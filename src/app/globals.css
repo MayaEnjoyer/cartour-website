@@ -1,26 +1,29 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  /* Дот-грид фон (ледь помітний, тренд 2025) */
+  .bg-dot-grid {
+    background-image:
+            radial-gradient(rgba(17, 24, 39, 0.06) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: 0 0;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Скло-картки */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-lg;
+  }
+  /* Градієнтна тонка рамка навколо елементів */
+  .gradient-ring {
+    @apply p-[1px] rounded-2xl bg-gradient-to-r from-sky-500/50 via-fuchsia-500/50 to-emerald-500/50;
+  }
+  /* Мʼяке світіння по краях */
+  .glow {
+    box-shadow:
+            0 0 40px rgba(14, 165, 233, .15),
+            0 0 80px rgba(168, 85, 247, .12),
+            0 0 120px rgba(16, 185, 129, .10);
+  }
+  /* Плаваючі градієнтні «блоби» */
+  .blob {
+    filter: blur(40px);
+    opacity: .25;
+  }
 }

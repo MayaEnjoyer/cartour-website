@@ -3,15 +3,15 @@
 import { useEffect, useRef } from 'react';
 import L, { LatLngExpression, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import marker2x from 'leaflet/dist/images/marker-icon-2x.png';
+import marker1x from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Іконки беремо з /public, щоб не тягнути png як модулі
 L.Icon.Default.mergeOptions({
-    iconRetinaUrl: '/leaflet/marker-icon-2x.png',
-    iconUrl: '/leaflet/marker-icon.png',
-    shadowUrl: '/leaflet/marker-shadow.png',
+    iconRetinaUrl: marker2x,
+    iconUrl: marker1x,
+    shadowUrl: markerShadow,
 });
-
-type LeafletContainerFlag = { _leaflet_id?: number };
 
 export default function MapBratislavaVienna() {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -20,17 +20,8 @@ export default function MapBratislavaVienna() {
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
-
-        // guard від повторної ініціалізації в StrictMode
         if (mapRef.current) return;
 
-        // інколи Leaflet залишає службовий id на DOM-вузлі — приберемо
-        const maybe = el as unknown as LeafletContainerFlag;
-        if (typeof maybe._leaflet_id !== 'undefined') {
-            delete maybe._leaflet_id;
-        }
-
-        // Координати Братислава ↔ Відень
         const bratislava: LatLngExpression = [48.1486, 17.1077];
         const vienna: LatLngExpression = [48.2082, 16.3738];
 
@@ -47,19 +38,15 @@ export default function MapBratislavaVienna() {
             attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
 
-        // Маршрут (пунктир)
         L.polyline([bratislava, vienna], {
-            color: '#1f2937', // slate-800
+            color: '#1f2937',
             weight: 4,
             dashArray: '6,6',
-            className: 'route-dash',
         }).addTo(map);
 
-        // Маркери
-        L.marker(bratislava, { title: 'Bratislava' }).addTo(map);
-        L.marker(vienna, { title: 'Wien' }).addTo(map);
+        L.marker(bratislava).addTo(map);
+        L.marker(vienna).addTo(map);
 
-        // Автопідгонка вʼюпорту
         map.fitBounds(L.latLngBounds([bratislava, vienna]), { padding: [20, 20] });
 
         return () => {

@@ -1,11 +1,11 @@
+// src/app/[locale]/layout.tsx
 import '../globals.css';
 import Nav from '../../components/Nav';
 import UXProvider from '../../components/providers/UXProvider';
-import OrbBackground from '../../components/ui/OrbBackground';
+import AirportBackground from '../../components/ui/AirportBackground';
 
 export default async function LocalizedLayout({
-                                                  children,
-                                                  params,
+                                                  children, params,
                                               }: {
     children: React.ReactNode;
     params: Promise<{ locale: string }>;
@@ -13,14 +13,12 @@ export default async function LocalizedLayout({
     const { locale } = await params;
 
     return (
-        <>
-            <UXProvider>
-                <div className="relative">
-                    <OrbBackground />
-                    <Nav locale={locale} />
-                    {children}
-                </div>
-            </UXProvider>
-        </>
+        <UXProvider>
+            <div className="relative">
+                <AirportBackground />
+                <Nav locale={locale} />
+                {children}
+            </div>
+        </UXProvider>
     );
 }

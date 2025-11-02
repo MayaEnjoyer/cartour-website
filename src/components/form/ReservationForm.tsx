@@ -5,8 +5,11 @@ import {
     useState,
     type FormEvent,
     type ReactElement,
+    type InputHTMLAttributes,
 } from 'react';
+import SocialLinks from '../contact/SocialLinks';
 
+/* ===== i18n ===== */
 type L = 'sk' | 'en' | 'de';
 const isL = (x: string): x is L => (['sk', 'en', 'de'] as const).includes(x as L);
 
@@ -15,29 +18,11 @@ type Dict = Record<
     {
         title: string;
         personal: string;
-        first: string;
-        last: string;
-        phone: string;
-        email: string;
-        ride: string;
-        from: string;
-        to: string;
-        date: string;
-        time: string;
-        flight: string;
-        pax: string;
-        luggage: string;
-        checked: string;
-        carry: string;
-        options: string;
-        wantReturn: string;
-        return: string;
-        notes: string;
-        submit: string;
-        altCall: string;
-        success: string;
-        required: string;
-        missingPrefix: string;
+        first: string; last: string; phone: string; email: string;
+        ride: string; from: string; to: string; date: string; time: string; flight: string;
+        pax: string; luggage: string; checked: string; carry: string;
+        options: string; wantReturn: string; return: string; notes: string;
+        submit: string; altCall: string; success: string; required: string; missingPrefix: string;
     }
 >;
 
@@ -125,16 +110,10 @@ const dict: Dict = {
     },
 };
 
+/* ===== validation ===== */
 const REQUIRED_FIELDS = [
-    'firstName',
-    'lastName',
-    'phone',
-    'email',
-    'pickup',
-    'dropoff',
-    'date',
-    'time',
-    'pax',
+    'firstName', 'lastName', 'phone', 'email',
+    'pickup', 'dropoff', 'date', 'time', 'pax',
 ] as const;
 
 function listMissing(fd: FormData): string[] {
@@ -146,6 +125,14 @@ function listMissing(fd: FormData): string[] {
     return missing;
 }
 
+/* ===== helpers ===== */
+type Item = { id: string };
+const uid = () =>
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
+
+/* ===== component ===== */
 export default function ReservationForm({ locale }: { locale: string }): ReactElement {
     const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
 
@@ -155,6 +142,15 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
 
+    // Додаткові адреси (неконтрольовані інпути, лише стабільні ключі)
+    const [extraPickups, setExtraPickups] = useState<Item[]>([]);
+    const [extraDrops, setExtraDrops] = useState<Item[]>([]);
+
+    const addExtraPickup = () => setExtraPickups(a => [...a, { id: uid() }]);
+    const addExtraDrop   = () => setExtraDrops(a => [...a, { id: uid() }]);
+    const removeExtraPickup = (id: string) => setExtraPickups(a => a.filter(x => x.id !== id));
+    const removeExtraDrop   = (id: string) => setExtraDrops(a => a.filter(x => x.id !== id));
+
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setSent(null);
@@ -162,14 +158,19 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
 
         const fd = new FormData(e.currentTarget);
         const m = listMissing(fd);
-        if (m.length) {
-            setMissing(m);
-            return;
-        }
+        if (m.length) { setMissing(m); return; }
         setMissing(null);
 
-        // Перетворюємо FormData → простий об’єкт
-        const payload = Object.fromEntries(fd.entries());
+        const extraP = fd.getAll('pickup_extra[]').map(String).filter(Boolean);
+        const extraD = fd.getAll('dropoff_extra[]').map(String).filter(Boolean);
+
+        const payload = {
+            ...Object.fromEntries(fd.entries()),
+            pickups:  [String(fd.get('pickup') ?? ''),  ...extraP],
+            dropoffs: [String(fd.get('dropoff') ?? ''), ...extraD],
+            pickup_extra: extraP,
+            dropoff_extra: extraD,
+        };
 
         setLoading(true);
         try {
@@ -178,22 +179,18 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-
-            // Якщо сервер повернув помилки валідації (zod)
             const data = await res.json().catch(() => ({}));
             if (!res.ok || data?.ok === false) {
                 const zodFieldErrors = data?.errors?.fieldErrors as Record<string, string[]> | undefined;
-                if (zodFieldErrors) {
-                    setMissing(Object.keys(zodFieldErrors));
-                } else {
-                    setServerError(`Error ${res.status}`);
-                }
+                if (zodFieldErrors) setMissing(Object.keys(zodFieldErrors));
+                else setServerError(`Error ${res.status}`);
                 return;
             }
 
             setSent(t.success);
             e.currentTarget.reset();
             setWantReturn(false);
+            setExtraPickups([]); setExtraDrops([]);
         } catch {
             setServerError('Network error. Please try again.');
         } finally {
@@ -202,211 +199,188 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
     }
 
     const label = (id: string, text: string, req = false): ReactElement => (
-        <label htmlFor={id} className="block text-sm font-medium">
+        <label htmlFor={id} className="ui-label">
             {text} {req && <span aria-hidden className="text-red-500">*</span>}
         </label>
     );
 
-    type InputType = 'text' | 'email' | 'tel' | 'date' | 'time' | 'number';
-
-    const input = (type: InputType = 'text') => {
-        function RenderInput(id: string, req = false, extra = ''): ReactElement {
-            return (
-                <input
-                    id={id}
-                    name={id}
-                    type={type}
-                    required={req}
-                    aria-required={req}
-                    className={`mt-1 w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-black/20 ${extra}`}
-                />
-            );
-        }
-        RenderInput.displayName = `Input<${type}>`;
-        return RenderInput;
-    };
-
-    const text = input('text');
-    const email = input('email');
-    const tel = input('tel');
-    const date = input('date');
-    const time = input('time');
-
-    const number = (id: string, req = false, min = 0, max = 32): ReactElement => (
+    // ✅ Більше ніяких JSX.IntrinsicElements — використовуємо стандартний тип
+    const textInput = (
+        id: string,
+        req = false,
+        attrs: InputHTMLAttributes<HTMLInputElement> = {}
+    ) => (
         <input
             id={id}
             name={id}
-            type="number"
-            min={min}
-            max={max}
             required={req}
             aria-required={req}
-            className="mt-1 w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-black/20"
+            className="ui-input mt-1"
+            {...attrs}
         />
     );
 
     return (
-        <section className="mx-auto max-w-4xl px-4 py-14 sm:py-20">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.title}</h1>
-
+        <form className="space-y-10" noValidate onSubmit={onSubmit}>
+            {/* alerts */}
             {missing && missing.length > 0 && (
-                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
                     {t.missingPrefix} {missing.join(', ')}
                 </div>
             )}
-
             {serverError && (
-                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
                     {serverError}
                 </div>
             )}
-
             {sent && (
-                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                <div className="info-card p-3 text-sm text-emerald-700 border-emerald-200 bg-emerald-50/70">
                     {sent}
                 </div>
             )}
 
-            <form className="mt-6 space-y-10" noValidate onSubmit={onSubmit}>
-                {/* Personal */}
-                <fieldset className="grid gap-4 sm:grid-cols-2">
-                    <legend className="mb-2 text-sm font-semibold">{t.personal}</legend>
-                    <div>
-                        {label('firstName', t.first, true)}
-                        {text('firstName', true)}
-                    </div>
-                    <div>
-                        {label('lastName', t.last, true)}
-                        {text('lastName', true)}
-                    </div>
-                    <div>
-                        {label('phone', t.phone, true)}
-                        {tel('phone', true)}
-                    </div>
-                    <div>
-                        {label('email', t.email, true)}
-                        {email('email', true)}
-                    </div>
-                </fieldset>
+            {/* Personal */}
+            <fieldset className="grid gap-4 sm:grid-cols-2">
+                <legend className="mb-2 text-sm font-semibold">{t.personal}</legend>
+                <div>{label('firstName', t.first, true)}{textInput('firstName', true)}</div>
+                <div>{label('lastName', t.last, true)}{textInput('lastName', true)}</div>
+                <div>{label('phone', t.phone, true)}{textInput('phone', true, { type: 'tel' })}</div>
+                <div>{label('email', t.email, true)}{textInput('email', true, { type: 'email' })}</div>
+            </fieldset>
 
-                {/* Ride details */}
-                <fieldset className="grid gap-4 sm:grid-cols-2">
-                    <legend className="mb-2 text-sm font-semibold">{t.ride}</legend>
-                    <div className="sm:col-span-2">
-                        {label('pickup', t.from, true)}
-                        {text('pickup', true)}
-                    </div>
-                    <div className="sm:col-span-2">
-                        {label('dropoff', t.to, true)}
-                        {text('dropoff', true)}
-                    </div>
+            {/* Ride details */}
+            <fieldset className="grid gap-4 sm:grid-cols-2">
+                <legend className="mb-2 text-sm font-semibold">{t.ride}</legend>
 
-                    <div>
-                        {label('date', t.date, true)}
-                        {date('date', true)}
-                    </div>
-                    <div>
-                        {label('time', t.time, true)}
-                        {time('time', true)}
-                    </div>
-
-                    <div>
-                        {label('flight', t.flight)}
-                        {text('flight')}
-                    </div>
-
-                    <div>
-                        {label('pax', t.pax, true)}
-                        {number('pax', true, 1, 8)}
-                    </div>
-
-                    <div className="sm:col-span-2">
-                        <span className="block text-sm font-medium">{t.luggage}</span>
-                        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                                {label('bagsChecked', t.checked)}
-                                {number('bagsChecked', false, 0, 12)}
-                            </div>
-                            <div>
-                                {label('bagsCarry', t.carry)}
-                                {number('bagsCarry', false, 0, 12)}
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                {/* Options */}
-                <fieldset className="space-y-4">
-                    <legend className="mb-2 text-sm font-semibold">{t.options}</legend>
-
-                    <label className="inline-flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border"
-                            checked={wantReturn}
-                            onChange={(e) => setWantReturn(e.target.checked)}
-                        />
-                        <span className="text-sm">{t.wantReturn}</span>
-                    </label>
-
-                    {wantReturn && (
-                        <div className="rounded-xl border p-4">
-                            <p className="mb-3 text-sm font-medium">{t.return}</p>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="sm:col-span-2">
-                                    {label('r_pickup', t.from, true)}
-                                    {text('r_pickup', true)}
-                                </div>
-                                <div className="sm:col-span-2">
-                                    {label('r_dropoff', t.to, true)}
-                                    {text('r_dropoff', true)}
-                                </div>
-                                <div>
-                                    {label('r_date', t.date, true)}
-                                    {date('r_date', true)}
-                                </div>
-                                <div>
-                                    {label('r_time', t.time, true)}
-                                    {time('r_time', true)}
-                                </div>
-                                <div className="sm:col-span-2">
-                                    {label('r_flight', t.flight)}
-                                    {text('r_flight')}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </fieldset>
-
-                {/* Notes */}
-                <fieldset>
-                    <legend className="mb-2 text-sm font-semibold">{t.notes}</legend>
-                    <textarea
-                        id="notes"
-                        name="notes"
-                        rows={4}
-                        className="w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-black/20"
-                    />
-                </fieldset>
-
-                <div className="flex items-center gap-4">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="rounded-xl border bg-black px-5 py-2 text-white shadow hover:bg-black/90 focus:ring-2 focus:ring-black/20 disabled:opacity-60"
-                    >
-                        {loading ? '…' : t.submit}
-                    </button>
-                    <span className="text-sm text-gray-500">
-            {t.altCall}:{' '}
-                        <a href="tel:+421908699151" className="underline">
-              +421 908 699 151
-            </a>
-          </span>
+                {/* основний pickup */}
+                <div className="sm:col-span-2">
+                    {label('pickup', t.from, true)}
+                    {textInput('pickup', true, { placeholder: t.from })}
                 </div>
 
-                <p className="text-xs text-gray-500">* {t.required}. Nikdy nezdieľame údaje s tretími stranami.</p>
-            </form>
-        </section>
+                {/* додаткові pickup */}
+                {extraPickups.map(item => (
+                    <div key={item.id} className="sm:col-span-2 relative">
+                        <input name="pickup_extra[]" className="ui-input mt-1 pr-8" placeholder={`${t.from} — extra`} />
+                        <button
+                            type="button"
+                            onClick={() => removeExtraPickup(item.id)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-red-500 hover:text-red-600 hover:bg-red-50"
+                            aria-label="Remove extra pickup"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+                <div className="sm:col-span-2">
+                    <button type="button" className="btn-secondary text-xs" onClick={addExtraPickup}>
+                        {t.from}: +
+                    </button>
+                </div>
+
+                {/* основний dropoff */}
+                <div className="sm:col-span-2">
+                    {label('dropoff', t.to, true)}
+                    {textInput('dropoff', true, { placeholder: t.to })}
+                </div>
+
+                {/* додаткові dropoff */}
+                {extraDrops.map(item => (
+                    <div key={item.id} className="sm:col-span-2 relative">
+                        <input name="dropoff_extra[]" className="ui-input mt-1 pr-8" placeholder={`${t.to} — extra`} />
+                        <button
+                            type="button"
+                            onClick={() => removeExtraDrop(item.id)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-red-500 hover:text-red-600 hover:bg-red-50"
+                            aria-label="Remove extra dropoff"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+                <div className="sm:col-span-2">
+                    <button type="button" className="btn-secondary text-xs" onClick={addExtraDrop}>
+                        {t.to}: +
+                    </button>
+                </div>
+
+                <div>
+                    {label('date', t.date, true)}
+                    {textInput('date', true, { type: 'date' })}
+                </div>
+                <div>
+                    {label('time', t.time, true)}
+                    {textInput('time', true, { type: 'time' })}
+                </div>
+
+                <div className="sm:col-span-2">
+                    {label('flight', t.flight)}
+                    {textInput('flight', false, { placeholder: t.flight })}
+                </div>
+
+                <div>
+                    {label('pax', t.pax, true)}
+                    {textInput('pax', true, { type: 'number', min: 1, max: 8 })}
+                </div>
+
+                <div className="sm:col-span-2">
+                    <span className="ui-label">{t.luggage}</span>
+                    <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>{label('bagsChecked', t.checked)}{textInput('bagsChecked', false, { type: 'number', min: 0, max: 12 })}</div>
+                        <div>{label('bagsCarry', t.carry)}{textInput('bagsCarry', false, { type: 'number', min: 0, max: 12 })}</div>
+                    </div>
+                </div>
+            </fieldset>
+
+            {/* Options */}
+            <fieldset className="space-y-4">
+                <legend className="mb-2 text-sm font-semibold">{t.options}</legend>
+
+                <label className="inline-flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border"
+                        checked={wantReturn}
+                        onChange={e => setWantReturn(e.target.checked)}
+                    />
+                    <span className="text-sm">{t.wantReturn}</span>
+                </label>
+
+                {wantReturn && (
+                    <div className="rounded-xl border p-4 bg-white/70">
+                        <p className="mb-3 text-sm font-medium">{t.return}</p>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="sm:col-span-2">{label('r_pickup', t.from, true)}{textInput('r_pickup', true)}</div>
+                            <div className="sm:col-span-2">{label('r_dropoff', t.to, true)}{textInput('r_dropoff', true)}</div>
+                            <div>{label('r_date', t.date, true)}{textInput('r_date', true, { type: 'date' })}</div>
+                            <div>{label('r_time', t.time, true)}{textInput('r_time', true, { type: 'time' })}</div>
+                        </div>
+                    </div>
+                )}
+            </fieldset>
+
+            {/* Notes + submit + socials */}
+            <fieldset>
+                <legend className="mb-2 text-sm font-semibold">{t.notes}</legend>
+                <textarea id="notes" name="notes" rows={4} className="ui-textarea" />
+            </fieldset>
+
+            <div className="flex items-center gap-4 flex-wrap">
+                <button type="submit" disabled={loading} className="btn-primary">
+                    {loading ? '…' : t.submit}
+                </button>
+                <span className="text-sm text-gray-500">
+          {t.altCall}:{' '}
+                    <a href="tel:+421908699151" className="underline">+421 908 699 151</a>
+        </span>
+
+                {/* соцмережі справа, переноситься нижче на вузьких екранах */}
+                <div className="ml-auto">
+                    <SocialLinks />
+                </div>
+            </div>
+
+            <p className="hint">* {t.required}. Nikdy nezdieľame údaje s tretími stranami.</p>
+        </form>
     );
 }

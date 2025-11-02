@@ -1,34 +1,277 @@
-/* Tailwind v4 обов'язково підключати так */
+/* Tailwind v4 */
 @import "tailwindcss";
 
-/* Твої утиліти */
+/* =======================
+   Base: холодний «туманний» фон з пастельним синім
+   ======================= */
+@layer base {
+    html, body, #__next { height: 100%; }
+
+    body {
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+
+        /* м’який синювато-сірий вертикальний градієнт */
+        background:
+                linear-gradient(180deg, #E9F1FA 0%, #DDE7F3 48%, #D5E3F1 100%);
+    }
+
+    /* м’які «туманні» підсвітки */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background:
+                radial-gradient(900px 500px at 50% 120px, rgba(255,255,255,.55), transparent 66%),
+                radial-gradient(820px 460px at 15% 28%, rgba(59,130,246,.16), transparent 72%),
+                radial-gradient(900px 520px at 85% 82%, rgba(56,189,248,.18), transparent 76%),
+                radial-gradient(1200px 520px at 50% 50%, rgba(255,255,255,.10), transparent 78%);
+    }
+
+    /* тонке віньєтування */
+    body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+                radial-gradient(1200px 900px at 50% 30%, rgba(255,255,255,.12), transparent 72%),
+                radial-gradient(1200px 900px at 50% 80%, rgba(255,255,255,.10), transparent 75%),
+                radial-gradient(closest-side at 50% 50%, transparent 65%, rgba(0,0,0,.055) 100%);
+    }
+
+    ::selection { background: rgba(15,23,42,0.12); }
+    * { -webkit-tap-highlight-color: transparent; }
+}
+
+/* =======================
+   Utilities
+   ======================= */
 @layer utilities {
-    /* Дот-грид */
+    /* ледь помітна точкова сітка */
     .bg-dot-grid {
-        background-image: radial-gradient(rgba(17, 24, 39, 0.06) 1px, transparent 1px);
+        background-image: radial-gradient(rgba(17,24,39,0.05) 1px, transparent 1px);
         background-size: 16px 16px;
         background-position: 0 0;
     }
 
-    /* Скло-картка */
+    /* універсальна «скляна» картка */
     .glass {
-        @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-lg;
+        background-color: rgba(255,255,255,0.65);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.30);
+        box-shadow:
+                0 10px 40px rgba(0,0,0,.08),
+                0 20px 80px rgba(0,0,0,.06);
+        border-radius: 1rem;
     }
 
-    /* Тонка градієнтна рамка */
+    /* тонка нейтральна рамка */
     .gradient-ring {
-        @apply p-[1px] rounded-2xl bg-gradient-to-r
-        from-sky-500/50 via-fuchsia-500/50 to-emerald-500/50;
+        padding: 1px;
+        border-radius: 1rem;
+        background: linear-gradient(
+                90deg,
+                rgba(255,255,255,0.60) 0%,
+                rgba(255,255,255,0.38) 50%,
+                rgba(255,255,255,0.18) 100%
+        );
     }
 
-    /* М’яке світіння */
+    /* м’яка тінь */
     .glow {
         box-shadow:
-                0 0 40px  rgba(14, 165, 233, .15),
-                0 0 80px  rgba(168, 85, 247, .12),
-                0 0 120px rgba(16, 185, 129, .10);
+                0 10px 40px rgba(0,0,0,.08),
+                0 20px 80px rgba(0,0,0,.06);
     }
 
-    /* Блоби */
-    .blob { filter: blur(40px); opacity: .25; }
+    /* =======================
+       Соц-іконки
+       ======================= */
+    /* ЗСУВ НИЖЧЕ — ДОДАЙ ЦЕЙ КЛАС ДО КОНТЕЙНЕРА SocialLinks */
+    .social-row { margin-top: 14px; }
+    @media (min-width: 640px) { .social-row { margin-top: 18px; } }
+
+    .social-btn {
+        display: inline-flex;
+        border-radius: 9999px;
+        padding: 2px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.60), rgba(255,255,255,0.22));
+        transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .social-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+    }
+    .social-btn-inn {
+        display:flex; align-items:center; justify-content:center;
+        width:36px; height:36px; border-radius:9999px;
+        background: rgba(255,255,255,0.78);
+        border:1px solid rgba(255,255,255,0.32);
+        backdrop-filter: blur(12px);
+        color:#1f2937;
+        transition: background-color .25s ease, color .25s ease;
+    }
+    .social-btn:hover .social-btn-inn { background: rgba(255,255,255,0.92); }
+
+    /* =======================
+       Панелі / карти
+       ======================= */
+    .form-panel {
+        background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.70));
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(255,255,255,0.35);
+        border-radius: 20px;
+        box-shadow:
+                0 10px 40px rgba(0,0,0,.09),
+                0 20px 80px rgba(0,0,0,.07);
+    }
+    .map-shell {
+        padding: 8px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.62);
+        border: 1px solid rgba(255,255,255,0.35);
+        box-shadow:
+                0 10px 40px rgba(0,0,0,.09),
+                0 20px 80px rgba(0,0,0,.07);
+    }
+    .map-shell .leaflet-container,
+    .map-shell > div {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(15,23,42,0.10);
+    }
+    .info-card {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255,255,255,0.32);
+        border-radius: 16px;
+        box-shadow:
+                0 10px 36px rgba(0,0,0,.08),
+                0 20px 64px rgba(0,0,0,.06);
+    }
+
+    /* =======================
+       Елементи форми
+       ======================= */
+    .ui-label {
+        display:block;
+        font-size:.875rem;
+        font-weight:600;
+        color:#111827;
+    }
+
+    /* ВАЖЛИВО: текст у полях завжди видимий (фікс Chrome/Safari/Autofill) */
+    input, textarea, select {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a;           /* Safari/iOS, Chrome */
+        caret-color: #0f172a;
+        background-clip: padding-box;
+    }
+    ::placeholder { color:#6b7280; opacity:.85; }
+    input:disabled, textarea:disabled, select:disabled {
+        color:#6b7280; -webkit-text-fill-color:#6b7280;
+    }
+    /* прибираємо жовтий autofill, лишаємо наш фон */
+    input:-webkit-autofill,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+        -webkit-text-fill-color:#0f172a;
+        box-shadow: 0 0 0 1000px rgba(255,255,255,0.90) inset !important;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    .ui-input, .ui-textarea, .ui-select {
+        width: 100%;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.90);
+        border: 1px solid rgba(15,23,42,0.12);
+        padding: .6rem .8rem;
+        outline: none;
+        transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        box-shadow:
+                inset 0 0 0 1px rgba(255,255,255,0.40),
+                0 1px 0 rgba(255,255,255,0.85);
+    }
+    .ui-textarea { padding: .7rem .8rem; resize: vertical; }
+    .ui-input:focus, .ui-textarea:focus, .ui-select:focus {
+        background: #ffffff;
+        border-color: rgba(17,24,39,0.35);
+        box-shadow: 0 0 0 4px rgba(17,24,39,0.08);
+    }
+
+    .checkbox {
+        width: 16px; height: 16px;
+        border: 1px solid rgba(15,23,42,0.25);
+        border-radius: 4px;
+        accent-color: #0f172a;
+    }
+
+    .btn-primary {
+        display:inline-flex; align-items:center; justify-content:center;
+        gap:.5rem; padding:.62rem 1.1rem; border-radius:12px;
+        color:#fff;
+        background: linear-gradient(180deg, #111827, #0b1220);
+        border:1px solid rgba(255,255,255,0.08);
+        box-shadow:0 12px 30px rgba(0,0,0,.15);
+        transition: transform .12s ease, background-color .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .btn-primary:hover { background:#0f172a; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+
+    .btn-secondary {
+        display:inline-flex; align-items:center; justify-content:center;
+        padding:.45rem .75rem; border-radius:.75rem;
+        font-size:.8125rem; color:#0f172a;
+        background: rgba(255,255,255,.85);
+        border:1px solid rgba(15,23,42,.10);
+        box-shadow:0 4px 18px rgba(0,0,0,.06);
+        transition: background .2s ease, box-shadow .2s ease, transform .12s ease;
+    }
+    .btn-secondary:hover { background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,.08); transform: translateY(-1px); }
+
+    .alert {
+        padding:.75rem .9rem; border-radius:.75rem; border:1px solid; font-size:.875rem; background:#fff;
+    }
+    .alert-success { border-color:rgba(16,185,129,.35); color:#065f46; background:rgba(236,253,245,.9); }
+    .alert-error   { border-color:rgba(239,68,68,.35);  color:#7f1d1d; background:rgba(254,242,242,.9); }
+
+    .hint { font-size:.75rem; color:#6b7280; }
 }
+
+/* Соц-рядок — трохи нижче заголовка */
+.social-row { margin-top: 14px; }
+@media (min-width: 640px) { .social-row { margin-top: 18px; } }
+
+/* Кнопка з м’якою рамкою для лінків типу “Add another …” */
+.btn-soft {
+    display:inline-flex; align-items:center; gap:.5rem;
+    padding:.5rem .8rem; border-radius:10px;
+    background:rgba(255,255,255,.8);
+    border:1px solid rgba(15,23,42,.12);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+    transition: box-shadow .2s ease, transform .12s ease;
+}
+.btn-soft:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-1px); }
+
+/* Акордеон: head/body */
+.step-head{ display:flex; align-items:center; gap:.75rem;
+    padding:.9rem 1rem; border-bottom:1px solid rgba(15,23,42,.06);
+    background:linear-gradient(180deg, rgba(15,23,42,.92), rgba(15,23,42,.85));
+    color:#fff;
+}
+.step-title{ font-weight:700; letter-spacing:.2px; }
+.step-dot{ width:28px; height:28px; border-radius:9999px; display:grid; place-items:center;
+    background:#fff; color:#0f172a; font-weight:700; font-size:.9rem; }
+.step-toggle{ margin-left:auto; width:22px; height:22px; border-radius:9999px; border:none; background:#fff; }
+.step-body{ height:0; overflow:hidden; transition: height .35s ease; }
+.step-body.open{ height:auto; }
+
+/* Google Places dropdown поверх усіх скляних блоків */
+.pac-container { z-index: 2147483647; }
+

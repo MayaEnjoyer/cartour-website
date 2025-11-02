@@ -1,3 +1,4 @@
+// src/app/[locale]/page.tsx
 import Hero from '../../components/home/Hero';
 import Features from '../../components/home/Features';
 import About from '../../components/home/About';
@@ -14,9 +15,7 @@ export default async function LocalizedHome({
 
     return (
         <>
-            {/* JSON-LD для TaxiService / пошуковиків */}
             <SeoJsonLd locale={locale} />
-
             <main>
                 <Hero locale={locale} />
                 <Features locale={locale} />

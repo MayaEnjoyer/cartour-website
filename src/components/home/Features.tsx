@@ -12,6 +12,59 @@ function isLocale(v: string): v is Locale {
     return (locales as readonly string[]).includes(v);
 }
 
+/* — маленькі іконки — */
+function IconShield() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+            <path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z" />
+        </svg>
+    );
+}
+function IconClock() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+            <path d="M12 1a11 11 0 1 0 11 11A11 11 0 0 0 12 1Zm1 12h5v-2h-4V6h-2v7Z" />
+        </svg>
+    );
+}
+function IconRadar() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+            <path d="M12 2a10 10 0 1 0 10 10H20A8 8 0 1 1 12 4Z" />
+            <circle cx="12" cy="12" r="2" />
+            <path d="M12 12 21 3" stroke="currentColor" strokeWidth="2" />
+        </svg>
+    );
+}
+
+/** ====== Анімація (framer-motion) ====== */
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            delayChildren: 0.08,
+            staggerChildren: 0.08,
+        },
+    },
+} as const;
+
+const cardVariants = {
+    hidden: { opacity: 0, y: 16, scale: 0.98, filter: 'blur(6px)' },
+    show: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: 'blur(0px)',
+        transition: {
+            type: 'spring',
+            stiffness: 420,
+            damping: 34,
+            mass: 0.6,
+        },
+    },
+} as const;
+
 export default function Features({ locale }: { locale: string }) {
     const reduce = useReducedMotion();
 
@@ -51,28 +104,57 @@ export default function Features({ locale }: { locale: string }) {
         },
     };
 
-    const safeLocale: Locale = isLocale(locale) ? locale as Locale : 'sk';
+    const safeLocale: Locale = isLocale(locale) ? (locale as Locale) : 'sk';
     const t = dict[safeLocale];
 
-    return (
-        <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.heading}</h2>
+    const icons = [IconClock, IconRadar, IconShield, IconClock, IconShield, IconRadar];
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {t.items.map((it, i) => (
-                    <motion.article
-                        key={it.title}
-                        className="rounded-xl border p-5"
-                        initial={reduce ? undefined : { opacity: 0, y: 12 }}
-                        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.2 }}
-                        transition={{ duration: 0.4, delay: i * 0.05, ease: 'easeOut' }}
-                    >
-                        <h3 className="text-lg font-medium">{it.title}</h3>
-                        <p className="mt-2 text-gray-600 text-sm">{it.desc}</p>
-                    </motion.article>
-                ))}
-            </div>
-        </section>
+    return (
+        <motion.section
+            className="mx-auto max-w-6xl px-4 py-14 sm:py-20"
+            {...(!reduce
+                ? { initial: 'hidden', whileInView: 'show', variants: containerVariants, viewport: { once: true, amount: 0.25 } }
+                : {})}
+        >
+            <motion.h2
+                className="text-2xl sm:text-3xl font-semibold tracking-tight"
+                {...(!reduce
+                    ? {
+                        initial: { opacity: 0, y: 10 },
+                        whileInView: { opacity: 1, y: 0 },
+                        transition: { duration: 0.5, ease: 'easeOut' },
+                        viewport: { once: true, amount: 0.6 },
+                    }
+                    : {})}
+            >
+                {t.heading}
+            </motion.h2>
+
+            <motion.div
+                className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                {...(!reduce ? { variants: containerVariants } : {})}
+            >
+                {t.items.map((it, i) => {
+                    const Ico = icons[i % icons.length];
+                    return (
+                        <motion.article
+                            key={it.title}
+                            className="
+                group rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur
+                p-5 shadow-sm transition will-change-transform
+                hover:shadow-md hover:-translate-y-0.5
+              "
+                            {...(!reduce ? { variants: cardVariants } : {})}
+                        >
+                            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1 text-xs font-semibold">
+                                <Ico />
+                                <span className="opacity-90">{it.title}</span>
+                            </div>
+                            <p className="text-sm text-gray-600">{it.desc}</p>
+                        </motion.article>
+                    );
+                })}
+            </motion.div>
+        </motion.section>
     );
 }

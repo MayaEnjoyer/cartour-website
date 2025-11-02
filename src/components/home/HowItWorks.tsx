@@ -18,61 +18,25 @@ export default function HowItWorks({ locale }: { locale: string }) {
         sk: {
             heading: 'Ako to funguje',
             steps: [
-                {
-                    title: 'Vytvorte si rezerváciu online alebo telefonicky',
-                    desc:
-                        'Rezerváciu môžete jednoducho vytvoriť online prostredníctvom nášho formulára, alebo nás kontaktovať telefonicky.',
-                },
-                {
-                    title: 'Potvrdenie rezervácie',
-                    desc:
-                        'Po spracovaní rezervácie vám pošleme e-mail/SMS so všetkými údajmi. Vaša preprava je týmto záväzne potvrdená a zorganizovaná.',
-                },
-                {
-                    title: 'V dohodnutý čas vás vyzdvihneme',
-                    desc:
-                        'Náš vodič bude v stanovenom čase čakať na dohodnutej adrese a odvezie vás spoľahlivo a pohodlne na miesto určenia.',
-                },
+                { title: 'Vytvorte si rezerváciu online alebo telefonicky', desc: 'Rezerváciu vytvoríte online cez formulár alebo telefonicky.' },
+                { title: 'Potvrdenie rezervácie', desc: 'Zašleme e-mail/SMS s detailmi — jazda je potvrdená.' },
+                { title: 'V dohodnutý čas vás vyzdvihneme', desc: 'Vodič príde načas a odvezie vás pohodlne na miesto určenia.' },
             ],
         },
         en: {
             heading: 'How it works',
             steps: [
-                {
-                    title: 'Make a reservation online or by phone',
-                    desc:
-                        'Book easily via our online form or contact us by phone.',
-                },
-                {
-                    title: 'Reservation confirmation',
-                    desc:
-                        'We’ll send a confirmation via e-mail/SMS with all trip details. Your ride is scheduled and confirmed.',
-                },
-                {
-                    title: 'Pickup at the agreed time',
-                    desc:
-                        'Our driver will wait at the specified address and take you safely and comfortably to your destination.',
-                },
+                { title: 'Make a reservation online or by phone', desc: 'Book easily via our online form or by phone.' },
+                { title: 'Reservation confirmation', desc: 'We’ll send an e-mail/SMS with all details — ride confirmed.' },
+                { title: 'Pickup at the agreed time', desc: 'Driver arrives on time and takes you comfortably to your destination.' },
             ],
         },
         de: {
             heading: 'So funktioniert’s',
             steps: [
-                {
-                    title: 'Online oder telefonisch reservieren',
-                    desc:
-                        'Buchen Sie bequem über unser Online-Formular oder telefonisch.',
-                },
-                {
-                    title: 'Reservierungsbestätigung',
-                    desc:
-                        'Wir senden eine Bestätigung per E-Mail/SMS mit allen Details. Ihre Fahrt ist fix eingeplant.',
-                },
-                {
-                    title: 'Abholung zur vereinbarten Zeit',
-                    desc:
-                        'Unser Fahrer wartet zur vereinbarten Zeit und bringt Sie sicher und komfortabel ans Ziel.',
-                },
+                { title: 'Online oder telefonisch reservieren', desc: 'Einfach über das Online-Formular oder telefonisch buchen.' },
+                { title: 'Reservierungsbestätigung', desc: 'Bestätigung per E-Mail/SMS mit allen Details — Fahrt fixiert.' },
+                { title: 'Abholung zur vereinbarten Zeit', desc: 'Fahrer kommt pünktlich und bringt Sie komfortabel ans Ziel.' },
             ],
         },
     };
@@ -80,27 +44,41 @@ export default function HowItWorks({ locale }: { locale: string }) {
     const t = dict[isLocale(locale) ? locale : 'sk'];
 
     return (
-        <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.heading}</h2>
+        <section className="relative overflow-hidden bg-black text-white">
+            <div
+                aria-hidden
+                className="absolute inset-0 opacity-[0.18] mix-blend-screen"
+                style={{ backgroundImage: "url('/leaflet/background.png')" }}
+            />
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24">
+                <div className="inline-flex items-center gap-2">
+                    <span className="h-2 w-10 rounded bg-sky-400" />
+                    <span className="h-2 w-6 rounded bg-rose-500" />
+                </div>
+                <h2 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight">{t.heading}</h2>
 
-            <ol className="mt-8 grid gap-6 sm:grid-cols-3">
-                {t.steps.map((s, i) => (
-                    <motion.li
-                        key={s.title}
-                        className="rounded-xl border p-5"
-                        initial={reduce ? undefined : { opacity: 0, y: 12 }}
-                        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.2 }}
-                        transition={{ duration: 0.4, delay: i * 0.06, ease: 'easeOut' }}
-                    >
-                        <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm font-medium">
-                            {i + 1}
-                        </div>
-                        <h3 className="text-lg font-medium">{s.title}</h3>
-                        <p className="mt-2 text-gray-600 text-sm">{s.desc}</p>
-                    </motion.li>
-                ))}
-            </ol>
+                <div className="relative mt-8">
+                    <div className="hidden sm:block absolute left-10 right-10 top-7 h-px border-t border-dashed border-white/30" />
+                    <ol className="grid gap-6 sm:grid-cols-3">
+                        {t.steps.map((s, i) => (
+                            <motion.li
+                                key={s.title}
+                                className="relative rounded-2xl border border-white/20 bg-white/5 backdrop-blur p-5 shadow-sm"
+                                initial={reduce ? undefined : { opacity: 0, y: 12 }}
+                                whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                                viewport={{ once: true, amount: 0.2 }}
+                                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow ring-1 ring-black/5">
+                                    {i + 1}
+                                </div>
+                                <h3 className="text-lg font-medium">{s.title}</h3>
+                                <p className="mt-2 text-[15px] sm:text-base text-white/80">{s.desc}</p>
+                            </motion.li>
+                        ))}
+                    </ol>
+                </div>
+            </div>
         </section>
     );
 }

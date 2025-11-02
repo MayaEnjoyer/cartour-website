@@ -1,31 +1,31 @@
-// src/app/[locale]/layout.tsx
 import '../globals.css';
+import { ReactNode, use } from 'react';
+
 import UXProvider from '../../components/providers/UXProvider';
 import AirportBackground from '../../components/ui/AirportBackground';
 import Nav from '../../components/ui/Nav';
 import PageOffset from '../../components/ui/PageOffset';
 
-export default async function LocalizedLayout({
-                                                  children,
-                                                  params,
-                                              }: {
-    children: React.ReactNode;
-    params: Promise<{ locale: 'sk' | 'en' | 'de' }>;
+import { normalizeLocale, Locale } from '../../lib/i18n';
+
+export default function LocalizedLayout({
+                                            children,
+                                            params,
+                                        }: {
+    children: ReactNode;
+    // ВАЖЛИВО: тут саме string (вимагає Next validator)
+    params: Promise<{ locale: string }>;
 }) {
-    const { locale } = await params;
+    // Layout не може бути async → розпаковуємо так
+    const { locale: rawLocale } = use(params);
+    const locale: Locale = normalizeLocale(rawLocale);
 
     return (
         <UXProvider>
             <div className="relative">
-                {/* легкий декоративний фон (діагональні штрихи) */}
                 <AirportBackground />
-
-                {/* прозорий/скляний хедер поверх контенту */}
                 <Nav locale={locale} />
-
-                {/* на головній відступ = 0; на інших сторінках = 88px */}
-                <PageOffset locale={locale} height={88} />
-
+                <PageOffset height={88} locale={locale} />
                 {children}
             </div>
         </UXProvider>

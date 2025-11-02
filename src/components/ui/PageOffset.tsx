@@ -10,9 +10,6 @@ export default function PageOffset({
     locale: 'sk' | 'en' | 'de';
 }) {
     const pathname = usePathname() || '/';
-    // Домівка: /sk або /sk/
-    const isHome =
-        pathname === `/${locale}` || pathname === `/${locale}/`;
-
+    const isHome = pathname === `/${locale}` || pathname === `/${locale}/`;
     return <div style={{ height: isHome ? 0 : height }} aria-hidden />;
 }

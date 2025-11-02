@@ -39,23 +39,29 @@ const dicts: Record<'sk' | 'en' | 'de', Dict> = {
     },
 };
 
-export default function OtherDestinations({ locale }: { locale: string }) {
+export default function OtherDestinations({
+                                              locale,
+                                              dark = false,
+                                          }: {
+    locale: string;
+    dark?: boolean;
+}) {
     const t = locale === 'en' ? dicts.en : locale === 'de' ? dicts.de : dicts.sk;
 
     return (
-        <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
+        <section className={`mx-auto max-w-6xl px-4 py-14 sm:py-20 ${dark ? 'text-white' : ''}`}>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.heading}</h2>
 
-            <div className="mt-6 overflow-x-auto rounded-xl border">
+            <div className={`mt-6 overflow-x-auto rounded-2xl ${dark ? 'border border-white/10 bg-white/5' : 'border bg-white'}`}>
                 <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className={dark ? 'bg-white/10' : 'bg-gray-50'}>
                     <tr className="text-left">
                         <th className="px-4 py-3">{t.col1}</th>
                         <th className="px-4 py-3">{t.col2}</th>
                         <th className="px-4 py-3">{t.col3}</th>
                     </tr>
                     </thead>
-                    <tbody className="[&>tr:nth-child(even)]:bg-gray-50/60">
+                    <tbody className={dark ? "[&>tr:nth-child(even)]:bg-white/5" : "[&>tr:nth-child(even)]:bg-gray-50/60"}>
                     {t.rows.map((r) => (
                         <tr key={r.fromTo}>
                             <td className="px-4 py-3">{r.fromTo}</td>

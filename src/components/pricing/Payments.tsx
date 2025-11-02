@@ -30,19 +30,37 @@ const dicts: Record<'sk'|'en'|'de', Dict> = {
     },
 };
 
-export default function Payments({ locale }: { locale: string }) {
+export default function Payments({
+                                     locale,
+                                     red = false,
+                                 }: {
+    locale: string;
+    red?: boolean;
+}) {
     const t = locale === 'en' ? dicts.en : locale === 'de' ? dicts.de : dicts.sk;
 
     return (
-        <section className="mx-auto max-w-6xl px-4 py-10 sm:py-16">
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.heading}</h2>
+        <section className={`mx-auto max-w-6xl px-4 py-16 ${red ? 'text-white' : ''}`}>
+            <div className="mb-6">
+                <p className={`text-sm tracking-wider ${red ? 'opacity-80' : 'text-gray-500'}`}>—</p>
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.heading}</h2>
+            </div>
 
-            <div className="mt-6 grid gap-6 sm:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-3">
                 {t.items.map((it) => (
-                    <div key={it.title} className="rounded-xl border p-5">
-                        <div className="text-2xl">{it.icon}</div>
-                        <h3 className="mt-2 text-lg font-medium">{it.title}</h3>
-                        <p className="mt-1 text-sm text-gray-600">{it.desc}</p>
+                    <div
+                        key={it.title}
+                        className="
+              rounded-2xl bg-white text-slate-900 p-6 shadow-xl
+              ring-1 ring-black/5
+            "
+                    >
+                        <div className="text-3xl">{it.icon}</div>
+                        <h3 className="mt-2 text-lg font-semibold">{it.title}</h3>
+                        <p className="mt-1 text-sm text-slate-600">{it.desc}</p>
+                        <button className="mt-4 inline-flex rounded-full bg-slate-900 px-4 py-2 text-white text-sm hover:bg-slate-800">
+                            OK
+                        </button>
                     </div>
                 ))}
             </div>

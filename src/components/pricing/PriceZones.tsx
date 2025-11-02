@@ -1,6 +1,19 @@
 'use client';
 
-import type { PriceZonesDict, Zone } from '../../types/pricing';
+type Zone = {
+    name: string;
+    sedan: string;
+    van: string;
+    areas: string[];
+};
+
+type PriceZonesDict = {
+    heading: string;
+    route: string;
+    zones: Zone[];
+    includedTitle: string;
+    included: string[];
+};
 
 export default function PriceZones({ locale }: { locale: string }) {
     const sk: PriceZonesDict = {
@@ -113,33 +126,65 @@ export default function PriceZones({ locale }: { locale: string }) {
 
     return (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{dict.heading}</h1>
-            <p className="mt-2 text-gray-600">{dict.route}</p>
+            <div className="text-center max-w-3xl mx-auto">
+                <p className="text-xs uppercase tracking-[0.2em] text-rose-600">— {dict.route}</p>
+                <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">
+                    {dict.heading}
+                </h1>
+                <p className="mt-3 text-sm text-gray-600">
+                    Fixné ceny podľa zón Bratislavy — žiadne skryté poplatky.
+                </p>
+            </div>
 
-            <div className="mt-8 grid gap-6 lg:grid-cols-3">
-                {dict.zones.map((z: Zone) => (
-                    <article key={z.name} className="rounded-xl border p-5">
-                        <h2 className="text-lg font-medium">{z.name}</h2>
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+                {dict.zones.map((z) => (
+                    <article
+                        key={z.name}
+                        className="
+              rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5
+            "
+                    >
+                        <h2 className="text-lg font-semibold">{z.name}</h2>
 
-                        <div className="mt-3 flex items-center gap-2 text-sm">
-                            <span className="inline-flex rounded border px-2 py-1">Sedan {z.sedan}</span>
-                            <span className="inline-flex rounded border px-2 py-1">{z.van}</span>
+                        <div className="mt-4 flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center rounded-full bg-slate-900 text-white px-3 py-1 text-sm font-semibold">
+                Sedan {z.sedan}
+              </span>
+                            <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm">
+                {z.van}
+              </span>
                         </div>
 
-                        <ul className="mt-4 list-disc pl-5 text-sm text-gray-700 space-y-1">
+                        <ul className="mt-4 space-y-2 text-sm text-gray-700">
                             {z.areas.map((a) => (
-                                <li key={a}>{a}</li>
+                                <li key={a} className="flex items-start gap-2">
+                                    <span className="mt-1 text-emerald-600">✓</span>
+                                    <span>{a}</span>
+                                </li>
                             ))}
                         </ul>
+
+                        <button
+                            className="
+                mt-6 inline-flex items-center justify-center rounded-full
+                bg-slate-900 px-4 py-2 text-sm font-medium text-white
+                hover:bg-slate-800
+              "
+                        >
+                            Objednať
+                        </button>
                     </article>
                 ))}
             </div>
 
-            <div className="mt-10 rounded-xl border p-5">
+            <div className="mt-10 rounded-2xl border bg-white p-6">
                 <h3 className="font-medium">{dict.includedTitle}</h3>
-                <ul className="mt-3 list-disc pl-5 text-sm text-gray-700 space-y-1">
+                <ul className="mt-3 grid gap-2 sm:grid-cols-3 text-sm text-gray-700">
                     {dict.included.map((i) => (
-                        <li key={i}>{i}</li>
+                        <li key={i} className="flex items-start gap-2">
+                            <span className="mt-1 text-emerald-600">✓</span>
+                            <span>{i}</span>
+                        </li>
                     ))}
                 </ul>
             </div>

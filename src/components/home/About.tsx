@@ -31,7 +31,7 @@ export default function About({ locale }: { locale: string }) {
                 'Naši vodiči majú dlhoročnú prax, sú presní, diskrétni a orientovaní na váš komfort.',
                 'Sme tu pre obchodné cesty, letiskové transfery, spoločenské udalosti aj každodenné presuny v meste a mimo neho.',
             ],
-            stats: ['4+ rokov skúseností', '1000+ transferov ročne', 'Hodnotenie 5★'],
+            stats: ['4+ rokov skúseností', '1000+ transferov ročne', 'Hodnotenie 4.3★'],
             badges: ['Airport', 'Corporate', '24/7'],
         },
         en: {

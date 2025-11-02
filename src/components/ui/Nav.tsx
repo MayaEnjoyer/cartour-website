@@ -33,9 +33,21 @@ function NavLink({
     );
 }
 
+// i18n labels
+const LABELS: Record<
+    Locale,
+    { home: string; pricing: string; contact: string; cta: string }
+> = {
+    sk: { home: 'Domov', pricing: 'Cenník', contact: 'Kontakt', cta: 'Objednať' },
+    en: { home: 'Home', pricing: 'Pricing', contact: 'Contact', cta: 'Book now' },
+    de: { home: 'Startseite', pricing: 'Preise', contact: 'Kontakt', cta: 'Jetzt buchen' },
+} as const;
+
 export default function Nav({ locale }: { locale: Locale }) {
     const pathname = usePathname() || '/';
     const isActive = (path: string) => pathname === path || pathname === `${path}/`;
+
+    const t = LABELS[locale] ?? LABELS.sk;
 
     return (
         <header className="fixed inset-x-0 top-0 z-50 bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-black/80">
@@ -50,7 +62,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                             width={320}
                             height={320}
                             priority
-                            className="h-32 w-auto" /* ~128px заввишки */
+                            className="h-32 w-auto"
                         />
                     </Link>
                 </div>
@@ -58,23 +70,23 @@ export default function Nav({ locale }: { locale: Locale }) {
                 {/* Центр — навігація з червоним підкресленням */}
                 <div className="flex items-center gap-12 justify-self-center">
                     <NavLink href={`/${locale}`} active={isActive(`/${locale}`)}>
-                        Home
+                        {t.home}
                     </NavLink>
                     <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>
-                        Pricing
+                        {t.pricing}
                     </NavLink>
                     <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>
-                        Contact
+                        {t.contact}
                     </NavLink>
                 </div>
 
-                {/* Праворуч — CTA + перемикач мови (бірюзова гама) */}
+                {/* Праворуч — CTA + перемикач мови */}
                 <div className="flex items-center gap-4 justify-self-end">
                     <Link
                         href={`/${locale}/kontakt`}
                         className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500"
                     >
-                        Book now
+                        {t.cta}
                     </Link>
                     <LocaleSwitcher locale={locale} />
                 </div>

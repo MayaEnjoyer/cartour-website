@@ -49,7 +49,7 @@ export default function LocaleSwitcher({ locale }: { locale: Locale }) {
                 aria-expanded={open}
                 className="
           inline-flex items-center gap-2 rounded-full
-          bg-rose-600 px-4 py-2 text-sm font-semibold text-white
+          bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white
           shadow ring-1 ring-white/10 hover:bg-rose-500 transition
         "
                 title="Change language"

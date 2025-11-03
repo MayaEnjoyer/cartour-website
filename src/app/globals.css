@@ -275,3 +275,8 @@
 /* Google Places dropdown поверх усіх скляних блоків */
 .pac-container { z-index: 2147483647; }
 
+html, body { overflow-x: hidden; }
+
+body { overflow-x: clip; }
+
+

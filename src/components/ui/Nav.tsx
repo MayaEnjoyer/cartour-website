@@ -1,9 +1,9 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {usePathname} from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
 
 type Locale = 'sk' | 'en' | 'de';
@@ -48,26 +48,29 @@ const LABELS: Record<
 export default function Nav({ locale }: { locale: Locale }) {
     const t = LABELS[locale] ?? LABELS.sk;
     const pathname = usePathname() || '/';
-    const isActive = (path: string) => pathname === path || pathname === `${path}/`;
+    const isActive = (p: string) => pathname === p || pathname === `${p}/`;
 
     const [open, setOpen] = useState(false);
 
-    // блокувати скрол фону під час відкритого меню
+    // блокуємо скрол під оверлеєм
     useEffect(() => {
         document.documentElement.classList.toggle('overflow-hidden', open);
         return () => document.documentElement.classList.remove('overflow-hidden');
     }, [open]);
 
-    // закривати меню при зміні маршруту (без ESLint-попередження)
+    // закриваємо при зміні маршруту
     useEffect(() => {
-        if (!open) return;
-        queueMicrotask(() => setOpen(false)); // або setTimeout(() => setOpen(false));
+        if (open) queueMicrotask(() => setOpen(false));
     }, [pathname, open]);
 
     return (
-        <header className="fixed inset-x-0 top-0 z-50 bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-black/80">
-            <nav className="mx-auto grid h-20 md:h-28 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4">
-                {/* Лого */}
+        <header
+            className="fixed inset-x-0 top-0 z-[100] bg-black/85 backdrop-blur supports-[backdrop-filter]:bg-black/75 pointer-events-auto"
+        >
+            {/* мобільно: flex з відступом між лівою і правою частиною.
+          на md+ перемикаємося у грід з центровим меню */}
+            <nav className="mx-auto flex h-16 md:h-28 max-w-6xl items-center justify-between px-4 md:grid md:grid-cols-[1fr_auto_1fr]">
+                {/* лого (зліва) */}
                 <div className="justify-self-start">
                     <Link href={`/${locale}`} className="flex items-center">
                         <Image
@@ -76,19 +79,23 @@ export default function Nav({ locale }: { locale: Locale }) {
                             width={320}
                             height={320}
                             priority
-                            className="h-12 md:h-24 w-auto"
+                            className="h-8 md:h-24 w-auto"
                         />
                     </Link>
                 </div>
 
-                {/* Центр — десктоп нав */}
+                {/* центр (тільки десктоп) */}
                 <div className="hidden md:flex items-center gap-12 justify-self-center">
                     <NavLink href={`/${locale}`} active={isActive(`/${locale}`)}>{t.home}</NavLink>
-                    <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>{t.pricing}</NavLink>
-                    <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>{t.contact}</NavLink>
+                    <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>
+                        {t.pricing}
+                    </NavLink>
+                    <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>
+                        {t.contact}
+                    </NavLink>
                 </div>
 
-                {/* Праворуч — десктоп CTA + локаль */}
+                {/* праворуч (десктоп) */}
                 <div className="hidden md:flex items-center gap-4 justify-self-end">
                     <Link
                         href={`/${locale}/kontakt`}
@@ -99,54 +106,52 @@ export default function Nav({ locale }: { locale: Locale }) {
                     <LocaleSwitcher locale={locale} />
                 </div>
 
-                {/* Мобільний бургер */}
-                <div className="md:hidden justify-self-end">
+                {/* бургер (мобільний) — СПРАВА */}
+                <div className="md:hidden">
                     <button
                         type="button"
                         aria-label="Open menu"
                         aria-expanded={open}
                         aria-controls="mobile-menu"
                         onClick={() => setOpen(true)}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 ring-white/10 hover:bg-white/10"
+                        className="relative z-[110] inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 hover:bg-white/15 active:bg-white/20"
                     >
-                        {/* 3 смужки */}
-                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" className="text-white">
+                        <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" aria-hidden="true">
                             <path fill="currentColor" d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
                         </svg>
                     </button>
                 </div>
             </nav>
 
-            {/* FULLSCREEN overlay меню для мобільних */}
+            {/* повноекранне меню */}
             <div
                 id="mobile-menu"
                 role="dialog"
                 aria-modal="true"
                 className={[
-                    'md:hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm transition-opacity',
+                    'md:hidden fixed inset-0 z-[120] bg-black/95 backdrop-blur-sm transition-opacity',
                     open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
                 ].join(' ')}
             >
                 <div className="mx-auto flex h-full max-w-6xl flex-col px-6 py-4">
-                    {/* верхня панель оверлею: лого + хрестик */}
+                    {/* верхня панель оверлею */}
                     <div className="flex items-center justify-between">
                         <Link href={`/${locale}`} onClick={() => setOpen(false)} className="flex items-center">
-                            <Image src="/leaflet/logo.png" alt="CarTour" width={160} height={64} className="h-10 w-auto" />
+                            <Image src="/leaflet/logo.png" alt="CarTour" width={160} height={64} className="h-8 w-auto" />
                         </Link>
+
                         <button
                             type="button"
                             aria-label="Close menu"
                             onClick={() => setOpen(false)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 ring-white/10 hover:bg-white/10"
+                            className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 hover:bg-white/15"
                         >
-                            {/* X */}
-                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" className="text-white">
-                                <path fill="currentColor" d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6l6.3-6.3z"/>
+                            <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6l6.3-6.3z"/>
                             </svg>
                         </button>
                     </div>
 
-                    {/* нав-лінки */}
                     <div className="mt-10 flex flex-1 flex-col items-center gap-6">
                         <NavLink href={`/${locale}`} active={isActive(`/${locale}`)} onClick={() => setOpen(false)}>
                             <span className="text-2xl">{t.home}</span>
@@ -167,7 +172,6 @@ export default function Nav({ locale }: { locale: Locale }) {
                         </Link>
 
                         <div className="mt-6">
-                            {/* така ж висота, як у CTA (щоб не “стрибало”) */}
                             <LocaleSwitcher locale={locale} />
                         </div>
                     </div>

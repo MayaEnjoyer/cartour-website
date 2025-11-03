@@ -39,10 +39,10 @@ export default function MapBratislavaVienna() {
             });
 
             const bratislava: LatLngExpression = [48.1486, 17.1077];
-            const vienna: LatLngExpression = [48.2082, 16.3738];
+            const vienna: LatLngExpression = [48.1108, 16.5697];
 
             const map = L.map(containerRef.current!, {
-                center: [48.2, 16.8],
+                center: [48.1108, 16.5697],
                 zoom: 9,
                 zoomControl: true,
                 scrollWheelZoom: true,

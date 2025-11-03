@@ -40,7 +40,7 @@ export default function Payments({
     const t = locale === 'en' ? dicts.en : locale === 'de' ? dicts.de : dicts.sk;
 
     return (
-        <section className={`mx-auto max-w-6xl px-4 py-16 ${red ? 'text-white' : ''}`}>
+        <section className={`mx-auto max-w-6xl px-4 py-4 ${red ? 'text-white' : ''}`}>
             <div className="mb-6">
                 <p className={`text-sm tracking-wider ${red ? 'opacity-80' : 'text-gray-500'}`}>—</p>
                 <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">{t.heading}</h2>
@@ -58,9 +58,6 @@ export default function Payments({
                         <div className="text-3xl">{it.icon}</div>
                         <h3 className="mt-2 text-lg font-semibold">{it.title}</h3>
                         <p className="mt-1 text-sm text-slate-600">{it.desc}</p>
-                        <button className="mt-4 inline-flex rounded-full bg-slate-900 px-4 py-2 text-white text-sm hover:bg-slate-800">
-                            OK
-                        </button>
                     </div>
                 ))}
             </div>

@@ -187,16 +187,16 @@ export default function Nav({ locale }: { locale: Locale }) {
 
                     {/* Соц-іконки внизу (статичні svg) */}
                     <div className="pb-8 flex items-center justify-center gap-4">
-                        <a href="#" aria-label="Facebook" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
+                        <a href="https://www.facebook.com/cartour.sk/" aria-label="Facebook" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M13.5 9H16V6h-2.5C11.6 6 11 7.2 11 8.7V10H9v3h2v5h3v-5h2.1l.4-3H14v-1c0-.6.2-1 1.5-1Z"/></svg>
                         </a>
-                        <a href="#" aria-label="Instagram" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
+                        <a href="https://www.instagram.com/cartour.sk/" aria-label="Instagram" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                                 <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3.5A5.5 5.5 0 1112 18.5 5.5 5.5 0 0112 7.5zm0 2A3.5 3.5 0 1015.5 13 3.5 3.5 0 0012 9.5zM17.5 6A1.5 1.5 0 1119 7.5 1.5 1.5 0 0117.5 6z"/>
                             </svg>
                         </a>
-                        <a href="#" aria-label="YouTube" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M23 12s0-3.6-.5-5.2a3.1 3.1 0 00-2.2-2.2C18.7 4 12 4 12 4s-6.7 0-8.3.6A3.1 3.1 0 001.5 6.8C1 8.4 1 12 1 12s0 3.6.5 5.2a3.1 3.1 0 002.2 2.2C5.3 20 12 20 12 20s6.7 0 8.3-.6a3.1 3.1 0 002.2-2.2C23 15.6 23 12 23 12zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+                        <a href="tel:+421908699151" aria-label="Call" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V21a1 1 0 01-1 1C10.07 22 2 13.93 2 3a1 1 0 011-1h3.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.24 1.02l-2.2 2.2z"/></svg>
                         </a>
                     </div>
                 </div>

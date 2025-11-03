@@ -1,34 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import LocaleSwitcher from './LocaleSwitcher';
 
 type Locale = 'sk' | 'en' | 'de';
 
 function NavLink({
-                     href,
-                     children,
-                     active,
-                     onClick,
-                 }: {
-    href: string;
-    children: React.ReactNode;
-    active?: boolean;
-    onClick?: () => void;
-}) {
+                     href, children, active,
+                 }: { href: string; children: React.ReactNode; active?: boolean }) {
     return (
         <Link
             href={href}
-            onClick={onClick}
             className={[
-                'relative group text-white transition',
-                'hover:opacity-90',
+                'relative group text-white transition hover:opacity-90',
                 'after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:bg-rose-600',
                 active ? 'after:w-full' : 'after:w-0 group-hover:after:w-full',
-                'after:transition-[width] after:duration-300 after:ease-out',
+                'after:transition-[width] after:duration-300',
             ].join(' ')}
         >
             {children}
@@ -36,144 +26,107 @@ function NavLink({
     );
 }
 
-const LABELS: Record<
-    Locale,
-    { home: string; pricing: string; contact: string; cta: string }
-> = {
+const LABELS: Record<Locale, {home: string; pricing: string; contact: string; cta: string}> = {
     sk: { home: 'Domov', pricing: 'Cenník', contact: 'Kontakt', cta: 'Objednať' },
-    en: { home: 'Home', pricing: 'Pricing', contact: 'Contact', cta: 'Book now' },
+    en: { home: 'Home',  pricing: 'Pricing', contact: 'Contact', cta: 'Book now' },
     de: { home: 'Startseite', pricing: 'Preise', contact: 'Kontakt', cta: 'Jetzt buchen' },
 } as const;
 
 export default function Nav({ locale }: { locale: Locale }) {
-    const t = LABELS[locale] ?? LABELS.sk;
     const pathname = usePathname() || '/';
     const isActive = (p: string) => pathname === p || pathname === `${p}/`;
+    const t = LABELS[locale] ?? LABELS.sk;
 
     const [open, setOpen] = useState(false);
 
-    // блокуємо скрол під оверлеєм
+    // Блокуємо скрол фону під меню
     useEffect(() => {
-        document.documentElement.classList.toggle('overflow-hidden', open);
-        return () => document.documentElement.classList.remove('overflow-hidden');
+        const el = document.documentElement;
+        open ? el.classList.add('overflow-hidden') : el.classList.remove('overflow-hidden');
+        return () => el.classList.remove('overflow-hidden');
     }, [open]);
 
-    // закриваємо при зміні маршруту
+    // Закриваємо меню при переході між сторінками
+    const current = pathname;
     useEffect(() => {
         if (open) queueMicrotask(() => setOpen(false));
-    }, [pathname, open]);
+    }, [current]);
 
     return (
-        <header
-            className="fixed inset-x-0 top-0 z-[100] bg-black/85 backdrop-blur supports-[backdrop-filter]:bg-black/75 pointer-events-auto"
-        >
-            {/* мобільно: flex з відступом між лівою і правою частиною.
-          на md+ перемикаємося у грід з центровим меню */}
-            <nav className="mx-auto flex h-16 md:h-28 max-w-6xl items-center justify-between px-4 md:grid md:grid-cols-[1fr_auto_1fr]">
-                {/* лого (зліва) */}
-                <div className="justify-self-start">
-                    <Link href={`/${locale}`} className="flex items-center">
-                        <Image
-                            src="/leaflet/logo.png"
-                            alt="CarTour"
-                            width={320}
-                            height={320}
-                            priority
-                            className="h-8 md:h-24 w-auto"
-                        />
-                    </Link>
-                </div>
+        <header className="fixed inset-x-0 top-0 z-50">
+            {/* Верхня панель */}
+            <nav className="flex items-center justify-between h-16 md:h-24 px-4 md:px-6
+                      bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+                {/* Лого (зліва) */}
+                <Link href={`/${locale}`} className="flex items-center">
+                    <Image
+                        src="/leaflet/logo.png"
+                        alt="CarTour"
+                        width={360}
+                        height={120}
+                        priority
+                        className="h-8 md:h-36 w-auto"
+                    />
+                </Link>
 
-                {/* центр (тільки десктоп) */}
-                <div className="hidden md:flex items-center gap-12 justify-self-center">
+                <div className="hidden md:flex items-center gap-10">
                     <NavLink href={`/${locale}`} active={isActive(`/${locale}`)}>{t.home}</NavLink>
-                    <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>
-                        {t.pricing}
-                    </NavLink>
-                    <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>
-                        {t.contact}
-                    </NavLink>
-                </div>
+                    <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>{t.pricing}</NavLink>
+                    <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>{t.contact}</NavLink>
 
-                {/* праворуч (десктоп) */}
-                <div className="hidden md:flex items-center gap-4 justify-self-end">
                     <Link
                         href={`/${locale}/kontakt`}
-                        className="inline-flex h-10 items-center justify-center rounded-full bg-rose-600 px-5 text-sm font-semibold text-white shadow hover:bg-rose-500"
+                        className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500"
                     >
                         {t.cta}
                     </Link>
                     <LocaleSwitcher locale={locale} />
                 </div>
 
-                {/* бургер (мобільний) — СПРАВА */}
-                <div className="md:hidden">
-                    <button
-                        type="button"
-                        aria-label="Open menu"
-                        aria-expanded={open}
-                        aria-controls="mobile-menu"
-                        onClick={() => setOpen(true)}
-                        className="relative z-[110] inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 hover:bg-white/15 active:bg-white/20"
-                    >
-                        <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" aria-hidden="true">
-                            <path fill="currentColor" d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
-                        </svg>
-                    </button>
-                </div>
+                {/* Бургер (праворуч) */}
+                <button
+                    type="button"
+                    aria-label="Open menu"
+                    aria-expanded={open}
+                    onClick={() => setOpen(v => !v)}
+                    className="md:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl
+                     bg-white/10 ring-1 ring-white/15"
+                >
+                    <span className="sr-only">Menu</span>
+                    <div className="space-y-1.5">
+                        <span className={`block h-0.5 w-7 bg-white transition-transform ${open ? 'translate-y-2 rotate-45' : ''}`} />
+                        <span className={`block h-0.5 w-7 bg-white transition-opacity ${open ? 'opacity-0' : 'opacity-100'}`} />
+                        <span className={`block h-0.5 w-7 bg-white transition-transform ${open ? '-translate-y-2 -rotate-45' : ''}`} />
+                    </div>
+                </button>
             </nav>
 
-            {/* повноекранне меню */}
+            {/* Повноекранне меню */}
             <div
-                id="mobile-menu"
-                role="dialog"
-                aria-modal="true"
-                className={[
-                    'md:hidden fixed inset-0 z-[120] bg-black/95 backdrop-blur-sm transition-opacity',
-                    open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
-                ].join(' ')}
+                className={`md:hidden fixed inset-0 z-[60] transition-opacity duration-300
+                    ${open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
             >
-                <div className="mx-auto flex h-full max-w-6xl flex-col px-6 py-4">
-                    {/* верхня панель оверлею */}
-                    <div className="flex items-center justify-between">
-                        <Link href={`/${locale}`} onClick={() => setOpen(false)} className="flex items-center">
-                            <Image src="/leaflet/logo.png" alt="CarTour" width={160} height={64} className="h-8 w-auto" />
-                        </Link>
+                <div className="absolute inset-0 bg-black/90" />
 
-                        <button
-                            type="button"
-                            aria-label="Close menu"
-                            onClick={() => setOpen(false)}
-                            className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 hover:bg-white/15"
-                        >
-                            <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" aria-hidden="true">
-                                <path fill="currentColor" d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6l6.3-6.3z"/>
-                            </svg>
-                        </button>
-                    </div>
+                <div
+                    className={`absolute inset-0 flex flex-col items-center justify-center gap-8 px-6
+                      text-center text-white transition-transform duration-300
+                      ${open ? 'translate-y-0' : '-translate-y-4'}`}
+                >
+                    <Link href={`/${locale}`}        onClick={() => setOpen(false)} className="text-2xl font-semibold">{t.home}</Link>
+                    <Link href={`/${locale}/cennik`} onClick={() => setOpen(false)} className="text-2xl font-semibold">{t.pricing}</Link>
+                    <Link href={`/${locale}/kontakt`}onClick={() => setOpen(false)} className="text-2xl font-semibold">{t.contact}</Link>
 
-                    <div className="mt-10 flex flex-1 flex-col items-center gap-6">
-                        <NavLink href={`/${locale}`} active={isActive(`/${locale}`)} onClick={() => setOpen(false)}>
-                            <span className="text-2xl">{t.home}</span>
-                        </NavLink>
-                        <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)} onClick={() => setOpen(false)}>
-                            <span className="text-2xl">{t.pricing}</span>
-                        </NavLink>
-                        <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)} onClick={() => setOpen(false)}>
-                            <span className="text-2xl">{t.contact}</span>
-                        </NavLink>
+                    <Link
+                        href={`/${locale}/kontakt`}
+                        onClick={() => setOpen(false)}
+                        className="mt-2 rounded-full bg-rose-600 px-7 py-3 text-lg font-semibold hover:bg-rose-500"
+                    >
+                        {t.cta}
+                    </Link>
 
-                        <Link
-                            href={`/${locale}/kontakt`}
-                            onClick={() => setOpen(false)}
-                            className="mt-4 inline-flex h-12 items-center justify-center rounded-full bg-rose-600 px-7 text-base font-semibold text-white shadow hover:bg-rose-500"
-                        >
-                            {t.cta}
-                        </Link>
-
-                        <div className="mt-6">
-                            <LocaleSwitcher locale={locale} />
-                        </div>
+                    <div className="mt-4">
+                        <LocaleSwitcher locale={locale} />
                     </div>
                 </div>
             </div>

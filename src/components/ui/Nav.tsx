@@ -63,7 +63,7 @@ export default function Nav({ locale }: { locale: Locale }) {
 
     return (
         <header className="fixed inset-x-0 top-0 z-[100]">
-            {/* чорна смуга — точно h-14 / md:h-28, все по центру по висоті */}
+            {/* чорна смуга — h-14 / md:h-28 */}
             <nav className="bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60" aria-label="Primary">
                 <div
                     className="
@@ -74,7 +74,7 @@ export default function Nav({ locale }: { locale: Locale }) {
             place-items-center
           "
                 >
-                    {/* ЛОГО зліва (трохи більше на мобільному) */}
+                    {/* ЛОГО зліва */}
                     <Link href={`/${locale}`} className="justify-self-start h-full flex items-center">
                         <Image
                             src="/leaflet/logo.png"
@@ -105,36 +105,39 @@ export default function Nav({ locale }: { locale: Locale }) {
                         <LocaleSwitcher locale={locale} />
                     </div>
 
-                    {/* Бургер — мобільний (менший, як на референсі) */}
-                    <button
-                        type="button"
-                        aria-label="Open menu"
-                        aria-controls="mobile-menu"
-                        aria-expanded={open}
-                        onClick={() => setOpen(v => !v)}
-                        className="
-              md:hidden justify-self-end
-              inline-flex items-center justify-center
-              w-11 h-11 rounded-xl
-              bg-white/10 ring-1 ring-white/15
-              hover:bg-white/15 active:scale-[.98]
-              transition
-            "
-                    >
-                        <span className="sr-only">Menu</span>
-                        <div className="space-y-1.5">
-                            <span className={`block h-0.5 w-6 bg-white transition-transform ${open ? 'translate-y-2 rotate-45' : ''}`} />
-                            <span className={`block h-0.5 w-6 bg-white transition-opacity ${open ? 'opacity-0' : 'opacity-100'}`} />
-                            <span className={`block h-0.5 w-6 bg-white transition-transform ${open ? '-translate-y-2 -rotate-45' : ''}`} />
+                    {/* Мобільний: перемикач мови + бургер праворуч */}
+                    <div className="md:hidden justify-self-end flex items-center gap-2">
+                        {/* трошки компактніший свічер */}
+                        <div className="-mr-1 scale-90">
+                            <LocaleSwitcher locale={locale} />
                         </div>
-                    </button>
+
+                        <button
+                            type="button"
+                            aria-label="Open menu"
+                            aria-controls="mobile-menu"
+                            aria-expanded={open}
+                            onClick={() => setOpen(v => !v)}
+                            className="
+                inline-flex items-center justify-center
+                w-11 h-11 rounded-xl
+                bg-white/10 ring-1 ring-white/15
+                hover:bg-white/15 active:scale-[.98]
+                transition
+              "
+                        >
+                            <span className="sr-only">Menu</span>
+                            <div className="space-y-1.5">
+                                <span className={`block h-0.5 w-6 bg-white transition-transform ${open ? 'translate-y-2 rotate-45' : ''}`} />
+                                <span className={`block h-0.5 w-6 bg-white transition-opacity ${open ? 'opacity-0' : 'opacity-100'}`} />
+                                <span className={`block h-0.5 w-6 bg-white transition-transform ${open ? '-translate-y-2 -rotate-45' : ''}`} />
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </nav>
 
-            {/* Мобільне меню — «як на AutoGlow»:
-         – зверху лого зліва + хрестик справа
-         – посередині великі пункти
-         – знизу ряд соц-іконок у колах */}
+            {/* Мобільне меню (оверлей) */}
             <div
                 id="mobile-menu"
                 className={`md:hidden fixed inset-0 z-[140] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
@@ -157,7 +160,6 @@ export default function Nav({ locale }: { locale: Locale }) {
                             onClick={() => setOpen(false)}
                             className="inline-flex items-center justify-center w-10 h-10 rounded-lg ring-1 ring-white/15 bg-white/10 hover:bg-white/15"
                         >
-                            {/* іконка X (svg, без пакетів) */}
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                                 <path d="M6 6l12 12M18 6L6 18" stroke="white" strokeWidth="2" strokeLinecap="round" />
                             </svg>
@@ -183,9 +185,14 @@ export default function Nav({ locale }: { locale: Locale }) {
                         >
                             {t.cta}
                         </Link>
+
+                        {/* Перемикач мови також доступний всередині меню */}
+                        <div className="mt-2">
+                            <LocaleSwitcher locale={locale} />
+                        </div>
                     </div>
 
-                    {/* Соц-іконки внизу (статичні svg) */}
+                    {/* Соц-іконки внизу */}
                     <div className="pb-8 flex items-center justify-center gap-4">
                         <a href="https://www.facebook.com/cartour.sk/" aria-label="Facebook" className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M13.5 9H16V6h-2.5C11.6 6 11 7.2 11 8.7V10H9v3h2v5h3v-5h2.1l.4-3H14v-1c0-.6.2-1 1.5-1Z"/></svg>

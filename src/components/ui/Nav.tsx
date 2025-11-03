@@ -82,8 +82,8 @@ export default function Nav({ locale }: { locale: Locale }) {
                             width={720}
                             height={144}
                             priority
-                            sizes="(max-width:768px) 200px, 720px"
-                            className="h-10 md:h-36 w-auto"   /* мобільне лого більше */
+                            sizes="(max-width:768px) 260px, 720px"
+                            className="h-12 sm:h-14 md:h-36 w-auto"
                         />
                     </Link>
 
@@ -149,7 +149,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                             alt="CarTour"
                             width={240}
                             height={72}
-                            className="h-8 w-auto"
+                            className="h-10 w-auto"
                             priority
                         />
                         <button

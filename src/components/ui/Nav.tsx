@@ -1,9 +1,9 @@
 'use client';
 
+import {useEffect, useState} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import {usePathname} from 'next/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
 
 type Locale = 'sk' | 'en' | 'de';
@@ -12,14 +12,17 @@ function NavLink({
                      href,
                      children,
                      active,
+                     onClick,
                  }: {
     href: string;
     children: React.ReactNode;
     active?: boolean;
+    onClick?: () => void;
 }) {
     return (
         <Link
             href={href}
+            onClick={onClick}
             className={[
                 'relative group text-white transition',
                 'hover:opacity-90',
@@ -33,40 +36,37 @@ function NavLink({
     );
 }
 
-// i18n labels
-const LABELS: Record<Locale, { home: string; pricing: string; contact: string; cta: string }> = {
+const LABELS: Record<
+    Locale,
+    { home: string; pricing: string; contact: string; cta: string }
+> = {
     sk: { home: 'Domov', pricing: 'Cenník', contact: 'Kontakt', cta: 'Objednať' },
     en: { home: 'Home', pricing: 'Pricing', contact: 'Contact', cta: 'Book now' },
     de: { home: 'Startseite', pricing: 'Preise', contact: 'Kontakt', cta: 'Jetzt buchen' },
 } as const;
 
 export default function Nav({ locale }: { locale: Locale }) {
+    const t = LABELS[locale] ?? LABELS.sk;
     const pathname = usePathname() || '/';
     const isActive = (path: string) => pathname === path || pathname === `${path}/`;
-    const t = LABELS[locale] ?? LABELS.sk;
 
-    // mobile
     const [open, setOpen] = useState(false);
 
-    // закриваємо меню на зміну маршруту — БЕЗ порушення правила
+    // блокувати скрол фону під час відкритого меню
+    useEffect(() => {
+        document.documentElement.classList.toggle('overflow-hidden', open);
+        return () => document.documentElement.classList.remove('overflow-hidden');
+    }, [open]);
+
+    // закривати меню при зміні маршруту (без ESLint-попередження)
     useEffect(() => {
         if (!open) return;
-        const id = setTimeout(() => setOpen(false), 0); // відкладено → без каскадних ререндерів
-        return () => clearTimeout(id);
+        queueMicrotask(() => setOpen(false)); // або setTimeout(() => setOpen(false));
     }, [pathname, open]);
-
-    // блокуємо скрол сторінки, поки меню відкрите
-    useEffect(() => {
-        const root = document.documentElement;
-        if (open) root.classList.add('overflow-hidden');
-        else root.classList.remove('overflow-hidden');
-        return () => root.classList.remove('overflow-hidden');
-    }, [open]);
 
     return (
         <header className="fixed inset-x-0 top-0 z-50 bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-black/80">
-            {/* Десктопна шапка (та сама сітка) */}
-            <nav className="mx-auto grid h-32 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4">
+            <nav className="mx-auto grid h-20 md:h-28 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4">
                 {/* Лого */}
                 <div className="justify-self-start">
                     <Link href={`/${locale}`} className="flex items-center">
@@ -76,86 +76,100 @@ export default function Nav({ locale }: { locale: Locale }) {
                             width={320}
                             height={320}
                             priority
-                            className="h-32 w-auto"
+                            className="h-12 md:h-24 w-auto"
                         />
                     </Link>
                 </div>
 
-                {/* Центр — навігація (ховаємо на мобільному) */}
+                {/* Центр — десктоп нав */}
                 <div className="hidden md:flex items-center gap-12 justify-self-center">
                     <NavLink href={`/${locale}`} active={isActive(`/${locale}`)}>{t.home}</NavLink>
                     <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>{t.pricing}</NavLink>
                     <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>{t.contact}</NavLink>
                 </div>
 
-                {/* Праворуч — CTA + мова (ховаємо на мобільному) */}
+                {/* Праворуч — десктоп CTA + локаль */}
                 <div className="hidden md:flex items-center gap-4 justify-self-end">
                     <Link
                         href={`/${locale}/kontakt`}
-                        className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500"
+                        className="inline-flex h-10 items-center justify-center rounded-full bg-rose-600 px-5 text-sm font-semibold text-white shadow hover:bg-rose-500"
                     >
                         {t.cta}
                     </Link>
                     <LocaleSwitcher locale={locale} />
                 </div>
 
-                {/* Бургер — лише мобільний */}
+                {/* Мобільний бургер */}
                 <div className="md:hidden justify-self-end">
                     <button
                         type="button"
                         aria-label="Open menu"
+                        aria-expanded={open}
+                        aria-controls="mobile-menu"
                         onClick={() => setOpen(true)}
-                        className="grid size-10 place-items-center rounded-full border border-white/20 bg-white/5"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 ring-white/10 hover:bg-white/10"
                     >
-                        <span className="block h-0.5 w-5 bg-white"></span>
-                        <span className="mt-1.5 block h-0.5 w-5 bg-white"></span>
-                        <span className="mt-1.5 block h-0.5 w-5 bg-white"></span>
+                        {/* 3 смужки */}
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" className="text-white">
+                            <path fill="currentColor" d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
+                        </svg>
                     </button>
                 </div>
             </nav>
 
-            {/* Мобільне повноекранне меню */}
-            <div className={`md:hidden fixed inset-0 z-50 ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-                {/* фон */}
-                <div
-                    className={`absolute inset-0 bg-black/95 backdrop-blur-sm transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'}`}
-                    onClick={() => setOpen(false)}
-                />
-                {/* контент */}
-                <div className={`absolute inset-0 flex flex-col items-center gap-6 pt-6 transition-transform duration-300 ${open ? 'translate-y-0' : 'translate-y-4'}`}>
-                    {/* верх: лого + Х */}
-                    <div className="flex w-full max-w-6xl items-center justify-between px-4">
-                        <Image src="/leaflet/logo.png" alt="CarTour" width={240} height={60} className="h-10 w-auto" />
+            {/* FULLSCREEN overlay меню для мобільних */}
+            <div
+                id="mobile-menu"
+                role="dialog"
+                aria-modal="true"
+                className={[
+                    'md:hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm transition-opacity',
+                    open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+                ].join(' ')}
+            >
+                <div className="mx-auto flex h-full max-w-6xl flex-col px-6 py-4">
+                    {/* верхня панель оверлею: лого + хрестик */}
+                    <div className="flex items-center justify-between">
+                        <Link href={`/${locale}`} onClick={() => setOpen(false)} className="flex items-center">
+                            <Image src="/leaflet/logo.png" alt="CarTour" width={160} height={64} className="h-10 w-auto" />
+                        </Link>
                         <button
-                            onClick={() => setOpen(false)}
+                            type="button"
                             aria-label="Close menu"
-                            className="grid size-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white"
+                            onClick={() => setOpen(false)}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 ring-white/10 hover:bg-white/10"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="stroke-current">
-                                <path d="M18 6L6 18M6 6l12 12" strokeWidth="2" strokeLinecap="round" />
+                            {/* X */}
+                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" className="text-white">
+                                <path fill="currentColor" d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6l6.3-6.3z"/>
                             </svg>
                         </button>
                     </div>
 
-                    {/* пункти */}
-                    <ul className="mt-4 flex flex-col items-center gap-6 text-2xl font-semibold text-white">
-                        <li><Link href={`/${locale}`} onClick={() => setOpen(false)} className="hover:text-rose-400">{t.home}</Link></li>
-                        <li><Link href={`/${locale}/cennik`} onClick={() => setOpen(false)} className="hover:text-rose-400">{t.pricing}</Link></li>
-                        <li><Link href={`/${locale}/kontakt`} onClick={() => setOpen(false)} className="hover:text-rose-400">{t.contact}</Link></li>
-                    </ul>
+                    {/* нав-лінки */}
+                    <div className="mt-10 flex flex-1 flex-col items-center gap-6">
+                        <NavLink href={`/${locale}`} active={isActive(`/${locale}`)} onClick={() => setOpen(false)}>
+                            <span className="text-2xl">{t.home}</span>
+                        </NavLink>
+                        <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)} onClick={() => setOpen(false)}>
+                            <span className="text-2xl">{t.pricing}</span>
+                        </NavLink>
+                        <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)} onClick={() => setOpen(false)}>
+                            <span className="text-2xl">{t.contact}</span>
+                        </NavLink>
 
-                    {/* CTA */}
-                    <Link
-                        href={`/${locale}/kontakt`}
-                        onClick={() => setOpen(false)}
-                        className="mt-2 rounded-full bg-rose-600 px-6 py-3 text-white font-semibold shadow hover:bg-rose-500"
-                    >
-                        {t.cta}
-                    </Link>
+                        <Link
+                            href={`/${locale}/kontakt`}
+                            onClick={() => setOpen(false)}
+                            className="mt-4 inline-flex h-12 items-center justify-center rounded-full bg-rose-600 px-7 text-base font-semibold text-white shadow hover:bg-rose-500"
+                        >
+                            {t.cta}
+                        </Link>
 
-                    {/* перемикач мови */}
-                    <div className="mt-4">
-                        <LocaleSwitcher locale={locale} />
+                        <div className="mt-6">
+                            {/* така ж висота, як у CTA (щоб не “стрибало”) */}
+                            <LocaleSwitcher locale={locale} />
+                        </div>
                     </div>
                 </div>
             </div>

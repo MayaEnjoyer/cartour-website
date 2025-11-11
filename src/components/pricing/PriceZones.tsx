@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 type Zone = {
     name: string;
     sedan: string;
@@ -25,8 +27,13 @@ export default function PriceZones({ locale }: { locale: string }) {
                 sedan: '60€',
                 van: '75€ (VAN 5/8 osôb)',
                 areas: [
-                    'Staré Mesto', 'Ružinov', 'Nové Mesto', 'Petržalka',
-                    'Karlova Ves', 'Jarovce', 'Hlavná vlaková stanica',
+                    'Staré Mesto',
+                    'Ružinov',
+                    'Nové Mesto',
+                    'Petržalka',
+                    'Karlova Ves',
+                    'Jarovce',
+                    'Hlavná vlaková stanica',
                 ],
             },
             {
@@ -34,9 +41,15 @@ export default function PriceZones({ locale }: { locale: string }) {
                 sedan: '65€',
                 van: '85€ (VAN 5/8 osôb)',
                 areas: [
-                    'Rača', 'Vajnory', 'Devín', 'Vrakuňa',
-                    'Letisko M. R. Štefánika (BTS)', 'Podunajské Biskupice',
-                    'Rusovce', 'Dúbravka', 'Lamač',
+                    'Rača',
+                    'Vajnory',
+                    'Devín',
+                    'Vrakuňa',
+                    'Letisko M. R. Štefánika (BTS)',
+                    'Podunajské Biskupice',
+                    'Rusovce',
+                    'Dúbravka',
+                    'Lamač',
                 ],
             },
             {
@@ -63,8 +76,13 @@ export default function PriceZones({ locale }: { locale: string }) {
                 sedan: '€60',
                 van: '€75 (VAN 5/8 seats)',
                 areas: [
-                    'Staré Mesto (Old Town)', 'Ružinov', 'Nové Mesto', 'Petržalka',
-                    'Karlova Ves', 'Jarovce', 'Main railway station',
+                    'Staré Mesto (Old Town)',
+                    'Ružinov',
+                    'Nové Mesto',
+                    'Petržalka',
+                    'Karlova Ves',
+                    'Jarovce',
+                    'Main railway station',
                 ],
             },
             {
@@ -72,9 +90,15 @@ export default function PriceZones({ locale }: { locale: string }) {
                 sedan: '€65',
                 van: '€85 (VAN 5/8 seats)',
                 areas: [
-                    'Rača', 'Vajnory', 'Devín', 'Vrakuňa',
-                    'Bratislava Airport (BTS)', 'Podunajské Biskupice',
-                    'Rusovce', 'Dúbravka', 'Lamač',
+                    'Rača',
+                    'Vajnory',
+                    'Devín',
+                    'Vrakuňa',
+                    'Bratislava Airport (BTS)',
+                    'Podunajské Biskupice',
+                    'Rusovce',
+                    'Dúbravka',
+                    'Lamač',
                 ],
             },
             {
@@ -97,8 +121,13 @@ export default function PriceZones({ locale }: { locale: string }) {
                 sedan: '60€',
                 van: '75€ (VAN 5/8 Plätze)',
                 areas: [
-                    'Staré Mesto', 'Ružinov', 'Nové Mesto', 'Petržalka',
-                    'Karlova Ves', 'Jarovce', 'Hauptbahnhof',
+                    'Staré Mesto',
+                    'Ružinov',
+                    'Nové Mesto',
+                    'Petržalka',
+                    'Karlova Ves',
+                    'Jarovce',
+                    'Hauptbahnhof',
                 ],
             },
             {
@@ -106,9 +135,15 @@ export default function PriceZones({ locale }: { locale: string }) {
                 sedan: '65€',
                 van: '85€ (VAN 5/8 Plätze)',
                 areas: [
-                    'Rača', 'Vajnory', 'Devín', 'Vrakuňa',
-                    'Flughafen BTS', 'Podunajské Biskupice',
-                    'Rusovce', 'Dúbravka', 'Lamač',
+                    'Rača',
+                    'Vajnory',
+                    'Devín',
+                    'Vrakuňa',
+                    'Flughafen BTS',
+                    'Podunajské Biskupice',
+                    'Rusovce',
+                    'Dúbravka',
+                    'Lamač',
                 ],
             },
             {
@@ -124,6 +159,37 @@ export default function PriceZones({ locale }: { locale: string }) {
 
     const dict = locale === 'en' ? en : locale === 'de' ? de : sk;
 
+    // Легка підсвітка "без прихованих платежів"
+    const tagline =
+        locale === 'en'
+            ? {
+                before: 'Fixed prices by Bratislava zones — ',
+                hi: 'no hidden fees',
+                after: '.',
+            }
+            : locale === 'de'
+                ? {
+                    before: 'Feste Preise nach Bratislava-Zonen — ',
+                    hi: 'keine versteckten Gebühren',
+                    after: '.',
+                }
+                : {
+                    before: 'Fixné ceny podľa zón Bratislavy — ',
+                    hi: 'žiadne skryté poplatky',
+                    after: '.',
+                };
+
+    // Примітка під трьома блоками
+    const bothWaysNote =
+        locale === 'en'
+            ? 'The listed price applies both ways.'
+            : locale === 'de'
+                ? 'Der angegebene Preis gilt in beide Richtungen.'
+                : 'Uvedená cena platí v oboch smeroch.';
+
+    const ctaLabel =
+        locale === 'en' ? 'Book now' : locale === 'de' ? 'Jetzt buchen' : 'Objednať';
+
     return (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
             <div className="text-center max-w-3xl mx-auto">
@@ -132,7 +198,11 @@ export default function PriceZones({ locale }: { locale: string }) {
                     {dict.heading}
                 </h1>
                 <p className="mt-3 text-sm text-gray-600">
-                    Fixné ceny podľa zón Bratislavy — žiadne skryté poplatky.
+                    {tagline.before}
+                    <span className="font-medium underline decoration-rose-500/30 underline-offset-4">
+            {tagline.hi}
+          </span>
+                    {tagline.after}
                 </p>
             </div>
 
@@ -140,9 +210,7 @@ export default function PriceZones({ locale }: { locale: string }) {
                 {dict.zones.map((z) => (
                     <article
                         key={z.name}
-                        className="
-              rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5
-            "
+                        className="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5"
                     >
                         <h2 className="text-lg font-semibold">{z.name}</h2>
 
@@ -164,18 +232,18 @@ export default function PriceZones({ locale }: { locale: string }) {
                             ))}
                         </ul>
 
-                        <button
-                            className="
-                mt-6 inline-flex items-center justify-center rounded-full
-                bg-slate-900 px-4 py-2 text-sm font-medium text-white
-                hover:bg-slate-800
-              "
+                        <Link
+                            href={`/${locale}/kontakt`}
+                            className="mt-6 inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
                         >
-                            Objednať
-                        </button>
+                            {ctaLabel}
+                        </Link>
                     </article>
                 ))}
             </div>
+
+            {/* Примітка під трьома блоками */}
+            <p className="mt-3 text-xs text-gray-500">{bothWaysNote}</p>
 
             <div className="mt-10 rounded-2xl border bg-white p-6">
                 <h3 className="font-medium">{dict.includedTitle}</h3>

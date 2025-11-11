@@ -41,20 +41,17 @@ export default function Nav({ locale }: { locale: Locale }) {
 
     const [open, setOpen] = useState(false);
 
-    // блок скролу під оверлеєм
     useEffect(() => {
         const root = document.documentElement;
         open ? root.classList.add('overflow-hidden') : root.classList.remove('overflow-hidden');
         return () => root.classList.remove('overflow-hidden');
     }, [open]);
 
-    // закривати при зміні сторінки
     useEffect(() => {
         if (open) queueMicrotask(() => setOpen(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname]);
 
-    // закриття на Esc
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
         window.addEventListener('keydown', onKey);
@@ -63,7 +60,6 @@ export default function Nav({ locale }: { locale: Locale }) {
 
     return (
         <header className="fixed inset-x-0 top-0 z-[100]">
-            {/* чорна смуга — h-14 / md:h-28 */}
             <nav className="bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60" aria-label="Primary">
                 <div
                     className="
@@ -94,7 +90,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                         <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>{t.contact}</NavLink>
                     </div>
 
-                    {/* Праворуч — CTA + мова (десктоп) */}
+                    {/* Праворуч: (десктоп) CTA + мова  |  (мобільно) мова + бургер */}
                     <div className="hidden md:flex h-full items-center justify-end gap-3 justify-self-end">
                         <Link
                             href={`/${locale}/kontakt`}
@@ -105,13 +101,11 @@ export default function Nav({ locale }: { locale: Locale }) {
                         <LocaleSwitcher locale={locale} />
                     </div>
 
-                    {/* Мобільний: перемикач мови + бургер праворуч */}
+                    {/* Мобільно: тільки перемикач мови поруч із бургером */}
                     <div className="md:hidden justify-self-end flex items-center gap-2">
-                        {/* трошки компактніший свічер */}
                         <div className="-mr-1 scale-90">
                             <LocaleSwitcher locale={locale} />
                         </div>
-
                         <button
                             type="button"
                             aria-label="Open menu"
@@ -137,7 +131,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                 </div>
             </nav>
 
-            {/* Мобільне меню (оверлей) */}
+            {/* Мобільне меню (без перемикача мови всередині) */}
             <div
                 id="mobile-menu"
                 className={`md:hidden fixed inset-0 z-[140] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
@@ -185,11 +179,6 @@ export default function Nav({ locale }: { locale: Locale }) {
                         >
                             {t.cta}
                         </Link>
-
-                        {/* Перемикач мови також доступний всередині меню */}
-                        <div className="mt-2">
-                            <LocaleSwitcher locale={locale} />
-                        </div>
                     </div>
 
                     {/* Соц-іконки внизу */}

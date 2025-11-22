@@ -18,25 +18,25 @@ export default function HowItWorks({ locale }: { locale: string }) {
         sk: {
             heading: 'Ako to funguje',
             steps: [
-                { title: 'Vytvorte si rezerváciu online alebo telefonicky', desc: 'Rezerváciu vytvoríte online cez formulár alebo telefonicky.' },
-                { title: 'Potvrdenie rezervácie', desc: 'Zašleme e-mail/SMS s detailmi — jazda je potvrdená.' },
-                { title: 'V dohodnutý čas vás vyzdvihneme', desc: 'Vodič príde načas a odvezie vás pohodlne na miesto určenia.' },
+                { title: 'Vytvorte si rezerváciu online alebo telefonicky', desc: 'Rezerváciu môžete jednoducho vytvoriť online prostredníctvom nášho formulára, alebo nás kontaktovať telefonicky.' },
+                { title: 'Potvrdenie rezervácie', desc: 'Po spracovaní vašej rezervácie vám zašleme potvrdzujúci e-mail/SMS správu so všetkými údajmi vašej cesty. Vaša preprava je týmto záväzne potvrdená. \n' },
+                { title: ' V dohodnutý čas vás vyzdvihneme', desc: 'V stanovenom čase bude náš vodič čakať na vami uvedenej adrese, pripravený odviezť vás spoľahlivo a pohodlne na určené miesto.' },
             ],
         },
         en: {
             heading: 'How it works',
             steps: [
-                { title: 'Make a reservation online or by phone', desc: 'Book easily via our online form or by phone.' },
-                { title: 'Reservation confirmation', desc: 'We’ll send an e-mail/SMS with all details — ride confirmed.' },
-                { title: 'Pickup at the agreed time', desc: 'Driver arrives on time and takes you comfortably to your destination.' },
+                { title: 'Create your reservation online or by phone', desc: 'You can easily create a reservation online via our form, or contact us by phone.' },
+                { title: 'Reservation confirmation', desc: 'After your reservation has been processed, we will send you a confirmation email/SMS with all the details of your trip. Your transport is thereby bindingly confirmed.' },
+                { title: 'We will pick you up at the agreed time', desc: 'At the agreed time, our driver will be waiting at the address you provided, ready to take you safely and comfortably to your destination.' },
             ],
         },
         de: {
             heading: 'So funktioniert’s',
             steps: [
-                { title: 'Online oder telefonisch reservieren', desc: 'Einfach über das Online-Formular oder telefonisch buchen.' },
-                { title: 'Reservierungsbestätigung', desc: 'Bestätigung per E-Mail/SMS mit allen Details — Fahrt fixiert.' },
-                { title: 'Abholung zur vereinbarten Zeit', desc: 'Fahrer kommt pünktlich und bringt Sie komfortabel ans Ziel.' },
+                { title: 'Erstellen Sie Ihre Reservierung online oder telefonisch', desc: 'Sie können Ihre Reservierung ganz einfach online über unser Formular vornehmen oder uns telefonisch kontaktieren.' },
+                { title: 'Bestätigung der Reservierung', desc: 'Nach der Bearbeitung Ihrer Reservierung senden wir Ihnen eine Bestätigungs-E-Mail bzw. SMS mit allen Details Ihrer Reise. Ihre Fahrt ist damit verbindlich bestätigt.' },
+                { title: 'Wir holen Sie zur vereinbarten Zeit ab', desc: 'Zum vereinbarten Zeitpunkt wartet unser Fahrer an der von Ihnen angegebenen Adresse und bringt Sie zuverlässig und komfortabel an Ihr Ziel.' },
             ],
         },
     };

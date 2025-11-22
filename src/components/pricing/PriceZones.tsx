@@ -19,8 +19,8 @@ type PriceZonesDict = {
 
 export default function PriceZones({ locale }: { locale: string }) {
     const sk: PriceZonesDict = {
-        heading: 'Cenník — Schwechat',
-        route: 'Bratislava ↔ Letisko Viedeň – Schwechat',
+        heading: 'Cenník',
+        route: 'Bratislava ↔ Letisko Viedeň —',
         zones: [
             {
                 name: 'Centrum a blízke mestské časti',
@@ -68,8 +68,8 @@ export default function PriceZones({ locale }: { locale: string }) {
     };
 
     const en: PriceZonesDict = {
-        heading: 'Pricing — Schwechat',
-        route: 'Bratislava ↔ Vienna Airport (Schwechat)',
+        heading: 'Pricing',
+        route: 'Bratislava ↔ Vienna Airport —',
         zones: [
             {
                 name: 'City centre & nearby districts',
@@ -113,8 +113,8 @@ export default function PriceZones({ locale }: { locale: string }) {
     };
 
     const de: PriceZonesDict = {
-        heading: 'Preise — Schwechat',
-        route: 'Bratislava ↔ Flughafen Wien (Schwechat)',
+        heading: 'Preise',
+        route: 'Bratislava ↔ Flughafen Wien —',
         zones: [
             {
                 name: 'Zentrum & nahe Bezirke',

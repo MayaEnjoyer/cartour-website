@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 
-// типи тягнемо як type-imports (не потрапляють у білд)
 type LeafletMap = import('leaflet').Map;
 type LatLngExpression = import('leaflet').LatLngExpression;
 
@@ -15,10 +14,8 @@ export default function MapBratislavaVienna() {
         const el = containerRef.current;
         if (!el) return;
 
-        // якщо мапа вже створена (StrictMode double-effect) — не ініціалізуємо вдруге
         if (mapRef.current) return;
 
-        // інколи Leaflet залишає технічний _leaflet_id на DOM-вузлі
         (el as HTMLDivElement & { _leaflet_id?: number | null })._leaflet_id = null;
 
         let cancelled = false;
@@ -49,7 +46,7 @@ export default function MapBratislavaVienna() {
                 attributionControl: false,
             });
 
-            mapRef.current = map; // <-- зберігаємо інстанс
+            mapRef.current = map;
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors',
@@ -69,7 +66,6 @@ export default function MapBratislavaVienna() {
 
         return () => {
             cancelled = true;
-            // прибираємо інстанс, щоб при ре-монті все створилось коректно
             if (mapRef.current) {
                 mapRef.current.remove();
                 mapRef.current = null;

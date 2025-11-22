@@ -9,7 +9,7 @@ export default function ContactClient({ locale }: { locale: string }) {
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
             <Reveal>
                 <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                    Kontakt & Rezervácia
+                    Rezervačný formulár
                 </h1>
                 <p className="mt-2 text-sm text-gray-500">
                     Rezervujte jazdu online alebo nás kontaktujte — odpovieme rýchlo.

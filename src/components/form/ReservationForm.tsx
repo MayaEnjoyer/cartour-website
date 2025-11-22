@@ -1,8 +1,12 @@
-// src/components/pricing/ReservationForm.tsx
 'use client';
 
 import {
-    useMemo, useState, type FormEvent, type ReactElement, type InputHTMLAttributes,
+    useMemo,
+    useState,
+    useEffect,
+    type FormEvent,
+    type ReactElement,
+    type InputHTMLAttributes,
 } from 'react';
 import Link from 'next/link';
 import SocialLinks from '../contact/SocialLinks';
@@ -11,18 +15,22 @@ import SocialLinks from '../contact/SocialLinks';
 type L = 'sk' | 'en' | 'de';
 const isL = (x: string): x is L => (['sk', 'en', 'de'] as const).includes(x as L);
 
-type Dict = Record<L, {
-    title: string;
-    personal: string;
-    first: string; last: string; phone: string; email: string;
-    ride: string; from: string; to: string; date: string; time: string; flight: string;
-    pax: string; luggage: string; checked: string; carry: string;
-    options: string; wantReturn: string; return: string; notes: string;
-    notesPH: string;
-    submit: string; altCall: string;
-    successTitle: string; success: string;
-    required: string; requiredBubble: string;
-}>;
+type Dict = Record<
+    L,
+    {
+        title: string;
+        personal: string;
+        first: string; last: string; phone: string; email: string;
+        ride: string; from: string; to: string; date: string; time: string; flight: string;
+        pax: string; luggage: string; checked: string; carry: string;
+        options: string; wantReturn: string; return: string;
+        notes: string; notesPH: string; notesHint: string;
+        submit: string; altCall: string;
+        successTitle: string; success: string;
+        required: string; requiredBubble: string;
+        gdprLabel: string; gdprRequiredBubble: string;
+    }
+>;
 
 const dict: Dict = {
     sk: {
@@ -47,12 +55,15 @@ const dict: Dict = {
         return: 'Detaily spätného transferu',
         notes: 'Poznámky',
         notesPH: 'napr. detská sedačka, kočík, väčšia batožina…',
+        notesHint: 'Tu môžete doplniť špeciálne požiadavky – napríklad detská sedačka, kočík, väčšia batožina a podobne.',
         submit: 'Odoslať rezerváciu',
         altCall: 'alebo zavolajte',
         successTitle: 'Rezervácia odoslaná',
         success: 'Ďakujeme! Vaša požiadavka bola odoslaná. Ozveme sa vám čoskoro.',
         required: 'Povinné pole',
         requiredBubble: 'Vyplňte toto pole.',
+        gdprLabel: 'Súhlasím so spracovaním osobných údajov na účely rezervácie.',
+        gdprRequiredBubble: 'Prosím, potvrďte súhlas so spracovaním osobných údajov.',
     },
     en: {
         title: 'Reservation form',
@@ -76,12 +87,15 @@ const dict: Dict = {
         return: 'Return trip details',
         notes: 'Notes',
         notesPH: 'e.g., child seat, stroller, large luggage…',
+        notesHint: 'Here you can add special requests such as a child seat, stroller, larger luggage, etc.',
         submit: 'Send reservation',
         altCall: 'or call',
         successTitle: 'Reservation sent',
         success: 'Thanks! Your request has been sent. We will contact you shortly.',
         required: 'Required field',
         requiredBubble: 'Please fill out this field.',
+        gdprLabel: 'I agree to the processing of my personal data for the purpose of this reservation.',
+        gdprRequiredBubble: 'Please confirm the consent to process your personal data.',
     },
     de: {
         title: 'Reservierungsformular',
@@ -105,12 +119,15 @@ const dict: Dict = {
         return: 'Details der Rückfahrt',
         notes: 'Anmerkungen',
         notesPH: 'z. B. Kindersitz, Kinderwagen, größeres Gepäck…',
+        notesHint: 'Hier können Sie besondere Wünsche angeben – zum Beispiel Kindersitz, Kinderwagen, größeres Gepäck usw.',
         submit: 'Reservierung senden',
         altCall: 'oder anrufen',
         successTitle: 'Reservierung gesendet',
         success: 'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
         required: 'Pflichtfeld',
         requiredBubble: 'Bitte füllen Sie dieses Feld aus.',
+        gdprLabel: 'Ich stimme der Verarbeitung meiner personenbezogenen Daten zum Zweck der Reservierung zu.',
+        gdprRequiredBubble: 'Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung.',
     },
 };
 
@@ -132,15 +149,22 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
 
     const [extraPickups, setExtraPickups] = useState<Item[]>([]);
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
+    const [notesHintOpen, setNotesHintOpen] = useState(false);
+
     const addExtraPickup = () => setExtraPickups(a => [...a, { id: uid() }]);
-    const addExtraDrop   = () => setExtraDrops(a => [...a, { id: uid() }]);
+    const addExtraDrop = () => setExtraDrops(a => [...a, { id: uid() }]);
     const removeExtraPickup = (id: string) => setExtraPickups(a => a.filter(x => x.id !== id));
-    const removeExtraDrop   = (id: string) => setExtraDrops(a => a.filter(x => x.id !== id));
+    const removeExtraDrop = (id: string) => setExtraDrops(a => a.filter(x => x.id !== id));
+
+    useEffect(() => {
+        if (!notesHintOpen) return;
+        const id = setTimeout(() => setNotesHintOpen(false), 30_000);
+        return () => clearTimeout(id);
+    }, [notesHintOpen]);
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        // Показати нативні «баббли» (як на скріні) і зупинити, якщо є невалідні поля
         if (!e.currentTarget.reportValidity()) return;
 
         setServerError(null);
@@ -151,7 +175,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
 
         const payload = {
             ...Object.fromEntries(fd.entries()),
-            pickups:  [String(fd.get('pickup') ?? ''),  ...extraP],
+            pickups: [String(fd.get('pickup') ?? ''), ...extraP],
             dropoffs: [String(fd.get('dropoff') ?? ''), ...extraD],
             pickup_extra: extraP,
             dropoff_extra: extraD,
@@ -165,14 +189,15 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                 body: JSON.stringify(payload),
             });
             const data = await res.json().catch(() => ({}));
-            if (!res.ok || data?.ok === false) {
+            if (!res.ok || (data as any)?.ok === false) {
                 setServerError(`Error ${res.status}`);
                 return;
             }
-            // успіх → показуємо модальне вікно
+
             (e.currentTarget as HTMLFormElement).reset();
             setWantReturn(false);
-            setExtraPickups([]); setExtraDrops([]);
+            setExtraPickups([]);
+            setExtraDrops([]);
             setSuccessOpen(true);
         } catch {
             setServerError('Network error. Please try again.');
@@ -187,7 +212,6 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
         </label>
     );
 
-    // Інпут з локалізованими нативними підказками («Please fill out this field.»)
     const textInput = (
         id: string,
         req = false,
@@ -199,23 +223,21 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
             required={req}
             aria-required={req}
             className="ui-input mt-1"
-            onInvalid={(ev) => (ev.currentTarget as HTMLInputElement).setCustomValidity(t.requiredBubble)}
-            onInput={(ev) => (ev.currentTarget as HTMLInputElement).setCustomValidity('')}
+            onInvalid={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity(t.requiredBubble)}
+            onInput={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity('')}
             {...attrs}
         />
     );
 
     return (
         <>
-            <form className="space-y-10" onSubmit={onSubmit}>
-                {/* server error */}
+            <form className="space-y-10" onSubmit={onSubmit} noValidate>
                 {serverError && (
                     <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
                         {serverError}
                     </div>
                 )}
 
-                {/* Personal */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
                     <legend className="mb-2 text-sm font-semibold">{t.personal}</legend>
                     <div>{label('firstName', t.first, true)}{textInput('firstName', true)}</div>
@@ -224,7 +246,6 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                     <div>{label('email', t.email, true)}{textInput('email', true, { type: 'email' })}</div>
                 </fieldset>
 
-                {/* Ride details */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
                     <legend className="mb-2 text-sm font-semibold">{t.ride}</legend>
 
@@ -306,7 +327,6 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                     </div>
                 </fieldset>
 
-                {/* Options */}
                 <fieldset className="space-y-4">
                     <legend className="mb-2 text-sm font-semibold">{t.options}</legend>
 
@@ -334,17 +354,60 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                     )}
                 </fieldset>
 
-                {/* Notes + submit + socials */}
-                <fieldset>
-                    <legend className="mb-2 text-sm font-semibold">{t.notes}</legend>
+                <fieldset className="relative">
+                    <legend className="mb-2 text-sm font-semibold pr-8">
+                        {t.notes}
+                    </legend>
+
+                    <button
+                        type="button"
+                        onClick={() => setNotesHintOpen(v => !v)}
+                        aria-label="Notes hint"
+                        className="absolute right-0 top-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm hover:bg-sky-700"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M12 2a6 6 0 00-3 11.2V15a1 1 0 001 1h4a1 1 0 001-1v-1.8A6 6 0 0012 2z"
+                                fill="currentColor"
+                            />
+                            <path
+                                d="M10 18h4a1 1 0 01.96 1.27l-.25.75A1 1 0 0113.75 21h-3.5a1 1 0 01-.96-1.27l.25-.75A1 1 0 0110 18z"
+                                fill="currentColor"
+                            />
+                        </svg>
+                    </button>
+
+                    {notesHintOpen && (
+                        <div className="mb-3 mt-1 max-w-xl rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs sm:text-sm text-sky-900 shadow-sm">
+                            {t.notesHint}
+                        </div>
+                    )}
+
                     <textarea
                         id="notes"
                         name="notes"
                         rows={4}
                         className="ui-textarea"
-                        placeholder={t.notesPH}
                     />
                 </fieldset>
+
+                <div className="pt-2 border-t border-gray-100">
+                    <label className="inline-flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+                        <input
+                            type="checkbox"
+                            name="gdpr"
+                            required
+                            className="mt-0.5 h-4 w-4 rounded border"
+                            onInvalid={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity(t.gdprRequiredBubble)}
+                            onInput={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity('')}
+                        />
+                        <span>{t.gdprLabel}</span>
+                    </label>
+                </div>
 
                 <div className="flex items-center gap-4 flex-wrap">
                     <button type="submit" disabled={loading} className="btn-primary">
@@ -359,20 +422,30 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         <SocialLinks />
                     </div>
                 </div>
-
-                <p className="hint">* {t.required}. Nikdy nezdieľame údaje s tretími stranami.</p>
             </form>
 
-            {/* ===== Success modal ===== */}
             {successOpen && (
                 <div
                     className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4"
-                    role="dialog" aria-modal="true" aria-label={t.successTitle}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={t.successTitle}
+                    onClick={() => setSuccessOpen(false)}
                 >
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div
+                        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+                        onClick={e => e.stopPropagation()}
+                    >
                         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
                             <svg viewBox="0 0 24 24" width="24" height="24" className="text-emerald-600">
-                                <path d="M20 7L9 18l-5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path
+                                    d="M20 7L9 18l-5-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </div>
                         <h3 className="text-center text-lg font-semibold">{t.successTitle}</h3>
@@ -383,14 +456,22 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                                 href={`/${locale}`}
                                 className="inline-flex flex-1 items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-white font-medium hover:bg-emerald-500"
                             >
-                                {locale === 'sk' ? 'Späť na Domov' : locale === 'de' ? 'Zur Startseite' : 'Back to Home'}
+                                {locale === 'sk'
+                                    ? 'Späť na Domov'
+                                    : locale === 'de'
+                                        ? 'Zur Startseite'
+                                        : 'Back to Home'}
                             </Link>
                             <button
                                 type="button"
                                 onClick={() => setSuccessOpen(false)}
                                 className="inline-flex flex-1 items-center justify-center rounded-xl border px-4 py-2.5 font-medium hover:bg-gray-50"
                             >
-                                {locale === 'sk' ? 'Zostať tu' : locale === 'de' ? 'Hier bleiben' : 'Stay here'}
+                                {locale === 'sk'
+                                    ? 'Zostať tu'
+                                    : locale === 'de'
+                                        ? 'Hier bleiben'
+                                        : 'Stay here'}
                             </button>
                         </div>
                     </div>

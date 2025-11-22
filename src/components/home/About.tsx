@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import {
+    useState,
+    useMemo,
+    useEffect,
+    useRef,
+    type TouchEvent,
+} from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
@@ -72,6 +78,9 @@ const ringByIdx = (i: number) =>
 const textByIdx = (i: number) =>
     ['text-sky-700', 'text-indigo-700', 'text-rose-700', 'text-emerald-700'][i % 4];
 
+const SWIPE_THRESHOLD = 40;
+
+/* ===== component ===== */
 export default function About({ locale }: { locale: string }) {
     const reduce = useReducedMotion();
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
@@ -101,17 +110,14 @@ export default function About({ locale }: { locale: string }) {
         if (reduce) return;
 
         if (position === total + 1) {
-            // дошли до клона первого — телепортируемся на настоящий первый
             setIsAnimating(false);
             setPosition(1);
         } else if (position === 0) {
-            // дошли до клона последнего — телепорт на настоящий последний
             setIsAnimating(false);
             setPosition(total);
         }
     };
 
-    // включаем анимацию обратно после телепорта
     useEffect(() => {
         if (!isAnimating) {
             const id = requestAnimationFrame(() => setIsAnimating(true));
@@ -128,6 +134,61 @@ export default function About({ locale }: { locale: string }) {
         ...(reduce || !isAnimating
             ? { transition: 'none' }
             : { transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)' }),
+    };
+
+    /* ===== touch / swipe logic (для мобилок) ===== */
+    const touchStartX = useRef<number | null>(null);
+    const touchStartY = useRef<number | null>(null);
+    const swiping = useRef(false);
+    const justSwiped = useRef(false);
+
+    const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+        const t0 = e.touches[0];
+        touchStartX.current = t0.clientX;
+        touchStartY.current = t0.clientY;
+        swiping.current = false;
+    };
+
+    const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
+        if (touchStartX.current == null || touchStartY.current == null) return;
+        const t0 = e.touches[0];
+        const dx = t0.clientX - touchStartX.current;
+        const dy = t0.clientY - touchStartY.current;
+
+        // горизонтальный свайп
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+            swiping.current = true;
+        }
+    };
+
+    const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+        if (touchStartX.current == null) return;
+        const t0 = e.changedTouches[0];
+        const dx = t0.clientX - touchStartX.current;
+
+        if (swiping.current && Math.abs(dx) > SWIPE_THRESHOLD) {
+            if (dx < 0) {
+                next();
+            } else {
+                prev();
+            }
+            justSwiped.current = true; // чтобы не открыть лайтбокс после свайпа
+        } else {
+            justSwiped.current = false;
+        }
+
+        touchStartX.current = null;
+        touchStartY.current = null;
+        swiping.current = false;
+    };
+
+    const handleMainClick = () => {
+        if (justSwiped.current) {
+            // свайп только что отработал — клик игнорируем
+            justSwiped.current = false;
+            return;
+        }
+        setLightbox(true);
     };
 
     return (
@@ -214,7 +275,10 @@ export default function About({ locale }: { locale: string }) {
                 >
                     <div
                         className="relative aspect-[16/10] w-full cursor-pointer"
-                        onClick={() => setLightbox(true)}
+                        onClick={handleMainClick}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
                     >
                         <div
                             className="flex h-full w-full select-none"
@@ -230,7 +294,7 @@ export default function About({ locale }: { locale: string }) {
                                         src={img.src}
                                         alt={img.alt}
                                         fill
-                                        priority={i === 1} // первый реальный слайд
+                                        priority={i === 1}
                                         sizes="(max-width: 768px) 100vw, 50vw"
                                         className="object-cover"
                                     />
@@ -311,7 +375,12 @@ export default function About({ locale }: { locale: string }) {
                             ✕
                         </button>
 
-                        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-black">
+                        <div
+                            className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-black"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
                             <div
                                 className="flex h-full w-full select-none"
                                 style={sliderStyle}

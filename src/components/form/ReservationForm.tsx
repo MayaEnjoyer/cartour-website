@@ -20,15 +20,34 @@ type Dict = Record<
     {
         title: string;
         personal: string;
-        first: string; last: string; phone: string; email: string;
-        ride: string; from: string; to: string; date: string; time: string; flight: string;
-        pax: string; luggage: string; checked: string; carry: string;
-        options: string; wantReturn: string; return: string;
-        notes: string; notesPH: string; notesHint: string;
-        submit: string; altCall: string;
-        successTitle: string; success: string;
-        required: string; requiredBubble: string;
-        gdprLabel: string; gdprRequiredBubble: string;
+        first: string;
+        last: string;
+        phone: string;
+        email: string;
+        ride: string;
+        from: string;
+        to: string;
+        date: string;
+        time: string;
+        flight: string;
+        pax: string;
+        luggage: string;
+        checked: string;
+        carry: string;
+        options: string;
+        wantReturn: string;
+        return: string;
+        notes: string;
+        notesPH: string;
+        notesHint: string;
+        submit: string;
+        altCall: string;
+        successTitle: string;
+        success: string;
+        required: string;
+        requiredBubble: string;
+        gdprLabel: string;
+        gdprRequiredBubble: string;
     }
 >;
 
@@ -55,7 +74,8 @@ const dict: Dict = {
         return: 'Detaily spätného transferu',
         notes: 'Poznámky',
         notesPH: 'napr. detská sedačka, kočík, väčšia batožina…',
-        notesHint: 'Tu môžete doplniť špeciálne požiadavky – napríklad detská sedačka, kočík, väčšia batožina a podobne.',
+        notesHint:
+            'Tu môžete doplniť špeciálne požiadavky – napríklad detská sedačka, kočík, väčšia batožina a podobne.',
         submit: 'Odoslať rezerváciu',
         altCall: 'alebo zavolajte',
         successTitle: 'Rezervácia odoslaná',
@@ -63,7 +83,8 @@ const dict: Dict = {
         required: 'Povinné pole',
         requiredBubble: 'Vyplňte toto pole.',
         gdprLabel: 'Súhlasím so spracovaním osobných údajov na účely rezervácie.',
-        gdprRequiredBubble: 'Prosím, potvrďte súhlas so spracovaním osobných údajov.',
+        gdprRequiredBubble:
+            'Prosím, potvrďte súhlas so spracovaním osobných údajov.',
     },
     en: {
         title: 'Reservation form',
@@ -87,15 +108,19 @@ const dict: Dict = {
         return: 'Return trip details',
         notes: 'Notes',
         notesPH: 'e.g., child seat, stroller, large luggage…',
-        notesHint: 'Here you can add special requests such as a child seat, stroller, larger luggage, etc.',
+        notesHint:
+            'Here you can add special requests such as a child seat, stroller, larger luggage, etc.',
         submit: 'Send reservation',
         altCall: 'or call',
         successTitle: 'Reservation sent',
-        success: 'Thanks! Your request has been sent. We will contact you shortly.',
+        success:
+            'Thanks! Your request has been sent. We will contact you shortly.',
         required: 'Required field',
         requiredBubble: 'Please fill out this field.',
-        gdprLabel: 'I agree to the processing of my personal data for the purpose of this reservation.',
-        gdprRequiredBubble: 'Please confirm the consent to process your personal data.',
+        gdprLabel:
+            'I agree to the processing of my personal data for the purpose of this reservation.',
+        gdprRequiredBubble:
+            'Please confirm the consent to process your personal data.',
     },
     de: {
         title: 'Reservierungsformular',
@@ -119,15 +144,18 @@ const dict: Dict = {
         return: 'Details der Rückfahrt',
         notes: 'Anmerkungen',
         notesPH: 'z. B. Kindersitz, Kinderwagen, größeres Gepäck…',
-        notesHint: 'Hier können Sie besondere Wünsche angeben – zum Beispiel Kindersitz, Kinderwagen, größeres Gepäck usw.',
+        notesHint:
+            'Hier können Sie besondere Wünsche angeben – zum Beispiel Kindersitz, Kinderwagen, größeres Gepäck usw.',
         submit: 'Reservierung senden',
         altCall: 'oder anrufen',
         successTitle: 'Reservierung gesendet',
         success: 'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
         required: 'Pflichtfeld',
         requiredBubble: 'Bitte füllen Sie dieses Feld aus.',
-        gdprLabel: 'Ich stimme der Verarbeitung meiner personenbezogenen Daten zum Zweck der Reservierung zu.',
-        gdprRequiredBubble: 'Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung.',
+        gdprLabel:
+            'Ich stimme der Verarbeitung meiner personenbezogenen Daten zum Zweck der Reservierung zu.',
+        gdprRequiredBubble:
+            'Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung.',
     },
 };
 
@@ -138,8 +166,14 @@ const uid = () =>
         ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
 
+type ApiResponse = { ok?: boolean };
+
 /* ===== component ===== */
-export default function ReservationForm({ locale }: { locale: string }): ReactElement {
+export default function ReservationForm({
+                                            locale,
+                                        }: {
+    locale: string;
+}): ReactElement {
     const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
 
     const [wantReturn, setWantReturn] = useState(false);
@@ -151,10 +185,13 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
     const [notesHintOpen, setNotesHintOpen] = useState(false);
 
-    const addExtraPickup = () => setExtraPickups(a => [...a, { id: uid() }]);
-    const addExtraDrop = () => setExtraDrops(a => [...a, { id: uid() }]);
-    const removeExtraPickup = (id: string) => setExtraPickups(a => a.filter(x => x.id !== id));
-    const removeExtraDrop = (id: string) => setExtraDrops(a => a.filter(x => x.id !== id));
+    const addExtraPickup = () =>
+        setExtraPickups((a) => [...a, { id: uid() }]);
+    const addExtraDrop = () => setExtraDrops((a) => [...a, { id: uid() }]);
+    const removeExtraPickup = (id: string) =>
+        setExtraPickups((a) => a.filter((x) => x.id !== id));
+    const removeExtraDrop = (id: string) =>
+        setExtraDrops((a) => a.filter((x) => x.id !== id));
 
     useEffect(() => {
         if (!notesHintOpen) return;
@@ -188,8 +225,15 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || (data as any)?.ok === false) {
+
+            let data: ApiResponse = {};
+            try {
+                data = await res.json();
+            } catch {
+                data = {};
+            }
+
+            if (!res.ok || data.ok === false) {
                 setServerError(`Error ${res.status}`);
                 return;
             }
@@ -215,7 +259,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
     const textInput = (
         id: string,
         req = false,
-        attrs: InputHTMLAttributes<HTMLInputElement> = {}
+        attrs: InputHTMLAttributes<HTMLInputElement> = {},
     ) => (
         <input
             id={id}
@@ -223,8 +267,14 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
             required={req}
             aria-required={req}
             className="ui-input mt-1"
-            onInvalid={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity(t.requiredBubble)}
-            onInput={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity('')}
+            onInvalid={(ev) =>
+                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                    t.requiredBubble,
+                )
+            }
+            onInput={(ev) =>
+                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+            }
             {...attrs}
         />
     );
@@ -238,14 +288,28 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                     </div>
                 )}
 
+                {/* Personal */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
                     <legend className="mb-2 text-sm font-semibold">{t.personal}</legend>
-                    <div>{label('firstName', t.first, true)}{textInput('firstName', true)}</div>
-                    <div>{label('lastName', t.last, true)}{textInput('lastName', true)}</div>
-                    <div>{label('phone', t.phone, true)}{textInput('phone', true, { type: 'tel' })}</div>
-                    <div>{label('email', t.email, true)}{textInput('email', true, { type: 'email' })}</div>
+                    <div>
+                        {label('firstName', t.first, true)}
+                        {textInput('firstName', true)}
+                    </div>
+                    <div>
+                        {label('lastName', t.last, true)}
+                        {textInput('lastName', true)}
+                    </div>
+                    <div>
+                        {label('phone', t.phone, true)}
+                        {textInput('phone', true, { type: 'tel' })}
+                    </div>
+                    <div>
+                        {label('email', t.email, true)}
+                        {textInput('email', true, { type: 'email' })}
+                    </div>
                 </fieldset>
 
+                {/* Ride details */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
                     <legend className="mb-2 text-sm font-semibold">{t.ride}</legend>
 
@@ -254,7 +318,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         {textInput('pickup', true, { placeholder: t.from })}
                     </div>
 
-                    {extraPickups.map(item => (
+                    {extraPickups.map((item) => (
                         <div key={item.id} className="sm:col-span-2 relative">
                             <input
                                 name="pickup_extra[]"
@@ -272,7 +336,11 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         </div>
                     ))}
                     <div className="sm:col-span-2">
-                        <button type="button" className="btn-secondary text-xs" onClick={addExtraPickup}>
+                        <button
+                            type="button"
+                            className="btn-secondary text-xs"
+                            onClick={addExtraPickup}
+                        >
                             {t.from}: +
                         </button>
                     </div>
@@ -282,7 +350,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         {textInput('dropoff', true, { placeholder: t.to })}
                     </div>
 
-                    {extraDrops.map(item => (
+                    {extraDrops.map((item) => (
                         <div key={item.id} className="sm:col-span-2 relative">
                             <input
                                 name="dropoff_extra[]"
@@ -300,13 +368,23 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         </div>
                     ))}
                     <div className="sm:col-span-2">
-                        <button type="button" className="btn-secondary text-xs" onClick={addExtraDrop}>
+                        <button
+                            type="button"
+                            className="btn-secondary text-xs"
+                            onClick={addExtraDrop}
+                        >
                             {t.to}: +
                         </button>
                     </div>
 
-                    <div>{label('date', t.date, true)}{textInput('date', true, { type: 'date' })}</div>
-                    <div>{label('time', t.time, true)}{textInput('time', true, { type: 'time' })}</div>
+                    <div>
+                        {label('date', t.date, true)}
+                        {textInput('date', true, { type: 'date' })}
+                    </div>
+                    <div>
+                        {label('time', t.time, true)}
+                        {textInput('time', true, { type: 'time' })}
+                    </div>
 
                     <div className="sm:col-span-2">
                         {label('flight', t.flight)}
@@ -321,12 +399,27 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                     <div className="sm:col-span-2">
                         <span className="ui-label">{t.luggage}</span>
                         <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>{label('bagsChecked', t.checked)}{textInput('bagsChecked', false, { type: 'number', min: 0, max: 12 })}</div>
-                            <div>{label('bagsCarry', t.carry)}{textInput('bagsCarry', false, { type: 'number', min: 0, max: 12 })}</div>
+                            <div>
+                                {label('bagsChecked', t.checked)}
+                                {textInput('bagsChecked', false, {
+                                    type: 'number',
+                                    min: 0,
+                                    max: 12,
+                                })}
+                            </div>
+                            <div>
+                                {label('bagsCarry', t.carry)}
+                                {textInput('bagsCarry', false, {
+                                    type: 'number',
+                                    min: 0,
+                                    max: 12,
+                                })}
+                            </div>
                         </div>
                     </div>
                 </fieldset>
 
+                {/* Options */}
                 <fieldset className="space-y-4">
                     <legend className="mb-2 text-sm font-semibold">{t.options}</legend>
 
@@ -335,7 +428,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                             type="checkbox"
                             className="h-4 w-4 rounded border"
                             checked={wantReturn}
-                            onChange={e => setWantReturn(e.target.checked)}
+                            onChange={(e) => setWantReturn(e.target.checked)}
                         />
                         <span className="text-sm">{t.wantReturn}</span>
                     </label>
@@ -344,16 +437,32 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         <div className="rounded-xl border p-4 bg-white/70">
                             <p className="mb-3 text-sm font-medium">{t.return}</p>
                             <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="sm:col-span-2">{label('r_pickup', t.from, true)}{textInput('r_pickup', true)}</div>
-                                <div className="sm:col-span-2">{label('r_dropoff', t.to, true)}{textInput('r_dropoff', true)}</div>
-                                <div>{label('r_date', t.date, true)}{textInput('r_date', true, { type: 'date' })}</div>
-                                <div>{label('r_time', t.time, true)}{textInput('r_time', true, { type: 'time' })}</div>
-                                <div className="sm:col-span-2">{label('r_flight', t.flight)}{textInput('r_flight', false, { placeholder: t.flight })}</div>
+                                <div className="sm:col-span-2">
+                                    {label('r_pickup', t.from, true)}
+                                    {textInput('r_pickup', true)}
+                                </div>
+                                <div className="sm:col-span-2">
+                                    {label('r_dropoff', t.to, true)}
+                                    {textInput('r_dropoff', true)}
+                                </div>
+                                <div>
+                                    {label('r_date', t.date, true)}
+                                    {textInput('r_date', true, { type: 'date' })}
+                                </div>
+                                <div>
+                                    {label('r_time', t.time, true)}
+                                    {textInput('r_time', true, { type: 'time' })}
+                                </div>
+                                <div className="sm:col-span-2">
+                                    {label('r_flight', t.flight)}
+                                    {textInput('r_flight', false, { placeholder: t.flight })}
+                                </div>
                             </div>
                         </div>
                     )}
                 </fieldset>
 
+                {/* Notes + lamp tooltip */}
                 <fieldset className="relative">
                     <legend className="mb-2 text-sm font-semibold pr-8">
                         {t.notes}
@@ -361,7 +470,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
 
                     <button
                         type="button"
-                        onClick={() => setNotesHintOpen(v => !v)}
+                        onClick={() => setNotesHintOpen((v) => !v)}
                         aria-label="Notes hint"
                         className="absolute right-0 top-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm hover:bg-sky-700"
                     >
@@ -387,14 +496,10 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                         </div>
                     )}
 
-                    <textarea
-                        id="notes"
-                        name="notes"
-                        rows={4}
-                        className="ui-textarea"
-                    />
+                    <textarea id="notes" name="notes" rows={4} className="ui-textarea" />
                 </fieldset>
 
+                {/* GDPR checkbox */}
                 <div className="pt-2 border-t border-gray-100">
                     <label className="inline-flex items-start gap-2 text-xs sm:text-sm text-gray-600">
                         <input
@@ -402,20 +507,29 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                             name="gdpr"
                             required
                             className="mt-0.5 h-4 w-4 rounded border"
-                            onInvalid={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity(t.gdprRequiredBubble)}
-                            onInput={ev => (ev.currentTarget as HTMLInputElement).setCustomValidity('')}
+                            onInvalid={(ev) =>
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    t.gdprRequiredBubble,
+                                )
+                            }
+                            onInput={(ev) =>
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                            }
                         />
                         <span>{t.gdprLabel}</span>
                     </label>
                 </div>
 
+                {/* Submit + socials */}
                 <div className="flex items-center gap-4 flex-wrap">
                     <button type="submit" disabled={loading} className="btn-primary">
                         {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
             {t.altCall}:{' '}
-                        <a href="tel:+421908699151" className="underline">+421 908 699 151</a>
+                        <a href="tel:+421908699151" className="underline">
+              +421 908 699 151
+            </a>
           </span>
 
                     <div className="ml-auto">
@@ -424,6 +538,7 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                 </div>
             </form>
 
+            {/* Success modal */}
             {successOpen && (
                 <div
                     className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4"
@@ -434,10 +549,15 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                 >
                     <div
                         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                            <svg viewBox="0 0 24 24" width="24" height="24" className="text-emerald-600">
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                                className="text-emerald-600"
+                            >
                                 <path
                                     d="M20 7L9 18l-5-5"
                                     fill="none"
@@ -448,8 +568,12 @@ export default function ReservationForm({ locale }: { locale: string }): ReactEl
                                 />
                             </svg>
                         </div>
-                        <h3 className="text-center text-lg font-semibold">{t.successTitle}</h3>
-                        <p className="mt-1 text-center text-sm text-gray-600">{t.success}</p>
+                        <h3 className="text-center text-lg font-semibold">
+                            {t.successTitle}
+                        </h3>
+                        <p className="mt-1 text-center text-sm text-gray-600">
+                            {t.success}
+                        </p>
 
                         <div className="mt-6 flex gap-3">
                             <Link

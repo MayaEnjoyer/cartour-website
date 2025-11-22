@@ -4,15 +4,50 @@ import Reveal from '../ui/Reveal';
 import MapBratislavaVienna from './MapBratislavaVienna';
 import ReservationForm from '../form/ReservationForm';
 
+type L = 'sk' | 'en' | 'de';
+const isL = (x: string): x is L => (['sk', 'en', 'de'] as const).includes(x as L);
+
+const dict: Record<
+    L,
+    {
+        title: string;
+        subtitle: string;
+        telLabel: string;
+        contactNote: string;
+    }
+> = {
+    sk: {
+        title: 'Rezervačný formulár',
+        subtitle: 'Rezervujte jazdu online alebo nás kontaktujte — odpovieme rýchlo.',
+        telLabel: 'Tel:',
+        contactNote: 'Online rezervácia dostupná 24/7. Lety sledujeme automaticky.',
+    },
+    en: {
+        title: 'Reservation form',
+        subtitle: 'Book your ride online or contact us — we respond quickly.',
+        telLabel: 'Tel:',
+        contactNote: 'Online reservations available 24/7. We track your flights automatically.',
+    },
+    de: {
+        title: 'Reservierungsformular',
+        subtitle: 'Buchen Sie Ihre Fahrt online oder kontaktieren Sie uns – wir antworten schnell.',
+        telLabel: 'Tel.:',
+        contactNote: 'Online-Reservierungen 24/7 verfügbar. Wir verfolgen Ihre Flüge automatisch.',
+    },
+};
+
 export default function ContactClient({ locale }: { locale: string }) {
+    const lang: L = isL(locale) ? locale : 'sk';
+    const t = dict[lang];
+
     return (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
             <Reveal>
                 <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                    Rezervačný formulár
+                    {t.title}
                 </h1>
                 <p className="mt-2 text-sm text-gray-500">
-                    Rezervujte jazdu online alebo nás kontaktujte — odpovieme rýchlo.
+                    {t.subtitle}
                 </p>
             </Reveal>
 
@@ -37,13 +72,16 @@ export default function ContactClient({ locale }: { locale: string }) {
                                 Bratislava, SK — Wien (Schwechat), AT
                             </p>
                             <p className="text-sm mt-3">
-                                Tel:&nbsp;
-                                <a href="tel:+421908699151" className="text-sky-600 hover:underline">
+                                {t.telLabel}&nbsp;
+                                <a
+                                    href="tel:+421908699151"
+                                    className="text-sky-600 hover:underline"
+                                >
                                     +421 908 699 151
                                 </a>
                             </p>
                             <p className="text-xs text-gray-500 mt-2">
-                                Online rezervácia dostupná 24/7. Lety sledujeme automaticky.
+                                {t.contactNote}
                             </p>
                         </div>
                     </Reveal>

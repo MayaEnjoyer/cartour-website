@@ -3,29 +3,12 @@ import PriceZones from '../../../components/pricing/PriceZones';
 import OtherDestinations from '../../../components/pricing/OtherDestinations';
 import Extras from '../../../components/pricing/Extras';
 import Payments from '../../../components/pricing/Payments';
-
-function BackgroundCar() {
-    // Один (єдиний) блок з фоном background_car.png
-    return (
-        <section
-            className="
-        relative py-28 md:py-40
-        bg-[url('/leaflet/background_car.png')]
-        bg-cover bg-center bg-no-repeat
-        bg-scroll md:bg-fixed
-      "
-        >
-            {/* легке затемнення, щоб текст/блоки над фоном читались */}
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="relative" />
-        </section>
-    );
-}
+import BackgroundCar from '../../../components/pricing/BackgroundCar';
 
 export default async function PricingPage(
     props: { params: Promise<{ locale: string }> }
 ) {
-    const { locale } = await props.params; // <-- головне виправлення
+    const { locale } = await props.params; // как у тебя было
 
     return (
         <main className="relative">
@@ -44,7 +27,7 @@ export default async function PricingPage(
                 </div>
             </section>
 
-            {/* 3) Один єдиний фон з машиною — не дублюємо */}
+            {/* 3) Фон з машиною (компонент з фіксом під iOS) */}
             <BackgroundCar />
 
             {/* 4) Червоний блок — способи оплати */}

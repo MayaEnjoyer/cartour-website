@@ -285,10 +285,14 @@ export default function Nav({ locale }: { locale: Locale }) {
                     open ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
             >
-                <div className="absolute inset-0 bg-black/90" />
+                {/* клик по фону закрывает меню */}
+                <div
+                    className="absolute inset-0 bg-black/90"
+                    onClick={() => setOpen(false)}
+                />
 
                 <div className="absolute inset-0 flex flex-col">
-                    <div className="h-20 px-4 flex items-center justify-between">
+                    <div className="h-20 px-4 flex items-center justify-start">
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
@@ -297,20 +301,6 @@ export default function Nav({ locale }: { locale: Locale }) {
                             className="h-16 w-auto"
                             priority
                         />
-                        <button
-                            aria-label="Close menu"
-                            onClick={() => setOpen(false)}
-                            className="inline-flex items-center justify-center w-10 h-10 rounded-lg ring-1 ring-white/15 bg-white/10 hover:bg-white/15"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M6 6l12 12M18 6L6 18"
-                                    stroke="white"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                        </button>
                     </div>
 
                     <div className="flex-1 flex flex-col items-center justify-center gap-7 px-6 text-center text-white">
@@ -370,10 +360,11 @@ export default function Nav({ locale }: { locale: Locale }) {
                     </div>
 
                     <div className="pb-8 flex items-center justify-center gap-4">
+                        {/* WhatsApp — тот же цвет, что и остальные иконки */}
                         <a
                             href="https://wa.me/421908699151"
                             aria-label="WhatsApp"
-                            className="inline-flex w-10 h-10 rounded-full bg-emerald-500 items-center justify-center hover:bg-emerald-400"
+                            className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500"
                             target="_blank"
                             rel="noopener noreferrer"
                         >

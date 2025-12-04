@@ -292,7 +292,8 @@ export default function Nav({ locale }: { locale: Locale }) {
                 />
 
                 <div className="absolute inset-0 flex flex-col">
-                    <div className="h-20 px-4 flex items-center justify-start">
+                    {/* Шапка оверлея с логотипом и крестиком */}
+                    <div className="h-20 px-4 flex items-center justify-between">
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
@@ -301,6 +302,20 @@ export default function Nav({ locale }: { locale: Locale }) {
                             className="h-16 w-auto"
                             priority
                         />
+                        <button
+                            aria-label="Close menu"
+                            onClick={() => setOpen(false)}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-lg ring-1 ring-white/15 bg-white/10 hover:bg-white/15"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M6 6l12 12M18 6L6 18"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                        </button>
                     </div>
 
                     <div className="flex-1 flex flex-col items-center justify-center gap-7 px-6 text-center text-white">

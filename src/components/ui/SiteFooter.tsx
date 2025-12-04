@@ -26,7 +26,7 @@ type FooterDict = {
 
 const FOOTER: Record<FooterLocale, FooterDict> = {
     sk: {
-        blurbTitle: 'Sme CarTour Bratislava',
+        blurbTitle: 'CarTour Bratislava',
         blurbBody:
             'Sme spoľahlivá a komfortná prepravná služba v rámci Bratislavy, celého Slovenska, na letiská aj do zahraničia. Ponúkame profesionálne transfery vozidlami Mercedes-Benz pre individuálnych klientov aj firemné služby, s maximálnym dôrazom na pohodlie, bezpečnosť a presnosť. Vďaka nám cestujete vždy komfortne a úplne bez stresu.',
         servicesTitle: 'Naše služby',
@@ -60,7 +60,7 @@ const FOOTER: Record<FooterLocale, FooterDict> = {
         },
     },
     en: {
-        blurbTitle: 'CarTour airport & private transfers',
+        blurbTitle: 'CarTour Bratislava',
         blurbBody:
             'We provide reliable and comfortable transportation in Bratislava, across Slovakia, to airports and abroad. We offer professional Mercedes-Benz transfers for individual clients and corporate partners, with maximum focus on comfort, safety and punctuality. With us, you always travel stress-free.',
         servicesTitle: 'Our services',
@@ -94,7 +94,7 @@ const FOOTER: Record<FooterLocale, FooterDict> = {
         },
     },
     de: {
-        blurbTitle: 'Komfortable Transfers mit CarTour',
+        blurbTitle: 'CarTour Bratislava',
         blurbBody:
             'Wir bieten eine zuverlässige und komfortable Personenbeförderung in Bratislava, in der ganzen Slowakei, zu Flughäfen und ins Ausland. Unsere Mercedes-Benz Transfers sind sowohl für Privatkunden als auch für Firmenkunden – mit höchster Priorität auf Komfort, Sicherheit und Pünktlichkeit. Mit uns reisen Sie immer entspannt und ohne Stress.',
         servicesTitle: 'Unsere Dienstleistungen',

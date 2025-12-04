@@ -326,7 +326,7 @@ export default function About({ locale }: { locale: string }) {
                     </div>
 
                     {/* captions */}
-                    <div className="absolute bottom-7 left-6.5 right-4 flex flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-3">
+                    <div className="hidden sm:flex absolute bottom-7 left-6.5 right-4 flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-3">
                         <div className="rounded-xl bg-white/90 backdrop-blur px-2.5 py-2 text-xs sm:text-sm lg:text-[13px] font-medium shadow whitespace-nowrap">
                             Mercedes-Benz • E-Class
                         </div>

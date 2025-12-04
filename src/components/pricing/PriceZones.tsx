@@ -164,14 +164,14 @@ export default function PriceZones({ locale }: { locale: string }) {
             },
         ],
         includedTitle: 'Im Preis enthalten',
-            included: [
-                'Parkgebühren an den Flughafenterminals',
-                'Autobahngebühren (Maut)',
-                'Getränke im Fahrzeug',
-                'Kostenlose Stornierung bis zu 12 Stunden im Voraus',
-                'Der angegebene Preis gilt in beide Richtungen',
-                'Flugüberwachung und Anpassung der Abholzeit',
-            ],
+        included: [
+            'Parkgebühren an den Flughafenterminals',
+            'Autobahngebühren (Maut)',
+            'Getränke im Fahrzeug',
+            'Kostenlose Stornierung bis zu 12 Stunden im Voraus',
+            'Der angegebene Preis gilt in beide Richtungen',
+            'Flugüberwachung und Anpassung der Abholzeit',
+        ],
     };
 
     const dict = locale === 'en' ? en : locale === 'de' ? de : sk;
@@ -201,15 +201,16 @@ export default function PriceZones({ locale }: { locale: string }) {
     return (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
             <div className="text-center max-w-3xl mx-auto">
-                <p className="text-xs uppercase tracking-[0.2em] text-rose-600">— {dict.route}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-rose-600">
+                    — {dict.route}
+                </p>
                 <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">
                     {dict.heading}
                 </h1>
                 <p className="mt-3 text-sm text-gray-600">
                     {tagline.before}
-                    <span className="font-medium underline decoration-rose-500/30 underline-offset-4">
-            {tagline.hi}
-          </span>
+                    {/* тут только убрана подчёркивающая стилизация */}
+                    <span className="font-medium">{tagline.hi}</span>
                     {tagline.after}
                 </p>
             </div>
@@ -223,12 +224,12 @@ export default function PriceZones({ locale }: { locale: string }) {
                         <h2 className="text-lg font-semibold">{z.name}</h2>
 
                         <div className="mt-4 flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center rounded-full bg-slate-900 text-white px-3 py-1 text-sm font-semibold">
-                Sedan {z.sedan}
-              </span>
+                            <span className="inline-flex items-center rounded-full bg-slate-900 text-white px-3 py-1 text-sm font-semibold">
+                                Sedan {z.sedan}
+                            </span>
                             <span className="inline-flex items-center rounded-full border px-3 py-1 text-sm">
-                {z.van}
-              </span>
+                                {z.van}
+                            </span>
                         </div>
 
                         <ul className="mt-4 space-y-2 text-sm text-gray-700">

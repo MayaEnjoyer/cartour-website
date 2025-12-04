@@ -111,7 +111,7 @@ export default function Nav({ locale }: { locale: Locale }) {
 
     useEffect(() => {
         if (open) queueMicrotask(() => setOpen(false));
-    }, [pathname]); // ← только при смене маршрута
+    }, [pathname]);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
@@ -177,7 +177,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                 <div
                     className="
             mx-auto w-full max-w-7xl
-            h-14 md:h-28
+            h-20 md:h-28
             px-4 md:px-6
             grid grid-cols-[auto_1fr_auto]
             place-items-center
@@ -194,7 +194,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                             height={144}
                             priority
                             sizes="(max-width:768px) 260px, 720px"
-                            className="h-12 sm:h-14 md:h-36 w-auto"
+                            className="h-16 sm:h-20 md:h-36 w-auto"
                         />
                     </Link>
 
@@ -258,11 +258,11 @@ export default function Nav({ locale }: { locale: Locale }) {
                         >
                             <span className="sr-only">Menu</span>
                             <div className="space-y-1.5">
-                                <span
-                                    className={`block h-0.5 w-6 bg-white transition-transform ${
-                                        open ? 'translate-y-2 rotate-45' : ''
-                                    }`}
-                                />
+                <span
+                    className={`block h-0.5 w-6 bg-white transition-transform ${
+                        open ? 'translate-y-2 rotate-45' : ''
+                    }`}
+                />
                                 <span
                                     className={`block h-0.5 w-6 bg-white transition-opacity ${
                                         open ? 'opacity-0' : 'opacity-100'

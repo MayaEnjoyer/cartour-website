@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <circle cx="135" cy="135" r="120" fill="#111111"></circle>
+
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="180" font-weight="900" fill="#F5FF00">
+    C
+  </text>
+</svg>

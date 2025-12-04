@@ -25,43 +25,242 @@ const schema = z.object({
     flight: z.string().optional(),
     notes: z.string().optional(),
 
-    // Опційний зворотній трансфер
+    // опційні додаткові точки
+    pickups: z.array(z.string()).optional(),
+    dropoffs: z.array(z.string()).optional(),
+    pickup_extra: z.array(z.string()).optional(),
+    dropoff_extra: z.array(z.string()).optional(),
+
+    // опційний зворотній трансфер
     r_pickup: z.string().optional(),
     r_dropoff: z.string().optional(),
     r_date: z.string().optional(),
     r_time: z.string().optional(),
     r_flight: z.string().optional(),
+
+    // чекбокс GDPR (нам не критично, але може прийти)
+    gdpr: z.string().optional(),
 });
 
-// Невеличкий helper для форматування тіла листа
-function asText(obj: Record<string, unknown>) {
-    return Object.entries(obj)
-        .filter(([, v]) => v !== undefined && v !== '')
-        .map(([k, v]) => `${k}: ${v}`)
-        .join('\n');
+type ReservationData = z.infer<typeof schema>;
+
+// ---- Helpers для форматування листа ----
+
+function formatBaggage(data: ReservationData): string {
+    const parts: string[] = [];
+    if (typeof data.bagsChecked === 'number') {
+        parts.push(`Podpalubná: ${data.bagsChecked} ks`);
+    }
+    if (typeof data.bagsCarry === 'number') {
+        parts.push(`Príručná: ${data.bagsCarry} ks`);
+    }
+    return parts.length ? parts.join(', ') : 'bez špecifikácie';
 }
 
+function hasReturn(data: ReservationData): boolean {
+    return Boolean(
+        data.r_pickup ||
+        data.r_dropoff ||
+        data.r_date ||
+        data.r_time ||
+        data.r_flight,
+    );
+}
+
+function buildTextBody(data: ReservationData): string {
+    const pickupExtra = (data.pickup_extra ?? []).filter((v) => v.trim() !== '');
+    const dropoffExtra = (data.dropoff_extra ?? []).filter(
+        (v) => v.trim() !== '',
+    );
+
+    const lines: string[] = [];
+
+    lines.push('Nová rezervácia na prepravu');
+    lines.push('');
+    lines.push(`Meno: ${data.firstName} ${data.lastName}`);
+    lines.push(`Telefón: ${data.phone}`);
+    lines.push(`E-mail: ${data.email}`);
+    lines.push('');
+    lines.push(`Miesto vyzdvihnutia: ${data.pickup}`);
+
+    if (pickupExtra.length) {
+        lines.push(
+            'Ďalšie miesta vyzdvihnutia:',
+            ...pickupExtra.map((p) => `  • ${p}`),
+        );
+    }
+
+    lines.push(`Miesto vysadenia: ${data.dropoff}`);
+
+    if (dropoffExtra.length) {
+        lines.push(
+            'Ďalšie miesta vysadenia:',
+            ...dropoffExtra.map((p) => `  • ${p}`),
+        );
+    }
+
+    lines.push(`Dátum vyzdvihnutia: ${data.date}`);
+    lines.push(`Čas vyzdvihnutia: ${data.time}`);
+    lines.push('');
+    lines.push(
+        `Počet osôb (informácia, cena sa pri počte osôb nemení): ${data.pax}`,
+    );
+    lines.push(`Batožina: ${formatBaggage(data)}`);
+    lines.push(`Číslo letu: ${data.flight || '—'}`);
+    lines.push('');
+
+    const notes = (data.notes ?? '').trim();
+    lines.push(`Špeciálne požiadavky: ${notes || '—'}`);
+
+    if (hasReturn(data)) {
+        lines.push('');
+        lines.push('Spätný transfer:');
+        lines.push(`  Miesto vyzdvihnutia: ${data.r_pickup || '-'}`);
+        lines.push(`  Miesto vysadenia:   ${data.r_dropoff || '-'}`);
+        lines.push(`  Dátum návratu:      ${data.r_date || '-'}`);
+        lines.push(`  Čas návratu:        ${data.r_time || '-'}`);
+        lines.push(`  Číslo letu (návrat): ${data.r_flight || '-'}`);
+    } else {
+        lines.push('');
+        lines.push('Spätný transfer: klient nepožaduje.');
+    }
+
+    lines.push('');
+    lines.push('---');
+    const site = process.env.NEXT_PUBLIC_SITE_URL ?? '';
+    if (site) {
+        lines.push(`Odoslané z rezervačného formulára Cartour (${site})`);
+    } else {
+        lines.push('Odoslané z rezervačného formulára Cartour.');
+    }
+
+    return lines.join('\n');
+}
+
+function buildHtmlBody(
+    data: ReservationData,
+    subject: string,
+    textBody: string,
+): string {
+    const baggage = formatBaggage(data);
+    const notes = (data.notes ?? '').trim() || '—';
+    const pickupExtra = (data.pickup_extra ?? []).filter((v) => v.trim() !== '');
+    const dropoffExtra = (data.dropoff_extra ?? []).filter(
+        (v) => v.trim() !== '',
+    );
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.cartour.sk';
+
+    return `<!doctype html>
+<html lang="sk">
+<head>
+  <meta charSet="utf-8" />
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;">
+  <div style="max-width:640px;margin:0 auto;padding:24px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+    <div style="background:#111827;border-radius:16px 16px 0 0;padding:16px 20px;">
+      <h1 style="margin:0;font-size:20px;line-height:1.3;color:#f9fafb;">Nová rezervácia na prepravu</h1>
+      <p style="margin:4px 0 0 0;font-size:13px;color:#9ca3af;">Online rezervácia z webu Cartour.</p>
+    </div>
+
+    <div style="background:#ffffff;border-radius:0 0 16px 16px;padding:20px 20px 18px;border:1px solid #e5e7eb;border-top:none;font-size:14px;color:#111827;">
+      <h2 style="margin:0 0 8px 0;font-size:16px;">Osobné údaje</h2>
+      <p style="margin:0 0 4px 0;"><strong>Meno:</strong> ${data.firstName} ${data.lastName}</p>
+      <p style="margin:0 0 4px 0;"><strong>Telefón:</strong> ${data.phone}</p>
+      <p style="margin:0 0 12px 0;"><strong>E-mail:</strong> ${data.email}</p>
+
+      <h2 style="margin:0 0 8px 0;font-size:16px;">Detaily jazdy</h2>
+      <p style="margin:0 0 4px 0;"><strong>Miesto vyzdvihnutia:</strong> ${data.pickup}</p>
+      ${
+        pickupExtra.length
+            ? `<p style="margin:0 0 4px 0;"><strong>Ďalšie miesta vyzdvihnutia:</strong><br/>${pickupExtra
+                .map((p) => `• ${p}`)
+                .join('<br/>')}</p>`
+            : ''
+    }
+      <p style="margin:0 0 4px 0;"><strong>Miesto vysadenia:</strong> ${data.dropoff}</p>
+      ${
+        dropoffExtra.length
+            ? `<p style="margin:0 0 4px 0;"><strong>Ďalšie miesta vysadenia:</strong><br/>${dropoffExtra
+                .map((p) => `• ${p}`)
+                .join('<br/>')}</p>`
+            : ''
+    }
+      <p style="margin:0 0 4px 0;"><strong>Dátum vyzdvihnutia:</strong> ${data.date}</p>
+      <p style="margin:0 0 12px 0;"><strong>Čas vyzdvihnutia:</strong> ${data.time}</p>
+
+      <h2 style="margin:0 0 8px 0;font-size:16px;">Cestujúci a batožina</h2>
+      <p style="margin:0 0 4px 0;"><strong>Počet osôb</strong> (informácia, cena sa pri počte osôb nemení): ${data.pax}</p>
+      <p style="margin:0 0 4px 0;"><strong>Batožina:</strong> ${baggage}</p>
+      <p style="margin:0 0 12px 0;"><strong>Číslo letu:</strong> ${data.flight || '—'}</p>
+
+      <h2 style="margin:0 0 8px 0;font-size:16px;">Špeciálne požiadavky</h2>
+      <p style="margin:0 0 12px 0;white-space:pre-line;">${notes}</p>
+
+      ${
+        hasReturn(data)
+            ? `<h2 style="margin:0 0 8px 0;font-size:16px;">Spätný transfer</h2>
+      <p style="margin:0 0 4px 0;"><strong>Miesto vyzdvihnutia:</strong> ${
+                data.r_pickup || '-'
+            }</p>
+      <p style="margin:0 0 4px 0;"><strong>Miesto vysadenia:</strong> ${
+                data.r_dropoff || '-'
+            }</p>
+      <p style="margin:0 0 4px 0;"><strong>Dátum návratu:</strong> ${
+                data.r_date || '-'
+            }</p>
+      <p style="margin:0 0 12px 0;"><strong>Čas návratu:</strong> ${
+                data.r_time || '-'
+            }</p>
+      <p style="margin:0 0 12px 0;"><strong>Číslo letu (návrat):</strong> ${
+                data.r_flight || '-'
+            }</p>`
+            : `<h2 style="margin:0 0 8px 0;font-size:16px;">Spätný transfer</h2>
+      <p style="margin:0 0 12px 0;">Klient nepožaduje spätný transfer.</p>`
+    }
+
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:12px 0 10px;" />
+      <p style="margin:0;font-size:12px;color:#6b7280;">
+        Tento e-mail bol vygenerovaný automaticky z formulára na stránke
+        <a href="${siteUrl}" style="color:#0ea5e9;text-decoration:none;">${siteUrl}</a>.
+        Na správu môžete priamo odpovedať.
+      </p>
+    </div>
+
+    <p style="margin:16px 0 0 0;font-size:11px;color:#9ca3af;text-align:center;">
+      Cartour – letiskové a mestské transfery
+    </p>
+  </div>
+</body>
+</html>`;
+}
+
+// ---- Обробник POST ----
+
 export async function POST(req: NextRequest) {
-    // 1) читаємо та валідимо JSON
     const json = await req.json().catch(() => null);
+
+    if (!json) {
+        return NextResponse.json(
+            { ok: false, errors: { _errors: ['Invalid JSON'] } },
+            { status: 400 },
+        );
+    }
+
     const parsed = schema.safeParse(json);
 
     if (!parsed.success) {
         return NextResponse.json(
-            { ok: false, errors: parsed.error.flatten() },
+            { ok: false, errors: parsed.error.format() },
             { status: 400 },
         );
     }
 
     const data = parsed.data;
 
-    // 2) Лінивий імпорт nodemailer — так TS не вимагає декларацій
-    //    і не буде помилки TS7016. Якщо хочеш статичний імпорт —
-    //    просто встанови типи: `npm i -D @types/nodemailer`
+    // Лінивий імпорт nodemailer
     const nodemailer = await import('nodemailer');
 
-    // 3) Транспорт з env (додай їх у .env.local)
-    // SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_TO
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: Number(process.env.SMTP_PORT ?? 587),
@@ -75,21 +274,26 @@ export async function POST(req: NextRequest) {
     const to = process.env.MAIL_TO ?? process.env.SMTP_USER;
     const from = process.env.MAIL_FROM ?? `CarTour <${process.env.SMTP_USER}>`;
 
-    const subject = 'New reservation request';
-    const text = asText(data);
-    const html = `
-    <h2>${subject}</h2>
-    <pre style="font-size:14px;line-height:1.5">${text}</pre>
-  `;
+    const subject = `Rezervácia prepravy - ${data.firstName} ${data.lastName} - ${data.date}`;
+    const textBody = buildTextBody(data);
+    const htmlBody = buildHtmlBody(data, subject, textBody);
 
-    // 4) Відправляємо лист
-    await transporter.sendMail({
-        from,
-        to,
-        subject,
-        text,
-        html,
-    });
+    try {
+        await transporter.sendMail({
+            from,
+            to,
+            subject,
+            text: textBody,
+            html: htmlBody,
+            replyTo: `${data.firstName} ${data.lastName} <${data.email}>`,
+        });
 
-    return NextResponse.json({ ok: true });
+        return NextResponse.json({ ok: true });
+    } catch (err) {
+        console.error('Reservation mail error', err);
+        return NextResponse.json(
+            { ok: false, errors: { _errors: ['Mail send failed'] } },
+            { status: 500 },
+        );
+    }
 }

@@ -28,6 +28,10 @@ const GALLERY = [
     { src: '/leaflet/car4.png.webp', alt: 'Mercedes E-Class in modern parking' },
     { src: '/leaflet/car5.png.webp', alt: 'Mercedes front view' },
     { src: '/leaflet/car6.png.webp', alt: 'Two black Mercedes sedans' },
+    { src: '/leaflet/car7.png.webp', alt: 'Mercedes-Benz Vito' },
+    { src: '/leaflet/car8.png.webp', alt: 'Mercedes-Benz Vito' },
+    { src: '/leaflet/car9.png.webp', alt: 'Mercedes-Benz Vito' },
+
 ];
 
 const dict: Dict = {

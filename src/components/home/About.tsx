@@ -69,7 +69,12 @@ const dict: Dict = {
 };
 
 const ringByIdx = (i: number) =>
-    ['ring-sky-500/20 bg-white/80', 'ring-indigo-500/20 bg-white/80', 'ring-rose-500/20 bg-white/80', 'ring-emerald-500/20 bg-white/80'][i % 4];
+    [
+        'ring-sky-500/20 bg-white/80',
+        'ring-indigo-500/20 bg-white/80',
+        'ring-rose-500/20 bg-white/80',
+        'ring-emerald-500/20 bg-white/80',
+    ][i % 4];
 
 const textByIdx = (i: number) =>
     ['text-sky-700', 'text-indigo-700', 'text-rose-700', 'text-emerald-700'][i % 4];
@@ -325,7 +330,20 @@ export default function About({ locale }: { locale: string }) {
                         </div>
                     </div>
 
-                    {/* captions */}
+                    {/* Плашки ПОД фото — только мобильная версия */}
+                    <div className="sm:hidden px-3 pb-3 pt-2 flex flex-wrap justify-center gap-2">
+                        <div className="rounded-[999px] bg-white/95 px-4 py-2 text-[11px] font-medium shadow whitespace-nowrap">
+                            Mercedes-Benz • E-Class
+                        </div>
+                        <div className="rounded-[999px] bg-sky-600 text-white px-4 py-2 text-[11px] font-medium shadow whitespace-nowrap">
+                            Comfort • Wi-Fi • Water
+                        </div>
+                        <div className="rounded-[999px] bg-rose-600 text-white px-4 py-2 text-[11px] font-medium shadow whitespace-nowrap">
+                            Professional Drivers
+                        </div>
+                    </div>
+
+                    {/* Старый вариант поверх фото — только desktop / tablet */}
                     <div className="hidden sm:flex absolute bottom-7 left-6.5 right-4 flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-3">
                         <div className="rounded-xl bg-white/90 backdrop-blur px-2.5 py-2 text-xs sm:text-sm lg:text-[13px] font-medium shadow whitespace-nowrap">
                             Mercedes-Benz • E-Class

@@ -177,7 +177,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                 <div
                     className="
             mx-auto w-full max-w-7xl
-            h-20 md:h-28
+            h-24 md:h-28
             px-4 md:px-6
             grid grid-cols-[auto_1fr_auto]
             place-items-center
@@ -193,8 +193,8 @@ export default function Nav({ locale }: { locale: Locale }) {
                             width={720}
                             height={144}
                             priority
-                            sizes="(max-width:768px) 260px, 720px"
-                            className="h-16 sm:h-20 md:h-36 w-auto"
+                            sizes="(max-width:768px) 300px, 720px"
+                            className="h-24 sm:h-20 md:h-36 w-auto"
                         />
                     </Link>
 
@@ -288,13 +288,13 @@ export default function Nav({ locale }: { locale: Locale }) {
                 <div className="absolute inset-0 bg-black/90" />
 
                 <div className="absolute inset-0 flex flex-col">
-                    <div className="h-14 px-4 flex items-center justify-between">
+                    <div className="h-20 px-4 flex items-center justify-between">
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
                             width={240}
                             height={72}
-                            className="h-10 w-auto"
+                            className="h-16 w-auto"
                             priority
                         />
                         <button
@@ -371,6 +371,24 @@ export default function Nav({ locale }: { locale: Locale }) {
 
                     <div className="pb-8 flex items-center justify-center gap-4">
                         <a
+                            href="https://wa.me/421908699151"
+                            aria-label="WhatsApp"
+                            className="inline-flex w-10 h-10 rounded-full bg-emerald-500 items-center justify-center hover:bg-emerald-400"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="white"
+                                aria-hidden="true"
+                            >
+                                <path d="M12.04 2C6.57 2 2.27 6.18 2.27 11.53c0 2.06.68 3.97 1.84 5.52L2 22l5.12-1.65a9.95 9.95 0 004.92 1.32h.01c5.47 0 9.77-4.18 9.77-9.53C21.82 6.18 17.51 2 12.04 2zm0 17.3a8.1 8.1 0 01-4.13-1.14l-.3-.18-3.04.98.99-2.9-.2-.3a7.4 7.4 0 01-1.15-3.98c0-4.08 3.37-7.4 7.5-7.4 4.13 0 7.5 3.32 7.5 7.4 0 4.07-3.37 7.42-7.5 7.42zm4.16-5.53c-.23-.12-1.37-.68-1.58-.75-.21-.08-.36-.12-.52.12-.15.23-.6.75-.74.9-.14.15-.27.17-.5.06-.23-.12-.96-.37-1.83-1.18-.68-.61-1.13-1.36-1.27-1.59-.13-.23-.01-.35.1-.47.1-.1.23-.27.35-.4.12-.14.16-.23.23-.38.08-.15.04-.29-.02-.41-.06-.12-.52-1.25-.72-1.7-.19-.45-.38-.38-.52-.38h-.44c-.15 0-.4.06-.61.29-.21.23-.8.78-.8 1.9 0 1.12.82 2.2.94 2.36.12.15 1.62 2.6 3.96 3.53.55.24.98.38 1.32.49.55.17 1.04.15 1.43.09.43-.06 1.37-.56 1.56-1.1.19-.54.19-1 .13-1.1-.06-.1-.21-.16-.44-.28z" />
+                            </svg>
+                        </a>
+
+                        <a
                             href="https://www.facebook.com/cartour.sk/"
                             aria-label="Facebook"
                             className="inline-flex w-10 h-10 rounded-full bg-rose-600 items-center justify-center hover:bg-rose-500"
@@ -379,6 +397,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                                 <path d="M13.5 9H16V6h-2.5C11.6 6 11 7.2 11 8.7V10H9v3h2v5h3v-5h2.1l.4-3H14v-1c0-.6.2-1 1.5-1Z" />
                             </svg>
                         </a>
+
                         <a
                             href="https://www.instagram.com/cartour.sk/"
                             aria-label="Instagram"
@@ -388,6 +407,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                                 <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3.5A5.5 5.5 0 1112 18.5 5.5 5.5 0 0112 7.5zm0 2A3.5 3.5 0 1015.5 13 3.5 3.5 0 0012 9.5zM17.5 6A1.5 1.5 0 1119 7.5 1.5 1.5 0 0117.5 6z" />
                             </svg>
                         </a>
+
                         <a
                             href="tel:+421908699151"
                             aria-label="Call"

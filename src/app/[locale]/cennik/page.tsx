@@ -10,7 +10,9 @@ function BackgroundCar() {
         <section
             className="
         relative py-28 md:py-40
-        bg-[url('/leaflet/background_car.png')] bg-cover bg-center bg-no-repeat bg-fixed
+        bg-[url('/leaflet/background_car.png')]
+        bg-cover bg-center bg-no-repeat
+        bg-scroll md:bg-fixed
       "
         >
             {/* легке затемнення, щоб текст/блоки над фоном читались */}
@@ -20,7 +22,9 @@ function BackgroundCar() {
     );
 }
 
-export default async function PricingPage(props: { params: Promise<{ locale: string }> }) {
+export default async function PricingPage(
+    props: { params: Promise<{ locale: string }> }
+) {
     const { locale } = await props.params; // <-- головне виправлення
 
     return (

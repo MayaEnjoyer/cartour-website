@@ -22,16 +22,14 @@ function isLocale(x: string): x is Locale {
 }
 
 const GALLERY = [
-    { src: '/leaflet/background_car2.png', alt: 'CarTour Mercedes E-Class in the parking lot' },
+    { src: '/leaflet/car6.png.webp', alt: 'Two black Mercedes sedans' },
     { src: '/leaflet/car.png.webp', alt: 'Mercedes interior – rear seats' },
     { src: '/leaflet/car1.png.webp', alt: 'Mercedes E-Class side view' },
-    { src: '/leaflet/car4.png.webp', alt: 'Mercedes E-Class in modern parking' },
+    { src: '/leaflet/car4.png', alt: 'Mercedes E-Class in modern parking' },
     { src: '/leaflet/car5.png.webp', alt: 'Mercedes front view' },
-    { src: '/leaflet/car6.png.webp', alt: 'Two black Mercedes sedans' },
     { src: '/leaflet/car7.png.webp', alt: 'Mercedes-Benz Vito' },
     { src: '/leaflet/car8.png.webp', alt: 'Mercedes-Benz Vito' },
     { src: '/leaflet/car9.png.webp', alt: 'Mercedes-Benz Vito' },
-
 ];
 
 const dict: Dict = {
@@ -43,7 +41,7 @@ const dict: Dict = {
             'Naši vodiči majú dlhoročnú prax, sú presní, diskrétni a orientovaní na váš komfort.',
             'Sme tu pre obchodné cesty, letiskové transfery, spoločenské udalosti aj každodenné presuny v meste a mimo neho.',
         ],
-        stats: ['7+ rokov skúseností', '1000+ transferov ročne', 'Hodnotenie 4.3★'],
+        stats: ['7+ rokov skúseností', '1000+ transferov ročne', 'Overená služba'],
         badges: ['Airport', 'Corporate', '24/7'],
     },
     en: {
@@ -54,18 +52,18 @@ const dict: Dict = {
             'Our drivers are seasoned professionals, punctual, discreet and comfort-oriented.',
             'Business trips, airport transfers, events or daily rides — we’ve got you covered in and outside the city.',
         ],
-        stats: ['7+ years of experience', '1000+ transfers / year', 'Rating 4.3★'],
+        stats: ['7+ years of experience', '1000+ transfers / year', 'Verified service'],
         badges: ['Airport', 'Corporate', '24/7'],
     },
     de: {
         heading: 'Über uns',
         p: [
-            'Seit über 7 Jahren sind wir ein verlässlicher Partner im Personentransport mit Fokus auf Flughafen- und Firmen­transfers.',
+            'Seit über 7 Jahren sind wir ein verlässlicher Partner im Personentransport mit Fokus auf Flughafen- und Firmen transfers.',
             'Wir fahren ausschließlich Mercedes-Benz — kurze wie lange Strecken mit Komfort und Sicherheit.',
             'Unsere Fahrer sind erfahren, pünktlich, diskret und auf Ihren Komfort bedacht.',
             'Geschäftsreisen, Flughafentransfers, Events oder tägliche Fahrten — in und außerhalb der Stadt.',
         ],
-        stats: ['7+ Jahre Erfahrung', '1000+ Transfers/Jahr', 'Bewertung 4.3★'],
+        stats: ['7+ Jahre Erfahrung', '1000+ Transfers/Jahr', 'Verifizierter Service'],
         badges: ['Airport', 'Corporate', '24/7'],
     },
 };
@@ -83,17 +81,14 @@ export default function About({ locale }: { locale: string }) {
 
     const total = GALLERY.length;
 
-    // позиция во «виртуальной» ленте (0..total+1, где 0 и total+1 — клоны)
     const [position, setPosition] = useState(1);
     const [isAnimating, setIsAnimating] = useState(true);
     const [lightbox, setLightbox] = useState(false);
 
-    // для свайпов
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
     const [touchCurrentX, setTouchCurrentX] = useState<number | null>(null);
     const [didSwipe, setDidSwipe] = useState(false);
 
-    // индекс реального слайда для точек
     const displayIndex = (position - 1 + total) % total;
 
     const next = () => {
@@ -154,7 +149,7 @@ export default function About({ locale }: { locale: string }) {
         }
 
         const dx = touchCurrentX - touchStartX;
-        const threshold = 40; // пикселей для свайпа
+        const threshold = 40;
 
         if (Math.abs(dx) > threshold) {
             if (dx < 0) {
@@ -174,7 +169,6 @@ export default function About({ locale }: { locale: string }) {
             id="about-section"
             className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24"
         >
-            {/* soft glows */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl"
@@ -190,7 +184,6 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                {/* text */}
                 <div>
                     <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
                         {t.heading}
@@ -243,7 +236,6 @@ export default function About({ locale }: { locale: string }) {
                     </div>
                 </div>
 
-                {/* slider + lightbox trigger */}
                 <motion.div
                     initial={reduce ? undefined : { opacity: 0, scale: 0.985 }}
                     whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
@@ -298,7 +290,6 @@ export default function About({ locale }: { locale: string }) {
 
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/55 via-black/30 to-transparent" />
 
-                        {/* arrows */}
                         <button
                             type="button"
                             onClick={(e) => {
@@ -322,7 +313,6 @@ export default function About({ locale }: { locale: string }) {
                             ›
                         </button>
 
-                        {/* dots */}
                         <div className="pointer-events-none absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
                             {GALLERY.map((_, i) => (
                                 <span
@@ -336,21 +326,20 @@ export default function About({ locale }: { locale: string }) {
                     </div>
 
                     {/* captions */}
-                    <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-3">
-                        <div className="rounded-xl bg-white/90 backdrop-blur px-3 py-2 text-sm font-medium shadow">
+                    <div className="absolute bottom-7 left-6.5 right-4 flex flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-3">
+                        <div className="rounded-xl bg-white/90 backdrop-blur px-2.5 py-2 text-xs sm:text-sm lg:text-[13px] font-medium shadow whitespace-nowrap">
                             Mercedes-Benz • E-Class
                         </div>
-                        <div className="rounded-xl bg-sky-600 text-white px-3 py-2 text-sm font-medium shadow">
+                        <div className="rounded-xl bg-sky-600 text-white px-2.5 py-2 text-xs sm:text-sm lg:text-[13px] font-medium shadow whitespace-nowrap">
                             Comfort • Wi-Fi • Water
                         </div>
-                        <div className="rounded-xl bg-rose-600 text-white px-3 py-2 text-sm font-medium shadow">
+                        <div className="rounded-xl bg-rose-600 text-white px-2.5 py-2 text-xs sm:text-sm lg:text-[13px] font-medium shadow whitespace-nowrap">
                             Professional Drivers
                         </div>
                     </div>
                 </motion.div>
             </div>
 
-            {/* LIGHTBOX */}
             {lightbox && (
                 <div
                     className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm"

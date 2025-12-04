@@ -12,7 +12,6 @@ const dicts: Record<'sk'|'en'|'de', Dict> = {
         rows: [
             { service: 'Autosedačka, podsedák, vajíčko', price: 'Zdarma', note: 'Bezplatná služba' },
             { service: 'Každá pridaná adresa vyzdvihnutia / vysadenia', price: 'od 5 €', note: 'Podľa vzdialenosti (km)' },
-            { service: 'Nočný príplatok (23:00 – 05:00)', price: '+5 €', note: 'Za nočnú službu' },
             { service: 'Čakanie', price: '20 €/hod', note: '1. hodina po pristátí zdarma, meškanie letu bez príplatku' },
             { service: 'Vyzdvihnutie s menovkou v príletovej hale', price: '+5 €', note: 'Personalizovaná služba' },
         ],
@@ -25,7 +24,6 @@ const dicts: Record<'sk'|'en'|'de', Dict> = {
         rows: [
             { service: 'Child seat / booster / infant seat', price: 'Free', note: 'Complimentary' },
             { service: 'Extra pickup / drop-off address', price: 'from €5', note: 'Depends on distance (km)' },
-            { service: 'Night service (23:00–05:00)', price: '+€5', note: 'Night surcharge' },
             { service: 'Waiting time', price: '€20/h', note: 'First hour after landing free, flight delay free' },
             { service: 'Meet & Greet (name board)', price: '+€5', note: 'Personalized pickup' },
         ],
@@ -38,7 +36,6 @@ const dicts: Record<'sk'|'en'|'de', Dict> = {
         rows: [
             { service: 'Kindersitz / Sitzerhöhung / Babyschale', price: 'Kostenlos', note: 'Gratis' },
             { service: 'Zusätzliche Abhol-/Abladeadresse', price: 'ab 5 €', note: 'Je nach Entfernung (km)' },
-            { service: 'Nachtdienst (23:00–05:00)', price: '+5 €', note: 'Nachtschichtzuschlag' },
             { service: 'Wartezeit', price: '20 €/h', note: 'Erste Stunde nach Landung gratis, Verspätung kostenlos' },
             { service: 'Meet & Greet (Namensschild)', price: '+5 €', note: 'Personalisierte Abholung' },
         ],

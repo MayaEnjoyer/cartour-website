@@ -4,6 +4,7 @@ import {
     useMemo,
     useState,
     useEffect,
+    useRef,
     type FormEvent,
     type ReactElement,
     type InputHTMLAttributes,
@@ -185,6 +186,9 @@ export default function ReservationForm({
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
     const [notesHintOpen, setNotesHintOpen] = useState(false);
 
+    // ref для textarea Poznámky
+    const notesRef = useRef<HTMLTextAreaElement | null>(null);
+
     const addExtraPickup = () =>
         setExtraPickups((a) => [...a, { id: uid() }]);
     const addExtraDrop = () => setExtraDrops((a) => [...a, { id: uid() }]);
@@ -198,6 +202,13 @@ export default function ReservationForm({
         const id = setTimeout(() => setNotesHintOpen(false), 30_000);
         return () => clearTimeout(id);
     }, [notesHintOpen]);
+
+    // авто-увеличение textarea
+    const handleNotesInput = (e: FormEvent<HTMLTextAreaElement>) => {
+        const el = e.currentTarget;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+    };
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -242,6 +253,10 @@ export default function ReservationForm({
             setWantReturn(false);
             setExtraPickups([]);
             setExtraDrops([]);
+            // сброс высоты textarea после отправки
+            if (notesRef.current) {
+                notesRef.current.style.height = '';
+            }
             setSuccessOpen(true);
         } catch {
             setServerError('Network error. Please try again.');
@@ -496,7 +511,15 @@ export default function ReservationForm({
                         </div>
                     )}
 
-                    <textarea id="notes" name="notes" rows={4} className="ui-textarea" />
+                    <textarea
+                        id="notes"
+                        name="notes"
+                        rows={4}
+                        ref={notesRef}
+                        className="ui-textarea"
+                        style={{ resize: 'none' }}   // запрет ручного растягивания
+                        onInput={handleNotesInput}   // авто-увеличение по тексту
+                    />
                 </fieldset>
 
                 {/* GDPR checkbox */}
@@ -526,11 +549,11 @@ export default function ReservationForm({
                         {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
-            {t.altCall}:{' '}
+                        {t.altCall}:{' '}
                         <a href="tel:+421908699151" className="underline">
-              +421 908 699 151
-            </a>
-          </span>
+                            +421 908 699 151
+                        </a>
+                    </span>
 
                     <div className="ml-auto">
                         <SocialLinks />

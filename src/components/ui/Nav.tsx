@@ -1,4 +1,3 @@
-// src/components/ui/Nav.tsx
 'use client';
 
 import Link from 'next/link';
@@ -13,14 +12,17 @@ function NavLink({
                      href,
                      children,
                      active,
+                     onClick,
                  }: {
     href: string;
     children: React.ReactNode;
     active?: boolean;
+    onClick?: () => void;
 }) {
     return (
         <Link
             href={href}
+            onClick={onClick}
             className={[
                 'inline-flex items-center leading-none',
                 'relative group text-white transition hover:opacity-90',
@@ -37,9 +39,11 @@ function NavLink({
 function ScrollButton({
                           onClick,
                           children,
+                          active,
                       }: {
     onClick: (e: MouseEvent<HTMLButtonElement>) => void;
     children: React.ReactNode;
+    active?: boolean;
 }) {
     return (
         <button
@@ -49,7 +53,7 @@ function ScrollButton({
                 'inline-flex items-center leading-none',
                 'relative group text-white transition hover:opacity-90',
                 'after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:bg-rose-600',
-                'after:w-0 group-hover:after:w-full',
+                active ? 'after:w-full' : 'after:w-0 group-hover:after:w-full',
                 'after:transition-[width] after:duration-300',
             ].join(' ')}
         >
@@ -93,22 +97,35 @@ export default function Nav({ locale }: { locale: Locale }) {
     const t = LABELS[locale] ?? LABELS.sk;
 
     const [open, setOpen] = useState(false);
+    const [aboutActive, setAboutActive] = useState(false);
 
     useEffect(() => {
         const root = document.documentElement;
-        open ? root.classList.add('overflow-hidden') : root.classList.remove('overflow-hidden');
+        if (open) {
+            root.classList.add('overflow-hidden');
+        } else {
+            root.classList.remove('overflow-hidden');
+        }
         return () => root.classList.remove('overflow-hidden');
     }, [open]);
 
     useEffect(() => {
         if (open) queueMicrotask(() => setOpen(false));
-    }, [pathname]);
+    }, [pathname, open]);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, []);
+
+    useEffect(() => {
+        const homePath = `/${locale}`;
+        if (pathname !== homePath && pathname !== `${homePath}/` && aboutActive) {
+            const id = setTimeout(() => setAboutActive(false), 0);
+            return () => clearTimeout(id);
+        }
+    }, [pathname, locale, aboutActive]);
 
     const scrollToAbout = () => {
         const el = document.getElementById('about-section');
@@ -124,6 +141,7 @@ export default function Nav({ locale }: { locale: Locale }) {
 
         if (pathname === homePath || pathname === `${homePath}/`) {
             scrollToAbout();
+            setAboutActive(true);
             return;
         }
 
@@ -142,14 +160,20 @@ export default function Nav({ locale }: { locale: Locale }) {
             const flag = sessionStorage.getItem('scrollToAbout');
             if (flag === '1') {
                 sessionStorage.removeItem('scrollToAbout');
-                setTimeout(scrollToAbout, 80);
+                setTimeout(() => {
+                    scrollToAbout();
+                    setAboutActive(true);
+                }, 80);
             }
         }
     }, [pathname, locale]);
 
     return (
         <header className="fixed inset-x-0 top-0 z-[100]">
-            <nav className="bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60" aria-label="Primary">
+            <nav
+                className="bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60"
+                aria-label="Primary"
+            >
                 <div
                     className="
             mx-auto w-full max-w-7xl
@@ -159,8 +183,10 @@ export default function Nav({ locale }: { locale: Locale }) {
             place-items-center
           "
                 >
-                    {/* ЛОГО слева */}
-                    <Link href={`/${locale}`} className="justify-self-start h-full flex items-center">
+                    <Link
+                        href={`/${locale}`}
+                        className="justify-self-start h-full flex items-center"
+                    >
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
@@ -173,16 +199,30 @@ export default function Nav({ locale }: { locale: Locale }) {
                     </Link>
 
                     <div className="hidden md:flex h-full items-center justify-center gap-12">
-                        <NavLink href={`/${locale}`} active={isActive(`/${locale}`)}>
+                        <NavLink
+                            href={`/${locale}`}
+                            active={isActive(`/${locale}`) && !aboutActive}
+                            onClick={() => setAboutActive(false)}
+                        >
                             {t.home}
                         </NavLink>
 
-                        <ScrollButton onClick={handleAboutClick}>{t.about}</ScrollButton>
+                        <ScrollButton onClick={handleAboutClick} active={aboutActive}>
+                            {t.about}
+                        </ScrollButton>
 
-                        <NavLink href={`/${locale}/cennik`} active={isActive(`/${locale}/cennik`)}>
+                        <NavLink
+                            href={`/${locale}/cennik`}
+                            active={isActive(`/${locale}/cennik`)}
+                            onClick={() => setAboutActive(false)}
+                        >
                             {t.pricing}
                         </NavLink>
-                        <NavLink href={`/${locale}/kontakt`} active={isActive(`/${locale}/kontakt`)}>
+                        <NavLink
+                            href={`/${locale}/kontakt`}
+                            active={isActive(`/${locale}/kontakt`)}
+                            onClick={() => setAboutActive(false)}
+                        >
                             {t.contact}
                         </NavLink>
                     </div>
@@ -190,6 +230,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                     <div className="hidden md:flex h-full items-center justify-end gap-3 justify-self-end">
                         <Link
                             href={`/${locale}/kontakt`}
+                            onClick={() => setAboutActive(false)}
                             className="inline-flex items-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500"
                         >
                             {t.cta}
@@ -262,7 +303,12 @@ export default function Nav({ locale }: { locale: Locale }) {
                             className="inline-flex items-center justify-center w-10 h-10 rounded-lg ring-1 ring-white/15 bg-white/10 hover:bg-white/15"
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <path d="M6 6l12 12M18 6L6 18" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                                <path
+                                    d="M6 6l12 12M18 6L6 18"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
                             </svg>
                         </button>
                     </div>
@@ -270,7 +316,10 @@ export default function Nav({ locale }: { locale: Locale }) {
                     <div className="flex-1 flex flex-col items-center justify-center gap-7 px-6 text-center text-white">
                         <Link
                             href={`/${locale}`}
-                            onClick={() => setOpen(false)}
+                            onClick={() => {
+                                setOpen(false);
+                                setAboutActive(false);
+                            }}
                             className="text-2xl font-semibold"
                         >
                             {t.home}
@@ -289,14 +338,20 @@ export default function Nav({ locale }: { locale: Locale }) {
 
                         <Link
                             href={`/${locale}/cennik`}
-                            onClick={() => setOpen(false)}
+                            onClick={() => {
+                                setOpen(false);
+                                setAboutActive(false);
+                            }}
                             className="text-2xl font-semibold"
                         >
                             {t.pricing}
                         </Link>
                         <Link
                             href={`/${locale}/kontakt`}
-                            onClick={() => setOpen(false)}
+                            onClick={() => {
+                                setOpen(false);
+                                setAboutActive(false);
+                            }}
                             className="text-2xl font-semibold"
                         >
                             {t.contact}
@@ -304,7 +359,10 @@ export default function Nav({ locale }: { locale: Locale }) {
 
                         <Link
                             href={`/${locale}/kontakt`}
-                            onClick={() => setOpen(false)}
+                            onClick={() => {
+                                setOpen(false);
+                                setAboutActive(false);
+                            }}
                             className="mt-1 rounded-full bg-rose-600 px-7 py-3 text-lg font-semibold hover:bg-rose-500"
                         >
                             {t.cta}

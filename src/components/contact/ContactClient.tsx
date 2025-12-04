@@ -18,19 +18,19 @@ const dict: Record<
 > = {
     sk: {
         title: 'Rezervačný formulár',
-        subtitle: 'Rezervujte jazdu online alebo nás kontaktujte — odpovieme rýchlo.',
+        subtitle: 'Rezervujte si jazdu online, alebo nás kontaktujte telefonicky.',
         telLabel: 'Tel:',
         contactNote: 'Online rezervácia dostupná 24/7. Lety sledujeme automaticky.',
     },
     en: {
         title: 'Reservation form',
-        subtitle: 'Book your ride online or contact us — we respond quickly.',
+        subtitle: 'Book a ride online or contact us by phone.',
         telLabel: 'Tel:',
         contactNote: 'Online reservations available 24/7. We track your flights automatically.',
     },
     de: {
         title: 'Reservierungsformular',
-        subtitle: 'Buchen Sie Ihre Fahrt online oder kontaktieren Sie uns – wir antworten schnell.',
+        subtitle: 'Buchen Sie eine Fahrt online oder kontaktieren Sie uns telefonisch.',
         telLabel: 'Tel.:',
         contactNote: 'Online-Reservierungen 24/7 verfügbar. Wir verfolgen Ihre Flüge automatisch.',
     },

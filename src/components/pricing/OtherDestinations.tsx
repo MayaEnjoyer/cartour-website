@@ -17,10 +17,10 @@ const dicts: Record<'sk' | 'en' | 'de', Dict> = {
         col2: 'Sedan',
         col3: 'VAN 5/8',
         rows: [
-            { fromTo: 'Bratislava ⟷ Letisko M. R. Štefánika (BTS)', sedan: '20€',  van: '20€' },
+            { fromTo: 'Bratislava ⟷ Letisko M. R. Štefánika (BTS)', sedan: '25€',  van: '35€' },
             { fromTo: 'Bratislava ⟷ Viedeň Centrum',                sedan: '80€',  van: '94€'  },
-            { fromTo: 'Bratislava ⟷ Budapešť',                      sedan: '229€', van: '259€' },
-            { fromTo: 'Bratislava ⟷ Praha',                         sedan: '339€', van: '369€' },
+            { fromTo: 'Bratislava ⟷ Budapešť',                      sedan: '249€', van: '299€' },
+            { fromTo: 'Bratislava ⟷ Praha',                         sedan: '349€', van: '399€' },
         ],
         note:
             'Pre transfery z iných miest nás prosím kontaktujte. Pripravíme pre vás individuálnu cenovú ponuku.',
@@ -31,10 +31,10 @@ const dicts: Record<'sk' | 'en' | 'de', Dict> = {
         col2: 'Sedan',
         col3: 'VAN 5/8',
         rows: [
-            { fromTo: 'Bratislava ⟷ M. R. Štefánik Airport (BTS)', sedan: '€20',  van: '€20'  },
+            { fromTo: 'Bratislava ⟷ M. R. Štefánik Airport (BTS)', sedan: '€25',  van: '€35'  },
             { fromTo: 'Bratislava ⟷ Vienna City',                  sedan: '€80',  van: '€94'  },
-            { fromTo: 'Bratislava ⟷ Budapest',                     sedan: '€229', van: '€259' },
-            { fromTo: 'Bratislava ⟷ Prague',                       sedan: '€339', van: '€369' },
+            { fromTo: 'Bratislava ⟷ Budapest',                     sedan: '€249', van: '€299' },
+            { fromTo: 'Bratislava ⟷ Prague',                       sedan: '€349', van: '€399' },
         ],
         note:
             'For transfers from other locations, please contact us. We will prepare an individual quote for you.',
@@ -45,10 +45,10 @@ const dicts: Record<'sk' | 'en' | 'de', Dict> = {
         col2: 'Sedan',
         col3: 'VAN 5/8',
         rows: [
-            { fromTo: 'Bratislava ⟷ Flughafen M. R. Štefánika (BTS)', sedan: '20€',  van: '20€'  },
+            { fromTo: 'Bratislava ⟷ Flughafen M. R. Štefánika (BTS)', sedan: '25€',  van: '35€'  },
             { fromTo: 'Bratislava ⟷ Wien Zentrum',                    sedan: '80€',  van: '94€'  },
-            { fromTo: 'Bratislava ⟷ Budapest',                        sedan: '229€', van: '259€' },
-            { fromTo: 'Bratislava ⟷ Prag',                           sedan: '339€', van: '369€' },
+            { fromTo: 'Bratislava ⟷ Budapest',                        sedan: '249€', van: '299€' },
+            { fromTo: 'Bratislava ⟷ Prag',                           sedan: '349€', van: '399€' },
         ],
         note:
             'Für Transfers aus anderen Orten kontaktieren Sie uns bitte. Wir erstellen Ihnen gern ein individuelles Angebot.',

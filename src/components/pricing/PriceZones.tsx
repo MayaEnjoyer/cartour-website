@@ -20,7 +20,7 @@ type PriceZonesDict = {
 export default function PriceZones({ locale }: { locale: string }) {
     const sk: PriceZonesDict = {
         heading: 'Cenník',
-        route: 'Bratislava ↔ Letisko Viedeň —',
+        route: 'Bratislava ↔  Letisko Viedeň Schwechat —',
         zones: [
             {
                 name: 'Centrum a blízke mestské časti',
@@ -64,12 +64,15 @@ export default function PriceZones({ locale }: { locale: string }) {
             'Parkovné na letiskových termináloch',
             'Diaľničné poplatky',
             'Pitný režim vo vozidle',
+            'Bezplatné zrušenie rezervácie 12 h vopred',
+            'Uvedená cena platí v oboch smeroch',
+            'Sledovanie príletov a prispôsobenie času vyzdvihnutia',
         ],
     };
 
     const en: PriceZonesDict = {
         heading: 'Pricing',
-        route: 'Bratislava ↔ Vienna Airport —',
+        route: 'Bratislava ↔ Vienna Airport Schwechat —',
         zones: [
             {
                 name: 'City centre & nearby districts',
@@ -109,12 +112,19 @@ export default function PriceZones({ locale }: { locale: string }) {
             },
         ],
         includedTitle: 'Included in the price',
-        included: ['Airport terminal parking', 'Highway tolls', 'Bottled water on board'],
+        included: [
+            'Parking at airport terminals',
+            'Motorway tolls',
+            'Drinks in the vehicle',
+            'Free cancellation up to 12 hours in advance',
+            'The listed price applies in both directions',
+            'Flight tracking and adjustment of pickup time',
+        ],
     };
 
     const de: PriceZonesDict = {
         heading: 'Preise',
-        route: 'Bratislava ↔ Flughafen Wien —',
+        route: 'Bratislava ↔ Flughafen Wien Schwechat —',
         zones: [
             {
                 name: 'Zentrum & nahe Bezirke',
@@ -154,12 +164,18 @@ export default function PriceZones({ locale }: { locale: string }) {
             },
         ],
         includedTitle: 'Im Preis enthalten',
-        included: ['Terminal-Parkgebühren', 'Mautgebühren', 'Getränke im Fahrzeug'],
+            included: [
+                'Parkgebühren an den Flughafenterminals',
+                'Autobahngebühren (Maut)',
+                'Getränke im Fahrzeug',
+                'Kostenlose Stornierung bis zu 12 Stunden im Voraus',
+                'Der angegebene Preis gilt in beide Richtungen',
+                'Flugüberwachung und Anpassung der Abholzeit',
+            ],
     };
 
     const dict = locale === 'en' ? en : locale === 'de' ? de : sk;
 
-    // Легка підсвітка "без прихованих платежів"
     const tagline =
         locale === 'en'
             ? {
@@ -178,14 +194,6 @@ export default function PriceZones({ locale }: { locale: string }) {
                     hi: 'žiadne skryté poplatky',
                     after: '.',
                 };
-
-    // Примітка під трьома блоками
-    const bothWaysNote =
-        locale === 'en'
-            ? 'The listed price applies both ways.'
-            : locale === 'de'
-                ? 'Der angegebene Preis gilt in beide Richtungen.'
-                : 'Uvedená cena platí v oboch smeroch.';
 
     const ctaLabel =
         locale === 'en' ? 'Book now' : locale === 'de' ? 'Jetzt buchen' : 'Objednať';
@@ -241,9 +249,6 @@ export default function PriceZones({ locale }: { locale: string }) {
                     </article>
                 ))}
             </div>
-
-            {/* Примітка під трьома блоками */}
-            <p className="mt-3 text-xs text-gray-500">{bothWaysNote}</p>
 
             <div className="mt-10 rounded-2xl border bg-white p-6">
                 <h3 className="font-medium">{dict.includedTitle}</h3>

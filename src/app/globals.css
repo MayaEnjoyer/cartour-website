@@ -279,4 +279,22 @@ html, body { overflow-x: hidden; }
 
 body { overflow-x: clip; }
 
+@layer components {
+    /* Фон машины для страницы Cennik */
+    .bg-pricing-car {
+        background-image: url('/leaflet/background_car.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    /* iOS-фаулбек: на Safari mobile bg-fixed глючит, поэтому там делаем scroll */
+    @supports (-webkit-touch-callout: none) {
+        .bg-pricing-car {
+            background-attachment: scroll;
+        }
+    }
+}
+
 

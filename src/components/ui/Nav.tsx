@@ -111,7 +111,7 @@ export default function Nav({ locale }: { locale: Locale }) {
 
     useEffect(() => {
         if (open) queueMicrotask(() => setOpen(false));
-    }, [pathname, open]);
+    }, [pathname]); // ← только при смене маршрута
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
@@ -258,11 +258,11 @@ export default function Nav({ locale }: { locale: Locale }) {
                         >
                             <span className="sr-only">Menu</span>
                             <div className="space-y-1.5">
-                <span
-                    className={`block h-0.5 w-6 bg-white transition-transform ${
-                        open ? 'translate-y-2 rotate-45' : ''
-                    }`}
-                />
+                                <span
+                                    className={`block h-0.5 w-6 bg-white transition-transform ${
+                                        open ? 'translate-y-2 rotate-45' : ''
+                                    }`}
+                                />
                                 <span
                                     className={`block h-0.5 w-6 bg-white transition-opacity ${
                                         open ? 'opacity-0' : 'opacity-100'

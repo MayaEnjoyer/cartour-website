@@ -110,10 +110,6 @@ export default function Nav({ locale }: { locale: Locale }) {
     }, [open]);
 
     useEffect(() => {
-        setOpen(false);
-    }, [pathname]);
-
-    useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
@@ -258,11 +254,11 @@ export default function Nav({ locale }: { locale: Locale }) {
                         >
                             <span className="sr-only">Menu</span>
                             <div className="space-y-1.5">
-                <span
-                    className={`block h-0.5 w-6 bg-white transition-transform ${
-                        open ? 'translate-y-2 rotate-45' : ''
-                    }`}
-                />
+                                <span
+                                    className={`block h-0.5 w-6 bg-white transition-transform ${
+                                        open ? 'translate-y-2 rotate-45' : ''
+                                    }`}
+                                />
                                 <span
                                     className={`block h-0.5 w-6 bg-white transition-opacity ${
                                         open ? 'opacity-0' : 'opacity-100'

@@ -51,6 +51,7 @@ function ScrollButton({
             onClick={onClick}
             className={[
                 'inline-flex items-center leading-none',
+                // ТУТ БЫЛО text:white – из-за этого «O nás» был другим цветом
                 'relative group text-white transition hover:opacity-90',
                 'after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:bg-rose-600',
                 active ? 'after:w-full' : 'after:w-0 group-hover:after:w-full',
@@ -99,6 +100,7 @@ export default function Nav({ locale }: { locale: Locale }) {
     const [open, setOpen] = useState(false);
     const [aboutActive, setAboutActive] = useState(false);
 
+    // блокируем скролл при открытом бургере
     useEffect(() => {
         const root = document.documentElement;
         if (open) {
@@ -109,12 +111,14 @@ export default function Nav({ locale }: { locale: Locale }) {
         return () => root.classList.remove('overflow-hidden');
     }, [open]);
 
+    // Esc закрывает бургер
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, []);
 
+    // если ушли с главной — снимаем актив с "O nás"
     useEffect(() => {
         const homePath = `/${locale}`;
         if (pathname !== homePath && pathname !== `${homePath}/` && aboutActive) {
@@ -147,6 +151,7 @@ export default function Nav({ locale }: { locale: Locale }) {
         router.push(homePath);
     };
 
+    // авто-скролл к "O nás" после редиректа
     useEffect(() => {
         const homePath = `/${locale}`;
         if (
@@ -168,41 +173,42 @@ export default function Nav({ locale }: { locale: Locale }) {
         <header className="fixed inset-x-0 top-0 z-[100]">
             <nav
                 className="
-          bg-black/80
-          border-b border-white/5
-        "
+                    bg-black/80
+                    border-b border-white/5
+                "
                 aria-label="Primary"
             >
-                {/* тонкая чёрная полоска */}
                 <div className="mx-auto w-full max-w-7xl px-4 md:px-6 py-2 md:py-3">
                     <div
                         className="
-              grid grid-cols-[auto_1fr_auto]
-              items-center
-              h-16 md:h-20 lg:h-[4.5rem]
-            "
+                            grid grid-cols-[auto_1fr_auto]
+                            items-center
+                            h-16 md:h-20 lg:h-[4.5rem]
+                        "
                     >
+                        {/* ЛОГОТИП – чуть уменьшен */}
                         <Link
                             href={`/${locale}`}
                             className="justify-self-start h-full flex items-center"
+                            onClick={() => setAboutActive(false)}
                         >
-                            <div className="relative h-full w-[260px] max-w-[70vw] overflow-visible">
-                                <Image
-                                    src="/leaflet/logo.png"
-                                    alt="CarTour"
-                                    fill
-                                    priority
-                                    sizes="(max-width:768px) 220px, 260px"
-                                    className="
-                    object-contain origin-left
-                    scale-100
-                    md:scale-[1.8] lg:scale-[2]
-                    md:-translate-x-[50px] lg:-translate-x-[80px]
-                  "
-                                />
-                            </div>
+                            <Image
+                                src="/leaflet/logo-nav.png"
+                                alt="CarTour"
+                                width={260}
+                                height={39}
+                                priority
+                                sizes="(max-width:768px) 150px, 210px"
+                                className="
+                                    h-4.5       /* мобильная высота ≈ 28px */
+                                    md:h-5.5    /* планшет */
+                                    lg:h-6.5    /* десктоп ~36px */
+                                    w-auto
+                                "
+                            />
                         </Link>
 
+                        {/* ДЕСКТОП-НАВ */}
                         <div className="hidden md:flex h-full items-center justify-center gap-12">
                             <NavLink
                                 href={`/${locale}`}
@@ -232,6 +238,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                             </NavLink>
                         </div>
 
+                        {/* CTA + локаль (десктоп) */}
                         <div className="hidden md:flex h-full items-center justify-end gap-3 justify-self-end">
                             <Link
                                 href={`/${locale}/kontakt`}
@@ -243,7 +250,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                             <LocaleSwitcher locale={locale} />
                         </div>
 
-                        {/* MOBILE RIGHT SIDE */}
+                        {/* МОБИЛЬНАЯ ПРАВАЯ ЧАСТЬ */}
                         <div className="md:hidden justify-self-end flex items-center gap-2">
                             <div className="-mr-1 scale-90">
                                 <LocaleSwitcher locale={locale} />
@@ -255,20 +262,20 @@ export default function Nav({ locale }: { locale: Locale }) {
                                 aria-expanded={open}
                                 onClick={() => setOpen((v) => !v)}
                                 className="
-                  inline-flex items-center justify-center
-                  w-11 h-11 rounded-xl
-                  bg-white/10 ring-1 ring-white/15
-                  hover:bg-white/15 active:scale-[.98]
-                  transition
-                "
+                                    inline-flex items-center justify-center
+                                    w-11 h-11 rounded-xl
+                                    bg-white/10 ring-1 ring-white/15
+                                    hover:bg-white/15 active:scale-[.98]
+                                    transition
+                                "
                             >
                                 <span className="sr-only">Menu</span>
                                 <div className="space-y-1.5">
-                  <span
-                      className={`block h-0.5 w-6 bg-white transition-transform ${
-                          open ? 'translate-y-2 rotate-45' : ''
-                      }`}
-                  />
+                                    <span
+                                        className={`block h-0.5 w-6 bg-white transition-transform ${
+                                            open ? 'translate-y-2 rotate-45' : ''
+                                        }`}
+                                    />
                                     <span
                                         className={`block h-0.5 w-6 bg-white transition-opacity ${
                                             open ? 'opacity-0' : 'opacity-100'
@@ -286,7 +293,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                 </div>
             </nav>
 
-            {/* mobile menu */}
+            {/* МОБИЛЬНОЕ МЕНЮ */}
             <div
                 id="mobile-menu"
                 className={`md:hidden fixed inset-0 z-[140] transition-opacity duration-300 ${
@@ -299,17 +306,15 @@ export default function Nav({ locale }: { locale: Locale }) {
                 />
 
                 <div className="absolute inset-0 flex flex-col">
-                    <div className="h-20 px-4 flex items-center justify-between">
-                        <div className="relative w-[220px] max-w-[60vw] h-11">
-                            <Image
-                                src="/leaflet/logo.png"
-                                alt="CarTour"
-                                fill
-                                priority
-                                sizes="220px"
-                                className="object-contain"
-                            />
-                        </div>
+                    <div className="h-16 px-4 flex items-center justify-between">
+                        <Image
+                            src="/leaflet/logo-nav.png"
+                            alt="CarTour"
+                            width={260}
+                            height={39}
+                            priority
+                            className="h-7 w-auto"
+                        />
                         <button
                             aria-label="Close menu"
                             onClick={() => setOpen(false)}
@@ -383,6 +388,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                     </div>
 
                     <div className="pb-8 flex items-center justify-center gap-4">
+                        {/* соц-ссылки остаются без изменений */}
                         <a
                             href="https://wa.me/421908699151"
                             aria-label="WhatsApp"

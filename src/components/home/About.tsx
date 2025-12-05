@@ -37,7 +37,7 @@ const dict: Dict = {
         heading: 'O nás',
         p: [
             'Viac ako sedem rokov sme overeným partnerom v osobnej preprave so zameraním na letiskové a firemné transfery.',
-            'Jazdíme výlučne Mercedes-Benz — pre krátke aj dlhé cesty, s dôrazom na pohodlie a bezpečnosť.',
+            'Jazdíme výlučne vozidlami Mercedes-Benz — pre krátke aj dlhé cesty, s dôrazom na pohodlie a bezpečnosť.',
             'Naši vodiči majú dlhoročnú prax, sú presní, diskrétni a orientovaní na váš komfort.',
             'Sme tu pre obchodné cesty, letiskové transfery, spoločenské udalosti aj každodenné presuny v meste a mimo neho.',
         ],

@@ -111,7 +111,7 @@ export default function Nav({ locale }: { locale: Locale }) {
 
     useEffect(() => {
         if (open) queueMicrotask(() => setOpen(false));
-    }, [pathname]);
+    }, [pathname, open]);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
@@ -177,7 +177,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                 <div
                     className="
             mx-auto w-full max-w-7xl
-            h-24 md:h-28
+            h-20 md:h-24
             px-4 md:px-6
             grid grid-cols-[auto_1fr_auto]
             place-items-center
@@ -193,8 +193,8 @@ export default function Nav({ locale }: { locale: Locale }) {
                             width={720}
                             height={144}
                             priority
-                            sizes="(max-width:768px) 300px, 720px"
-                            className="h-24 sm:h-20 md:h-36 w-auto"
+                            sizes="(max-width:768px) 320px, 720px"
+                            className="h-28 sm:h-32 md:h-36 w-auto -my-4"
                         />
                     </Link>
 
@@ -285,21 +285,19 @@ export default function Nav({ locale }: { locale: Locale }) {
                     open ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
             >
-                {/* клик по фону закрывает меню */}
                 <div
                     className="absolute inset-0 bg-black/90"
                     onClick={() => setOpen(false)}
                 />
 
                 <div className="absolute inset-0 flex flex-col">
-                    {/* Шапка оверлея с логотипом и крестиком */}
                     <div className="h-20 px-4 flex items-center justify-between">
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
                             width={240}
                             height={72}
-                            className="h-16 w-auto"
+                            className="h-20 w-auto"
                             priority
                         />
                         <button
@@ -375,7 +373,6 @@ export default function Nav({ locale }: { locale: Locale }) {
                     </div>
 
                     <div className="pb-8 flex items-center justify-center gap-4">
-                        {/* WhatsApp — тот же цвет, что и остальные иконки */}
                         <a
                             href="https://wa.me/421908699151"
                             aria-label="WhatsApp"

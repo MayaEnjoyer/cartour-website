@@ -14,7 +14,7 @@ export default function Hero({ locale }: Props) {
                 badge: '— LETISKOVÉ TRANSFERY',
                 title: 'Pohodlné transféry na Letisko',
                 subtitle:
-                    'Spoľahlivá preprava vozidlami Mercedes-Benz. Cestujte štýlovo a bez starostí.',
+                    'Spoľahlivá preprava vozidlami Mercedes-Benz. Cestujte pohodlne a bez starostí.',
                 cta1: 'Rezervovať',
                 cta2: 'Zavolajte nám',
                 quick: ['24/7 flexibilita', 'Sledovanie letov', 'Mercedes-Benz'],

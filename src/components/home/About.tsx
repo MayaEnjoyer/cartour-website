@@ -79,10 +79,54 @@ const ringByIdx = (i: number) =>
 const textByIdx = (i: number) =>
     ['text-sky-700', 'text-indigo-700', 'text-rose-700', 'text-emerald-700'][i % 4];
 
+/* ===== буквеная анимация, как на CodePen ===== */
+
+const LETTER_STAGGER = 0.004; // шаг между буквами
+const PARAGRAPH_GAP = 0.08;   // пауза между абзацами
+
+type AnimatedTextProps = {
+    text: string;
+    visible: boolean;
+    reduce: boolean;
+    delayOffset?: number;
+};
+
+function AnimatedText({ text, visible, reduce, delayOffset = 0 }: AnimatedTextProps) {
+    if (reduce) return <>{text}</>;
+
+    const letters = Array.from(text);
+
+    return (
+        <>
+            {letters.map((ch, index) => (
+                <span
+                    key={index}
+                    className="inline-block will-change-transform"
+                    style={{
+                        opacity: visible ? 1 : 0,
+                        transform: visible ? 'translateY(0)' : 'translateY(0.4em)',
+                        transition:
+                            'opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                        transitionDelay: visible
+                            ? `${(delayOffset + index * LETTER_STAGGER).toFixed(3)}s`
+                            : '0s',
+                    }}
+                >
+          {ch}
+        </span>
+            ))}
+        </>
+    );
+}
+
 export default function About({ locale }: { locale: string }) {
-    const reduce = useReducedMotion();
+    const reduceMotion = useReducedMotion();
+    const reduce = !!reduceMotion;
+
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = useMemo(() => dict[safeLocale], [safeLocale]);
+
+    const [textVisible, setTextVisible] = useState<boolean>(reduce);
 
     const total = GALLERY.length;
 
@@ -169,6 +213,22 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
+    // смещения, чтобы абзацы появлялись строго по очереди
+    const paragraphOffsets = useMemo(() => {
+        if (reduce) return t.p.map(() => 0);
+
+        const headingLen = Array.from(t.heading).length;
+        let acc = headingLen * LETTER_STAGGER + 0.09; // быстрее старт после заголовка
+
+        const offsets: number[] = [];
+        for (const para of t.p) {
+            offsets.push(acc);
+            const len = Array.from(para).length;
+            acc += len * LETTER_STAGGER + PARAGRAPH_GAP;
+        }
+        return offsets;
+    }, [t, reduce]);
+
     return (
         <section
             id="about-section"
@@ -189,27 +249,33 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                <div>
+                <motion.div
+                    viewport={{ once: true, amount: 0.3 }}
+                    onViewportEnter={() => {
+                        if (!reduce) setTextVisible(true);
+                    }}
+                >
                     <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                        {t.heading}
+                        <AnimatedText
+                            text={t.heading}
+                            visible={textVisible}
+                            reduce={reduce}
+                        />
                     </h2>
 
                     <div className="mt-6 space-y-4 text-gray-700">
                         {t.p.map((para, i) => (
-                            <motion.p
+                            <p
                                 key={i}
                                 className="text-[15px] sm:text-base leading-relaxed"
-                                initial={reduce ? undefined : { opacity: 0, y: 10 }}
-                                whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.2 }}
-                                transition={{
-                                    duration: 0.55,
-                                    delay: i * 0.05,
-                                    ease: [0.22, 1, 0.36, 1],
-                                }}
                             >
-                                {para}
-                            </motion.p>
+                                <AnimatedText
+                                    text={para}
+                                    visible={textVisible}
+                                    reduce={reduce}
+                                    delayOffset={paragraphOffsets[i] ?? 0}
+                                />
+                            </p>
                         ))}
                     </div>
 
@@ -239,7 +305,7 @@ export default function About({ locale }: { locale: string }) {
               </span>
                         ))}
                     </div>
-                </div>
+                </motion.div>
 
                 <motion.div
                     initial={reduce ? undefined : { opacity: 0, scale: 0.985 }}
@@ -330,7 +396,6 @@ export default function About({ locale }: { locale: string }) {
                         </div>
                     </div>
 
-                    {/* Плашки ПОД фото — только мобильная версия */}
                     <div className="sm:hidden px-3 pb-3 pt-2 flex flex-wrap justify-center gap-2">
                         <div className="rounded-[999px] bg-white/95 px-4 py-2 text-[11px] font-medium shadow whitespace-nowrap">
                             Mercedes-Benz • E-Class
@@ -343,7 +408,6 @@ export default function About({ locale }: { locale: string }) {
                         </div>
                     </div>
 
-                    {/* Старый вариант поверх фото — только desktop / tablet */}
                     <div className="hidden sm:flex absolute bottom-7 left-6.5 right-4 flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-3">
                         <div className="rounded-xl bg-white/90 backdrop-blur px-2.5 py-2 text-xs sm:text-sm lg:text-[13px] font-medium shadow whitespace-nowrap">
                             Mercedes-Benz • E-Class
@@ -436,3 +500,4 @@ export default function About({ locale }: { locale: string }) {
         </section>
     );
 }
+

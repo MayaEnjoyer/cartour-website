@@ -102,27 +102,29 @@ const dict: Dict = {
     },
 };
 
-const containerVariants = {
-    hidden: { opacity: 0, y: 24 },
+const gridVariants = {
+    hidden: {},
     show: {
-        opacity: 1,
-        y: 0,
         transition: {
-            duration: 0.5,
-            ease: 'easeOut',
-            staggerChildren: 0.06,
+            delayChildren: 0.05,
+            staggerChildren: 0.08,
         },
     },
 } as const;
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 18 },
+    hidden: {
+        opacity: 0,
+        y: 22,
+        scale: 0.96,
+    },
     show: {
         opacity: 1,
         y: 0,
+        scale: 1,
         transition: {
-            duration: 0.35,
-            ease: 'easeOut',
+            duration: 0.45,
+            ease: [0.21, 0.47, 0.32, 0.98],
         },
     },
 } as const;
@@ -140,8 +142,7 @@ export default function Features({ locale }: { locale: string }) {
                 ? {
                     initial: 'hidden',
                     whileInView: 'show',
-                    variants: containerVariants,
-                    viewport: { once: true, amount: 0.25 },
+                    viewport: { once: true, amount: 0.3 },
                 }
                 : {})}
         >
@@ -149,7 +150,7 @@ export default function Features({ locale }: { locale: string }) {
                 className="text-2xl sm:text-3xl font-semibold tracking-tight"
                 {...(!reduce
                     ? {
-                        initial: { opacity: 0, y: 12 },
+                        initial: { opacity: 0, y: 10 },
                         whileInView: { opacity: 1, y: 0 },
                         transition: { duration: 0.4, ease: 'easeOut' },
                         viewport: { once: true, amount: 0.6 },
@@ -159,16 +160,16 @@ export default function Features({ locale }: { locale: string }) {
                 {t.heading}
             </motion.h2>
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <motion.div
+                className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                {...(!reduce ? { variants: gridVariants } : {})}
+            >
                 {t.items.map((it, i) => {
                     const Ico = icons[i % icons.length];
                     return (
                         <motion.article
                             key={it.title}
-                            className="
-                rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur
-                p-5 shadow-sm
-              "
+                            className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur p-5 shadow-sm"
                             {...(!reduce ? { variants: cardVariants } : {})}
                         >
                             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1 text-xs font-semibold">
@@ -179,7 +180,7 @@ export default function Features({ locale }: { locale: string }) {
                         </motion.article>
                     );
                 })}
-            </div>
+            </motion.div>
         </motion.section>
     );
 }

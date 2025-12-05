@@ -422,3 +422,4 @@ export default function Nav({ locale }: { locale: Locale }) {
         </header>
     );
 }
+

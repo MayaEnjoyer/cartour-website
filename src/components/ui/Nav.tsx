@@ -200,7 +200,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                                 priority
                                 sizes="(max-width:768px) 150px, 210px"
                                 className="
-                                    h-4.5       /* мобильная высота ≈ 28px */
+                                    h-4.5       /* мобильная высота == 28px */
                                     md:h-5.5    /* планшет */
                                     lg:h-6.5    /* десктоп ~36px */
                                     w-auto

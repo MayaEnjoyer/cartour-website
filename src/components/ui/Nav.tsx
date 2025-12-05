@@ -167,7 +167,10 @@ export default function Nav({ locale }: { locale: Locale }) {
     return (
         <header className="fixed inset-x-0 top-0 z-[100]">
             <nav
-                className="bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60"
+                className="
+          bg-black/80
+          border-b border-white/5
+        "
                 aria-label="Primary"
             >
                 <div
@@ -186,10 +189,10 @@ export default function Nav({ locale }: { locale: Locale }) {
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
-                            width={720}
-                            height={144}
+                            width={260}
+                            height={52}
                             priority
-                            sizes="(max-width:768px) 320px, 720px"
+                            sizes="(max-width:768px) 220px, 260px"
                             className="h-28 sm:h-32 md:h-36 w-auto -my-4"
                         />
                     </Link>
@@ -254,11 +257,11 @@ export default function Nav({ locale }: { locale: Locale }) {
                         >
                             <span className="sr-only">Menu</span>
                             <div className="space-y-1.5">
-                                <span
-                                    className={`block h-0.5 w-6 bg-white transition-transform ${
-                                        open ? 'translate-y-2 rotate-45' : ''
-                                    }`}
-                                />
+                <span
+                    className={`block h-0.5 w-6 bg-white transition-transform ${
+                        open ? 'translate-y-2 rotate-45' : ''
+                    }`}
+                />
                                 <span
                                     className={`block h-0.5 w-6 bg-white transition-opacity ${
                                         open ? 'opacity-0' : 'opacity-100'
@@ -291,9 +294,9 @@ export default function Nav({ locale }: { locale: Locale }) {
                         <Image
                             src="/leaflet/logo.png"
                             alt="CarTour"
-                            width={240}
-                            height={72}
-                            className="h-20 w-auto"
+                            width={220}
+                            height={44}
+                            className="h-16 w-auto"
                             priority
                         />
                         <button
@@ -422,4 +425,3 @@ export default function Nav({ locale }: { locale: Locale }) {
         </header>
     );
 }
-

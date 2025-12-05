@@ -110,8 +110,8 @@ export default function Nav({ locale }: { locale: Locale }) {
     }, [open]);
 
     useEffect(() => {
-        if (open) queueMicrotask(() => setOpen(false));
-    }, [pathname, open]);
+        setOpen(false);
+    }, [pathname]);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);

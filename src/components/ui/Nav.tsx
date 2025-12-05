@@ -173,111 +173,114 @@ export default function Nav({ locale }: { locale: Locale }) {
         "
                 aria-label="Primary"
             >
-                <div
-                    className="
-            mx-auto w-full max-w-7xl
-            h-20 md:h-24
-            px-4 md:px-6
-            grid grid-cols-[auto_1fr_auto]
-            place-items-center
-          "
-                >
-                    <Link
-                        href={`/${locale}`}
-                        className="justify-self-start h-full flex items-center"
+                {/* тонкая чёрная полоска */}
+                <div className="mx-auto w-full max-w-7xl px-4 md:px-6 py-2 md:py-3">
+                    <div
+                        className="
+              grid grid-cols-[auto_1fr_auto]
+              items-center
+              h-16 md:h-20 lg:h-[4.5rem]
+            "
                     >
-                        <Image
-                            src="/leaflet/logo.png"
-                            alt="CarTour"
-                            width={260}
-                            height={52}
-                            priority
-                            sizes="(max-width:768px) 220px, 260px"
-                            className="h-28 sm:h-32 md:h-36 w-auto -my-4"
-                        />
-                    </Link>
-
-                    <div className="hidden md:flex h-full items-center justify-center gap-12">
-                        <NavLink
-                            href={`/${locale}`}
-                            active={isActive(`/${locale}`) && !aboutActive}
-                            onClick={() => setAboutActive(false)}
-                        >
-                            {t.home}
-                        </NavLink>
-
-                        <ScrollButton onClick={handleAboutClick} active={aboutActive}>
-                            {t.about}
-                        </ScrollButton>
-
-                        <NavLink
-                            href={`/${locale}/cennik`}
-                            active={isActive(`/${locale}/cennik`)}
-                            onClick={() => setAboutActive(false)}
-                        >
-                            {t.pricing}
-                        </NavLink>
-                        <NavLink
-                            href={`/${locale}/kontakt`}
-                            active={isActive(`/${locale}/kontakt`)}
-                            onClick={() => setAboutActive(false)}
-                        >
-                            {t.contact}
-                        </NavLink>
-                    </div>
-
-                    <div className="hidden md:flex h-full items-center justify-end gap-3 justify-self-end">
                         <Link
-                            href={`/${locale}/kontakt`}
-                            onClick={() => setAboutActive(false)}
-                            className="inline-flex items-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500"
+                            href={`/${locale}`}
+                            className="justify-self-start h-full flex items-center"
                         >
-                            {t.cta}
-                        </Link>
-                        <LocaleSwitcher locale={locale} />
-                    </div>
-
-                    <div className="md:hidden justify-self-end flex items-center gap-2">
-                        <div className="-mr-1 scale-90">
-                            <LocaleSwitcher locale={locale} />
-                        </div>
-                        <button
-                            type="button"
-                            aria-label="Open menu"
-                            aria-controls="mobile-menu"
-                            aria-expanded={open}
-                            onClick={() => setOpen((v) => !v)}
-                            className="
-                inline-flex items-center justify-center
-                w-11 h-11 rounded-xl
-                bg-white/10 ring-1 ring-white/15
-                hover:bg-white/15 active:scale-[.98]
-                transition
-              "
-                        >
-                            <span className="sr-only">Menu</span>
-                            <div className="space-y-1.5">
-                <span
-                    className={`block h-0.5 w-6 bg-white transition-transform ${
-                        open ? 'translate-y-2 rotate-45' : ''
-                    }`}
-                />
-                                <span
-                                    className={`block h-0.5 w-6 bg-white transition-opacity ${
-                                        open ? 'opacity-0' : 'opacity-100'
-                                    }`}
-                                />
-                                <span
-                                    className={`block h-0.5 w-6 bg-white transition-transform ${
-                                        open ? '-translate-y-2 -rotate-45' : ''
-                                    }`}
+                            <div className="relative h-full w-[260px] max-w-[70vw] overflow-visible">
+                                <Image
+                                    src="/leaflet/logo.png"
+                                    alt="CarTour"
+                                    fill
+                                    priority
+                                    sizes="(max-width:768px) 220px, 260px"
+                                    className="object-contain origin-left scale-[1.6] sm:scale-[1.8] md:scale-[2] -translate-x-[50px] sm:-translate-x-[80px]"
                                 />
                             </div>
-                        </button>
+                        </Link>
+
+                        <div className="hidden md:flex h-full items-center justify-center gap-12">
+                            <NavLink
+                                href={`/${locale}`}
+                                active={isActive(`/${locale}`) && !aboutActive}
+                                onClick={() => setAboutActive(false)}
+                            >
+                                {t.home}
+                            </NavLink>
+
+                            <ScrollButton onClick={handleAboutClick} active={aboutActive}>
+                                {t.about}
+                            </ScrollButton>
+
+                            <NavLink
+                                href={`/${locale}/cennik`}
+                                active={isActive(`/${locale}/cennik`)}
+                                onClick={() => setAboutActive(false)}
+                            >
+                                {t.pricing}
+                            </NavLink>
+                            <NavLink
+                                href={`/${locale}/kontakt`}
+                                active={isActive(`/${locale}/kontakt`)}
+                                onClick={() => setAboutActive(false)}
+                            >
+                                {t.contact}
+                            </NavLink>
+                        </div>
+
+                        <div className="hidden md:flex h-full items-center justify-end gap-3 justify-self-end">
+                            <Link
+                                href={`/${locale}/kontakt`}
+                                onClick={() => setAboutActive(false)}
+                                className="inline-flex items-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500"
+                            >
+                                {t.cta}
+                            </Link>
+                            <LocaleSwitcher locale={locale} />
+                        </div>
+
+                        <div className="md:hidden justify-self-end flex items-center gap-2">
+                            <div className="-mr-1 scale-90">
+                                <LocaleSwitcher locale={locale} />
+                            </div>
+                            <button
+                                type="button"
+                                aria-label="Open menu"
+                                aria-controls="mobile-menu"
+                                aria-expanded={open}
+                                onClick={() => setOpen((v) => !v)}
+                                className="
+                  inline-flex items-center justify-center
+                  w-11 h-11 rounded-xl
+                  bg-white/10 ring-1 ring-white/15
+                  hover:bg-white/15 active:scale-[.98]
+                  transition
+                "
+                            >
+                                <span className="sr-only">Menu</span>
+                                <div className="space-y-1.5">
+                  <span
+                      className={`block h-0.5 w-6 bg-white transition-transform ${
+                          open ? 'translate-y-2 rotate-45' : ''
+                      }`}
+                  />
+                                    <span
+                                        className={`block h-0.5 w-6 bg-white transition-opacity ${
+                                            open ? 'opacity-0' : 'opacity-100'
+                                        }`}
+                                    />
+                                    <span
+                                        className={`block h-0.5 w-6 bg-white transition-transform ${
+                                            open ? '-translate-y-2 -rotate-45' : ''
+                                        }`}
+                                    />
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </nav>
 
+            {/* mobile menu */}
             <div
                 id="mobile-menu"
                 className={`md:hidden fixed inset-0 z-[140] transition-opacity duration-300 ${
@@ -291,14 +294,16 @@ export default function Nav({ locale }: { locale: Locale }) {
 
                 <div className="absolute inset-0 flex flex-col">
                     <div className="h-20 px-4 flex items-center justify-between">
-                        <Image
-                            src="/leaflet/logo.png"
-                            alt="CarTour"
-                            width={220}
-                            height={44}
-                            className="h-16 w-auto"
-                            priority
-                        />
+                        <div className="relative w-[220px] max-w-[60vw] h-11">
+                            <Image
+                                src="/leaflet/logo.png"
+                                alt="CarTour"
+                                fill
+                                priority
+                                sizes="220px"
+                                className="object-contain"
+                            />
+                        </div>
                         <button
                             aria-label="Close menu"
                             onClick={() => setOpen(false)}

@@ -58,7 +58,7 @@ const dict: Dict = {
     de: {
         heading: 'Über uns',
         p: [
-            'Seit über 7 Jahren sind wir ein verlässlicher Partner im Personentransport mit Fokus auf Flughafen- und Firmen transfers.',
+            'Seit über 7 Jahren sind wir ein verlässlicher Partner im Personentransport mit Fokus auf Flughafen- und Firmentransfers.',
             'Wir fahren ausschließlich Mercedes-Benz — kurze wie lange Strecken mit Komfort und Sicherheit.',
             'Unsere Fahrer sind erfahren, pünktlich, diskret und auf Ihren Komfort bedacht.',
             'Geschäftsreisen, Flughafentransfers, Events oder tägliche Fahrten — in und außerhalb der Stadt.',
@@ -79,10 +79,16 @@ const ringByIdx = (i: number) =>
 const textByIdx = (i: number) =>
     ['text-sky-700', 'text-indigo-700', 'text-rose-700', 'text-emerald-700'][i % 4];
 
-/* ===== буквеная анимация, как на CodePen ===== */
+/* ===== Очень быстрая “печатающая” анимация ===== */
 
-const LETTER_STAGGER = 0.004; // шаг между буквами
-const PARAGRAPH_GAP = 0.08;   // пауза между абзацами
+// шаг между буквами (секунды) — очень быстро
+const LETTER_STAGGER = 0.004;
+// длительность анимации одной буквы (секунды)
+const LETTER_DURATION = 0.1;
+// небольшая пауза после заголовка
+const HEADING_EXTRA_DELAY = 0.14;
+// пауза между абзацами
+const PARAGRAPH_GAP = 0.08;
 
 type AnimatedTextProps = {
     text: string;
@@ -92,29 +98,40 @@ type AnimatedTextProps = {
 };
 
 function AnimatedText({ text, visible, reduce, delayOffset = 0 }: AnimatedTextProps) {
+    // если пользователь просит уменьшить анимации — показываем текст сразу
     if (reduce) return <>{text}</>;
 
     const letters = Array.from(text);
 
+    // отдельный индекс только для "настоящих" букв (без пробелов)
+    let visibleIndex = 0;
+
     return (
         <>
-            {letters.map((ch, index) => (
-                <span
-                    key={index}
-                    className="inline-block will-change-transform"
-                    style={{
-                        opacity: visible ? 1 : 0,
-                        transform: visible ? 'translateY(0)' : 'translateY(0.4em)',
-                        transition:
-                            'opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                        transitionDelay: visible
-                            ? `${(delayOffset + index * LETTER_STAGGER).toFixed(3)}s`
-                            : '0s',
-                    }}
-                >
-          {ch}
-        </span>
-            ))}
+            {letters.map((ch, index) => {
+                // пробелы и прочие whitespace НЕ анимируем, чтобы они не ломали слова
+                if (/\s/.test(ch)) {
+                    return <span key={index}>{ch}</span>;
+                }
+
+                const delay = delayOffset + visibleIndex * LETTER_STAGGER;
+                visibleIndex += 1;
+
+                return (
+                    <span
+                        key={index}
+                        className="inline-block will-change-transform"
+                        style={{
+                            opacity: visible ? 1 : 0,
+                            transform: visible ? 'translateY(0)' : 'translateY(0.35em)',
+                            transition: `opacity ${LETTER_DURATION}s cubic-bezier(0.22, 1, 0.36, 1), transform ${LETTER_DURATION}s cubic-bezier(0.22, 1, 0.36, 1)`,
+                            transitionDelay: visible ? `${delay.toFixed(3)}s` : '0s',
+                        }}
+                    >
+            {ch}
+          </span>
+                );
+            })}
         </>
     );
 }
@@ -213,18 +230,19 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
-    // смещения, чтобы абзацы появлялись строго по очереди
+    // смещения, чтобы абзацы стартовали по очереди (очень быстро)
     const paragraphOffsets = useMemo(() => {
         if (reduce) return t.p.map(() => 0);
 
-        const headingLen = Array.from(t.heading).length;
-        let acc = headingLen * LETTER_STAGGER + 0.09; // быстрее старт после заголовка
+        // считаем только непустые символы, чтобы не учитывать пробелы
+        const headingChars = t.heading.replace(/\s+/g, '').length;
+        let acc = headingChars * LETTER_STAGGER + HEADING_EXTRA_DELAY;
 
         const offsets: number[] = [];
         for (const para of t.p) {
             offsets.push(acc);
-            const len = Array.from(para).length;
-            acc += len * LETTER_STAGGER + PARAGRAPH_GAP;
+            const chars = para.replace(/\s+/g, '').length;
+            acc += chars * LETTER_STAGGER + PARAGRAPH_GAP;
         }
         return offsets;
     }, [t, reduce]);
@@ -249,6 +267,7 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
+                {/* ЛЕВАЯ КОЛОНКА — текст с анимацией */}
                 <motion.div
                     viewport={{ once: true, amount: 0.3 }}
                     onViewportEnter={() => {
@@ -256,19 +275,12 @@ export default function About({ locale }: { locale: string }) {
                     }}
                 >
                     <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                        <AnimatedText
-                            text={t.heading}
-                            visible={textVisible}
-                            reduce={reduce}
-                        />
+                        <AnimatedText text={t.heading} visible={textVisible} reduce={reduce} />
                     </h2>
 
                     <div className="mt-6 space-y-4 text-gray-700">
                         {t.p.map((para, i) => (
-                            <p
-                                key={i}
-                                className="text-[15px] sm:text-base leading-relaxed"
-                            >
+                            <p key={i} className="text-[15px] sm:text-base leading-relaxed">
                                 <AnimatedText
                                     text={para}
                                     visible={textVisible}
@@ -307,6 +319,7 @@ export default function About({ locale }: { locale: string }) {
                     </div>
                 </motion.div>
 
+                {/* ПРАВАЯ КОЛОНКА — слайдер */}
                 <motion.div
                     initial={reduce ? undefined : { opacity: 0, scale: 0.985 }}
                     whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
@@ -343,10 +356,7 @@ export default function About({ locale }: { locale: string }) {
                             onTransitionEnd={handleTransitionEnd}
                         >
                             {extendedSlides.map((img, i) => (
-                                <div
-                                    key={`${img.src}-${i}`}
-                                    className="relative min-w-full h-full"
-                                >
+                                <div key={`${img.src}-${i}`} className="relative min-w-full h-full">
                                     <Image
                                         src={img.src}
                                         alt={img.alt}
@@ -462,10 +472,7 @@ export default function About({ locale }: { locale: string }) {
                                 onTransitionEnd={handleTransitionEnd}
                             >
                                 {extendedSlides.map((img, i) => (
-                                    <div
-                                        key={`${img.src}-lb-${i}`}
-                                        className="relative min-w-full h-full"
-                                    >
+                                    <div key={`${img.src}-lb-${i}`} className="relative min-w-full h-full">
                                         <Image
                                             src={img.src}
                                             alt={img.alt}
@@ -500,4 +507,3 @@ export default function About({ locale }: { locale: string }) {
         </section>
     );
 }
-

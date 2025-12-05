@@ -193,7 +193,12 @@ export default function Nav({ locale }: { locale: Locale }) {
                                     fill
                                     priority
                                     sizes="(max-width:768px) 220px, 260px"
-                                    className="object-contain origin-left scale-[1.6] sm:scale-[1.8] md:scale-[2] -translate-x-[50px] sm:-translate-x-[80px]"
+                                    className="
+                    object-contain origin-left
+                    scale-100
+                    md:scale-[1.8] lg:scale-[2]
+                    md:-translate-x-[50px] lg:-translate-x-[80px]
+                  "
                                 />
                             </div>
                         </Link>
@@ -238,6 +243,7 @@ export default function Nav({ locale }: { locale: Locale }) {
                             <LocaleSwitcher locale={locale} />
                         </div>
 
+                        {/* MOBILE RIGHT SIDE */}
                         <div className="md:hidden justify-self-end flex items-center gap-2">
                             <div className="-mr-1 scale-90">
                                 <LocaleSwitcher locale={locale} />

@@ -79,62 +79,29 @@ const ringByIdx = (i: number) =>
 const textByIdx = (i: number) =>
     ['text-sky-700', 'text-indigo-700', 'text-rose-700', 'text-emerald-700'][i % 4];
 
-/* ===== Очень быстрая “печатающая” анимация ===== */
+/* === Варианты анимаций текста (мягкие, мобильные-friendly) === */
 
-// шаг между буквами (секунды) — очень быстро
-const LETTER_STAGGER = 0.004;
-// длительность анимации одной буквы (секунды)
-const LETTER_DURATION = 0.1;
-// небольшая пауза после заголовка
-const HEADING_EXTRA_DELAY = 0.14;
-// пауза между абзацами
-const PARAGRAPH_GAP = 0.08;
+const textColumnVariants = {
+    hidden: {},
+    show: {
+        transition: {
+            delayChildren: 0.08,
+            staggerChildren: 0.18,
+        },
+    },
+} as const;
 
-type AnimatedTextProps = {
-    text: string;
-    visible: boolean;
-    reduce: boolean;
-    delayOffset?: number;
-};
-
-function AnimatedText({ text, visible, reduce, delayOffset = 0 }: AnimatedTextProps) {
-    // если пользователь просит уменьшить анимации — показываем текст сразу
-    if (reduce) return <>{text}</>;
-
-    const letters = Array.from(text);
-
-    // отдельный индекс только для "настоящих" букв (без пробелов)
-    let visibleIndex = 0;
-
-    return (
-        <>
-            {letters.map((ch, index) => {
-                // пробелы и прочие whitespace НЕ анимируем, чтобы они не ломали слова
-                if (/\s/.test(ch)) {
-                    return <span key={index}>{ch}</span>;
-                }
-
-                const delay = delayOffset + visibleIndex * LETTER_STAGGER;
-                visibleIndex += 1;
-
-                return (
-                    <span
-                        key={index}
-                        className="inline-block will-change-transform"
-                        style={{
-                            opacity: visible ? 1 : 0,
-                            transform: visible ? 'translateY(0)' : 'translateY(0.35em)',
-                            transition: `opacity ${LETTER_DURATION}s cubic-bezier(0.22, 1, 0.36, 1), transform ${LETTER_DURATION}s cubic-bezier(0.22, 1, 0.36, 1)`,
-                            transitionDelay: visible ? `${delay.toFixed(3)}s` : '0s',
-                        }}
-                    >
-            {ch}
-          </span>
-                );
-            })}
-        </>
-    );
-}
+const textItemVariants = {
+    hidden: { opacity: 0, y: 18 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.55,
+            ease: [0.22, 1, 0.36, 1],
+        },
+    },
+} as const;
 
 export default function About({ locale }: { locale: string }) {
     const reduceMotion = useReducedMotion();
@@ -142,8 +109,6 @@ export default function About({ locale }: { locale: string }) {
 
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = useMemo(() => dict[safeLocale], [safeLocale]);
-
-    const [textVisible, setTextVisible] = useState<boolean>(reduce);
 
     const total = GALLERY.length;
 
@@ -230,23 +195,6 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
-    // смещения, чтобы абзацы стартовали по очереди (очень быстро)
-    const paragraphOffsets = useMemo(() => {
-        if (reduce) return t.p.map(() => 0);
-
-        // считаем только непустые символы, чтобы не учитывать пробелы
-        const headingChars = t.heading.replace(/\s+/g, '').length;
-        let acc = headingChars * LETTER_STAGGER + HEADING_EXTRA_DELAY;
-
-        const offsets: number[] = [];
-        for (const para of t.p) {
-            offsets.push(acc);
-            const chars = para.replace(/\s+/g, '').length;
-            acc += chars * LETTER_STAGGER + PARAGRAPH_GAP;
-        }
-        return offsets;
-    }, [t, reduce]);
-
     return (
         <section
             id="about-section"
@@ -267,31 +215,41 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                {/* ЛЕВАЯ КОЛОНКА — текст с анимацией */}
+                {/* ЛЕВАЯ КОЛОНКА — текст, плавное появление блоков */}
                 <motion.div
-                    viewport={{ once: true, amount: 0.3 }}
-                    onViewportEnter={() => {
-                        if (!reduce) setTextVisible(true);
-                    }}
+                    className="max-w-xl"
+                    {...(!reduce
+                        ? {
+                            variants: textColumnVariants,
+                            initial: 'hidden',
+                            whileInView: 'show',
+                            viewport: { once: true, amount: 0.3 },
+                        }
+                        : {})}
                 >
-                    <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                        <AnimatedText text={t.heading} visible={textVisible} reduce={reduce} />
-                    </h2>
+                    <motion.h2
+                        className="text-3xl sm:text-4xl font-semibold tracking-tight"
+                        {...(!reduce ? { variants: textItemVariants } : {})}
+                    >
+                        {t.heading}
+                    </motion.h2>
 
-                    <div className="mt-6 space-y-4 text-gray-700">
-                        {t.p.map((para, i) => (
-                            <p key={i} className="text-[15px] sm:text-base leading-relaxed">
-                                <AnimatedText
-                                    text={para}
-                                    visible={textVisible}
-                                    reduce={reduce}
-                                    delayOffset={paragraphOffsets[i] ?? 0}
-                                />
-                            </p>
-                        ))}
-                    </div>
+                    {t.p.map((para, i) => (
+                        <motion.p
+                            key={i}
+                            className={`text-[15px] sm:text-base leading-relaxed text-gray-700 ${
+                                i === 0 ? 'mt-6' : 'mt-4'
+                            }`}
+                            {...(!reduce ? { variants: textItemVariants } : {})}
+                        >
+                            {para}
+                        </motion.p>
+                    ))}
 
-                    <ul className="mt-7 flex flex-wrap gap-3">
+                    <motion.ul
+                        className="mt-7 flex flex-wrap gap-3"
+                        {...(!reduce ? { variants: textItemVariants } : {})}
+                    >
                         {t.stats.map((s, i) => (
                             <li
                                 key={s}
@@ -302,9 +260,12 @@ export default function About({ locale }: { locale: string }) {
                                 <span className={textByIdx(i)}>{s}</span>
                             </li>
                         ))}
-                    </ul>
+                    </motion.ul>
 
-                    <div className="mt-5 flex flex-wrap gap-2">
+                    <motion.div
+                        className="mt-5 flex flex-wrap gap-2"
+                        {...(!reduce ? { variants: textItemVariants } : {})}
+                    >
                         {t.badges.map((b, i) => (
                             <span
                                 key={b}
@@ -316,15 +277,27 @@ export default function About({ locale }: { locale: string }) {
                                 {b}
               </span>
                         ))}
-                    </div>
+                    </motion.div>
                 </motion.div>
 
-                {/* ПРАВАЯ КОЛОНКА — слайдер */}
+                {/* ПРАВАЯ КОЛОНКА — слайдер (оставил как был, он норм работает и на мобиле) */}
                 <motion.div
-                    initial={reduce ? undefined : { opacity: 0, scale: 0.985 }}
-                    whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    initial={
+                        reduce
+                            ? undefined
+                            : { opacity: 0, y: 16, scale: 0.985 }
+                    }
+                    whileInView={
+                        reduce
+                            ? undefined
+                            : { opacity: 1, y: 0, scale: 1 }
+                    }
+                    viewport={reduce ? undefined : { once: true, amount: 0.2 }}
+                    transition={
+                        reduce
+                            ? undefined
+                            : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+                    }
                     className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70"
                 >
                     <div

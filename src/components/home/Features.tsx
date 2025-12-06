@@ -102,12 +102,14 @@ const dict: Dict = {
     },
 };
 
+/* Плавная «строчная» анимация карточек */
+
 const gridVariants = {
     hidden: {},
     show: {
         transition: {
-            delayChildren: 0.05,
-            staggerChildren: 0.08,
+            delayChildren: 0.1,
+            staggerChildren: 0.12,
         },
     },
 } as const;
@@ -115,16 +117,14 @@ const gridVariants = {
 const cardVariants = {
     hidden: {
         opacity: 0,
-        y: 22,
-        scale: 0.96,
+        y: 18,
     },
     show: {
         opacity: 1,
         y: 0,
-        scale: 1,
         transition: {
-            duration: 0.45,
-            ease: [0.21, 0.47, 0.32, 0.98],
+            duration: 0.5,
+            ease: [0.22, 1, 0.36, 1],
         },
     },
 } as const;
@@ -150,9 +150,9 @@ export default function Features({ locale }: { locale: string }) {
                 className="text-2xl sm:text-3xl font-semibold tracking-tight"
                 {...(!reduce
                     ? {
-                        initial: { opacity: 0, y: 10 },
+                        initial: { opacity: 0, y: 12 },
                         whileInView: { opacity: 1, y: 0 },
-                        transition: { duration: 0.4, ease: 'easeOut' },
+                        transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
                         viewport: { once: true, amount: 0.6 },
                     }
                     : {})}

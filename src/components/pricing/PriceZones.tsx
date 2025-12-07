@@ -204,12 +204,16 @@ export default function PriceZones({ locale }: { locale: string }) {
                 <p className="text-xs uppercase tracking-[0.2em] text-rose-600">
                     — {dict.route}
                 </p>
+
+                {/* Заголовок с таким же подчёркиванием, как на форме резервации */}
                 <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">
-                    {dict.heading}
+                    <span className="inline-block border-b-2 border-slate-900/20 pb-1">
+                        {dict.heading}
+                    </span>
                 </h1>
+
                 <p className="mt-3 text-sm text-gray-600">
                     {tagline.before}
-                    {/* тут только убрана подчёркивающая стилизация */}
                     <span className="font-medium">{tagline.hi}</span>
                     {tagline.after}
                 </p>
@@ -265,4 +269,3 @@ export default function PriceZones({ locale }: { locale: string }) {
         </section>
     );
 }
-

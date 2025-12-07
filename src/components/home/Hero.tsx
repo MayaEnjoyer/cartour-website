@@ -52,7 +52,7 @@ export default function Hero({ locale }: Props) {
             {/* background image + gradient */}
             <div className="absolute inset-0">
                 <div className="absolute inset-0 bg-[url('/leaflet/background_car3.png')] bg-cover bg-center bg-no-repeat opacity-45" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/3" />
             </div>
 
             <div className="relative mx-auto max-w-6xl px-4 min-h-[100svh] flex items-end sm:items-center">

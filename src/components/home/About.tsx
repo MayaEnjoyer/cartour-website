@@ -178,7 +178,7 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
-    // --- NEW: параллакс для правого блока как на современных GSAP-портфолио ---
+    // Параллакс для блока about
     const sectionRef = useRef<HTMLElement | null>(null);
 
     const { scrollYProgress } = useScroll({
@@ -186,9 +186,8 @@ export default function About({ locale }: { locale: string }) {
         offset: ['start center', 'end center'],
     });
 
-    // лёгкий вертикальный сдвиг и скейл карточки при прокрутке
-    const sliderTranslateY = useTransform(scrollYProgress, [0, 1], [20, -20]);
-    const sliderScale = useTransform(scrollYProgress, [0, 1], [0.96, 1.02]);
+    // Лёгкий вертикальный сдвиг карточки при скролле (без scale)
+    const sliderTranslateY = useTransform(scrollYProgress, [0, 1], [12, -12]);
 
     // Если страница открыта сразу с #about-section, #about-text или #vehicles-section
     useEffect(() => {
@@ -337,17 +336,10 @@ export default function About({ locale }: { locale: string }) {
                 {/* ПРАВАЯ КОЛОНКА — слайдер, якорь для Naše vozidlá */}
                 <motion.div
                     id="vehicles-section"
-                    className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70"
-                    style={
-                        reduce
-                            ? undefined
-                            : {
-                                y: sliderTranslateY,
-                                scale: sliderScale,
-                            }
-                    }
-                    initial={reduce ? undefined : { opacity: 0, y: 24 }}
-                    whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                    className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70 transform-gpu"
+                    style={reduce ? undefined : { y: sliderTranslateY }}
+                    initial={reduce ? undefined : { opacity: 0 }}
+                    whileInView={reduce ? undefined : { opacity: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={
                         reduce
@@ -358,16 +350,8 @@ export default function About({ locale }: { locale: string }) {
                                 ease: SOFT_EASE,
                             }
                     }
-                    whileHover={
-                        reduce
-                            ? undefined
-                            : {
-                                scale: 1.02,
-                                y: -4,
-                            }
-                    }
                 >
-                    {/* glow-background как на крутых портфолио */}
+                    {/* glow-background как на портфолио */}
                     <motion.div
                         aria-hidden
                         className="pointer-events-none absolute -inset-10 rounded-[32px] bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(244,63,94,0.32),transparent_55%)]"
@@ -464,9 +448,7 @@ export default function About({ locale }: { locale: string }) {
                                 <span
                                     key={i}
                                     className={`h-1.5 w-1.5 rounded-full ${
-                                        i === displayIndex
-                                            ? 'bg-white'
-                                            : 'bg-white/40'
+                                        i === displayIndex ? 'bg-white' : 'bg-white/40'
                                     }`}
                                 />
                             ))}
@@ -521,16 +503,12 @@ export default function About({ locale }: { locale: string }) {
                             className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-black touch-pan-y"
                             onTouchStart={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchStartCommon(
-                                        e.touches[0].clientX,
-                                    );
+                                    handleTouchStartCommon(e.touches[0].clientX);
                                 }
                             }}
                             onTouchMove={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchMoveCommon(
-                                        e.touches[0].clientX,
-                                    );
+                                    handleTouchMoveCommon(e.touches[0].clientX);
                                 }
                             }}
                             onTouchEnd={() => {

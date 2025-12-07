@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import Accordion from '../ui/Accordion';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 const locales = ['sk', 'en', 'de'] as const;
 type Locale = (typeof locales)[number];
@@ -12,6 +12,98 @@ function isLocale(x: string): x is Locale {
 
 type QA = { q: string; a: string };
 type Dict = Record<Locale, { heading: string; items: QA[] }>;
+
+const SOFT_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+type AccordionItem = { title: string; content: string };
+
+function AnimatedAccordion({
+                               items,
+                               defaultOpen = 0,
+                           }: {
+    items: AccordionItem[];
+    defaultOpen?: number;
+}) {
+    const reduceMotion = useReducedMotion();
+    const reduce = !!reduceMotion;
+
+    const [openIndex, setOpenIndex] = useState<number | null>(
+        typeof defaultOpen === 'number' ? defaultOpen : null,
+    );
+
+    const toggle = (idx: number) => {
+        setOpenIndex((current) => (current === idx ? null : idx));
+    };
+
+    const contentVariants = {
+        collapsed: { height: 0, opacity: 0 },
+        open: { height: 'auto', opacity: 1 },
+    };
+
+    return (
+        <motion.div
+            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm"
+            initial={reduce ? undefined : { opacity: 0, y: 12 }}
+            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={
+                reduce
+                    ? undefined
+                    : { duration: 0.6, ease: SOFT_EASE }
+            }
+        >
+            <div className="divide-y divide-slate-200/80">
+                {items.map((item, idx) => {
+                    const isOpen = openIndex === idx;
+
+                    return (
+                        <div key={item.title}>
+                            <button
+                                type="button"
+                                onClick={() => toggle(idx)}
+                                className={`flex w-full items-center justify-between gap-4 px-4 sm:px-5 py-4 text-left transition-colors ${
+                                    isOpen ? 'bg-slate-50/80' : 'bg-white/0'
+                                }`}
+                            >
+                                <span className="text-[15px] sm:text-base font-medium text-slate-900">
+                                    {item.title}
+                                </span>
+                                <div className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 text-lg leading-none transition-colors">
+                                    {isOpen ? '−' : '+'}
+                                </div>
+                            </button>
+
+                            <AnimatePresence initial={false}>
+                                {isOpen && (
+                                    <motion.div
+                                        key="content"
+                                        initial="collapsed"
+                                        animate="open"
+                                        exit="collapsed"
+                                        variants={contentVariants}
+                                        transition={
+                                            reduce
+                                                ? { duration: 0 }
+                                                : {
+                                                    duration: 0.28,
+                                                    ease: SOFT_EASE,
+                                                }
+                                        }
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="px-4 sm:px-5 pb-4 pt-1 text-[14px] sm:text-[15px] leading-relaxed text-gray-700">
+                                            {item.content}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    );
+                })}
+            </div>
+        </motion.div>
+    );
+}
 
 export default function FAQ({ locale }: { locale: string }) {
     const dict: Dict = {
@@ -122,7 +214,7 @@ export default function FAQ({ locale }: { locale: string }) {
                     {t.heading}
                 </h2>
                 <div className="mt-6 text-[15px] sm:text-base">
-                    <Accordion
+                    <AnimatedAccordion
                         items={t.items.map(({ q, a }) => ({
                             title: q,
                             content: a,

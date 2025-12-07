@@ -19,10 +19,10 @@ type AccordionItem = { title: string; content: string };
 
 function AnimatedAccordion({
                                items,
-                               defaultOpen = 0,
+                               defaultOpen = null,
                            }: {
     items: AccordionItem[];
-    defaultOpen?: number;
+    defaultOpen?: number | null;
 }) {
     const reduceMotion = useReducedMotion();
     const reduce = !!reduceMotion;
@@ -220,7 +220,6 @@ export default function FAQ({ locale }: { locale: string }) {
                             title: q,
                             content: a,
                         }))}
-                        defaultOpen={0}
                     />
                 </div>
             </div>

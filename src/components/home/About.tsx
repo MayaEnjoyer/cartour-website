@@ -1,7 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import {
+    motion,
+    useReducedMotion,
+    useScroll,
+    useTransform,
+} from 'framer-motion';
 import Image from 'next/image';
 
 const locales = ['sk', 'en', 'de'] as const;
@@ -81,31 +86,10 @@ const textByIdx = (i: number) =>
 
 const SOFT_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-// variants для «как у примера»: блок появляется снизу, строки идут каскадом
-const containerVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.7,
-            ease: SOFT_EASE,
-            when: 'beforeChildren',
-            staggerChildren: 0.08,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 18 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.6, ease: SOFT_EASE },
-    },
-};
-
 export default function About({ locale }: { locale: string }) {
+    const reduceMotion = useReducedMotion();
+    const reduce = !!reduceMotion;
+
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = useMemo(() => dict[safeLocale], [safeLocale]);
 
@@ -132,6 +116,8 @@ export default function About({ locale }: { locale: string }) {
     };
 
     const handleTransitionEnd = () => {
+        if (reduce) return;
+
         if (position === total + 1) {
             setIsAnimating(false);
             setPosition(1);
@@ -153,9 +139,9 @@ export default function About({ locale }: { locale: string }) {
     const sliderStyle = {
         transform: `translateX(-${position * 100}%)`,
         willChange: 'transform' as const,
-        ...(isAnimating
-            ? { transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)' }
-            : { transition: 'none' }),
+        ...(reduce || !isAnimating
+            ? { transition: 'none' }
+            : { transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)' }),
     };
 
     const handleTouchStartCommon = (clientX: number) => {
@@ -180,8 +166,11 @@ export default function About({ locale }: { locale: string }) {
         const threshold = 40;
 
         if (Math.abs(dx) > threshold) {
-            if (dx < 0) next();
-            else prev();
+            if (dx < 0) {
+                next();
+            } else {
+                prev();
+            }
             setDidSwipe(true);
         }
 
@@ -189,7 +178,19 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
-    // Прокрутка к якорям (#about-section, #about-text, #vehicles-section)
+    // --- NEW: параллакс для правого блока как на современных GSAP-портфолио ---
+    const sectionRef = useRef<HTMLElement | null>(null);
+
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ['start center', 'end center'],
+    });
+
+    // лёгкий вертикальный сдвиг и скейл карточки при прокрутке
+    const sliderTranslateY = useTransform(scrollYProgress, [0, 1], [20, -20]);
+    const sliderScale = useTransform(scrollYProgress, [0, 1], [0.96, 1.02]);
+
+    // Если страница открыта сразу с #about-section, #about-text или #vehicles-section
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const hash = window.location.hash;
@@ -214,9 +215,11 @@ export default function About({ locale }: { locale: string }) {
 
     return (
         <section
+            ref={sectionRef}
             id="about-section"
             className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24"
         >
+            {/* мягкие световые пятна фона */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl"
@@ -232,37 +235,62 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                {/* ЛЕВАЯ КОЛОНКА — как на примере: один большой блок, который плавно появляется */}
-                <motion.div
-                    id="about-text"
-                    className="max-w-xl"
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.35 }}
-                >
+                {/* ЛЕВАЯ КОЛОНКА — текстовый блок, сюда скроллим по #about-text */}
+                <div id="about-text" className="max-w-xl">
+                    {/* Заголовок */}
                     <motion.h2
                         className="text-3xl sm:text-4xl font-semibold tracking-tight"
-                        variants={itemVariants}
+                        initial={reduce ? undefined : { opacity: 0, y: 18 }}
+                        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.25 }}
+                        transition={
+                            reduce
+                                ? undefined
+                                : { duration: 0.7, delay: 0.05, ease: SOFT_EASE }
+                        }
                     >
                         {t.heading}
                     </motion.h2>
 
+                    {/* Параграфы */}
                     {t.p.map((para, i) => (
                         <motion.p
                             key={i}
                             className={`text-[15px] sm:text-base leading-relaxed text-gray-700 ${
                                 i === 0 ? 'mt-6' : 'mt-4'
                             }`}
-                            variants={itemVariants}
+                            initial={reduce ? undefined : { opacity: 0, y: 18 }}
+                            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.25 }}
+                            transition={
+                                reduce
+                                    ? undefined
+                                    : {
+                                        duration: 0.6,
+                                        delay: (i + 1) * 0.09,
+                                        ease: SOFT_EASE,
+                                    }
+                            }
                         >
                             {para}
                         </motion.p>
                     ))}
 
+                    {/* Статы */}
                     <motion.ul
                         className="mt-7 flex flex-wrap gap-3"
-                        variants={itemVariants}
+                        initial={reduce ? undefined : { opacity: 0, y: 18 }}
+                        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.25 }}
+                        transition={
+                            reduce
+                                ? undefined
+                                : {
+                                    duration: 0.6,
+                                    delay: (t.p.length + 1) * 0.09,
+                                    ease: SOFT_EASE,
+                                }
+                        }
                     >
                         {t.stats.map((s, i) => (
                             <li
@@ -276,9 +304,21 @@ export default function About({ locale }: { locale: string }) {
                         ))}
                     </motion.ul>
 
+                    {/* Бейджи */}
                     <motion.div
                         className="mt-5 flex flex-wrap gap-2"
-                        variants={itemVariants}
+                        initial={reduce ? undefined : { opacity: 0, y: 18 }}
+                        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.25 }}
+                        transition={
+                            reduce
+                                ? undefined
+                                : {
+                                    duration: 0.6,
+                                    delay: (t.p.length + 2) * 0.09,
+                                    ease: SOFT_EASE,
+                                }
+                        }
                     >
                         {t.badges.map((b, i) => (
                             <span
@@ -287,22 +327,68 @@ export default function About({ locale }: { locale: string }) {
                                     i,
                                 )} border-current/20`}
                             >
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-current" />
                                 {b}
-              </span>
+                            </span>
                         ))}
                     </motion.div>
-                </motion.div>
+                </div>
 
-                {/* ПРАВАЯ КОЛОНКА — слайдер */}
+                {/* ПРАВАЯ КОЛОНКА — слайдер, якорь для Naše vozidlá */}
                 <motion.div
                     id="vehicles-section"
                     className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70"
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.35 }}
-                    transition={{ duration: 0.6, ease: SOFT_EASE, delay: 0.1 }}
+                    style={
+                        reduce
+                            ? undefined
+                            : {
+                                y: sliderTranslateY,
+                                scale: sliderScale,
+                            }
+                    }
+                    initial={reduce ? undefined : { opacity: 0, y: 24 }}
+                    whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={
+                        reduce
+                            ? undefined
+                            : {
+                                duration: 0.7,
+                                delay: (t.p.length + 3) * 0.09,
+                                ease: SOFT_EASE,
+                            }
+                    }
+                    whileHover={
+                        reduce
+                            ? undefined
+                            : {
+                                scale: 1.02,
+                                y: -4,
+                            }
+                    }
                 >
+                    {/* glow-background как на крутых портфолио */}
+                    <motion.div
+                        aria-hidden
+                        className="pointer-events-none absolute -inset-10 rounded-[32px] bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(244,63,94,0.32),transparent_55%)]"
+                        initial={reduce ? undefined : { opacity: 0, scale: 0.95 }}
+                        whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        animate={
+                            reduce
+                                ? undefined
+                                : {
+                                    x: [-18, 18, -18],
+                                    y: [-10, 10, -10],
+                                    transition: {
+                                        duration: 16,
+                                        repeat: Infinity,
+                                        ease: 'easeInOut',
+                                    },
+                                }
+                        }
+                    />
+
                     <div
                         className="relative aspect-[16/10] w-full cursor-pointer touch-pan-y"
                         onClick={() => {
@@ -378,7 +464,9 @@ export default function About({ locale }: { locale: string }) {
                                 <span
                                     key={i}
                                     className={`h-1.5 w-1.5 rounded-full ${
-                                        i === displayIndex ? 'bg-white' : 'bg-white/40'
+                                        i === displayIndex
+                                            ? 'bg-white'
+                                            : 'bg-white/40'
                                     }`}
                                 />
                             ))}
@@ -433,12 +521,16 @@ export default function About({ locale }: { locale: string }) {
                             className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-black touch-pan-y"
                             onTouchStart={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchStartCommon(e.touches[0].clientX);
+                                    handleTouchStartCommon(
+                                        e.touches[0].clientX,
+                                    );
                                 }
                             }}
                             onTouchMove={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchMoveCommon(e.touches[0].clientX);
+                                    handleTouchMoveCommon(
+                                        e.touches[0].clientX,
+                                    );
                                 }
                             }}
                             onTouchEnd={() => {

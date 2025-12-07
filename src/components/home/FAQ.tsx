@@ -61,9 +61,10 @@ function AnimatedAccordion({
                             <button
                                 type="button"
                                 onClick={() => toggle(idx)}
-                                className={`flex w-full items-center justify-between gap-4 px-4 sm:px-5 py-4 text-left transition-colors ${
-                                    isOpen ? 'bg-slate-50/80' : 'bg-white/0'
-                                }`}
+                                className={`flex w-full items-center justify-between gap-4 px-4 sm:px-5 py-4 text-left transition-colors
+                                    min-h-[72px] sm:min-h-0
+                                    ${isOpen ? 'bg-slate-50/80' : 'bg-white/0'}
+                                `}
                             >
                                 <span className="text-[15px] sm:text-base font-medium text-slate-900">
                                     {item.title}

@@ -137,9 +137,11 @@ function buildHref(locale: FooterLocale, key: InfoKey): string {
     const base = `/${locale}`;
     switch (key) {
         case 'about':
-            return `${base}#about-section`;
+            // Ведём к текстовому блоку O nás
+            return `${base}#about-text`;
         case 'vehicles':
-            return `${base}#vehicles-section`;     // блок с фотографиями
+            // Блок со слайдером
+            return `${base}#vehicles-section`;
         case 'faq':
             return `${base}#faq-section`;
         case 'pricing':
@@ -162,12 +164,12 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
                 const onHome =
                     pathname === homePath || pathname === `${homePath}/`;
 
-                // Если мы не на главной — даём Next.js спокойно перейти по href,
-                // а дальше сработает стандартный скролл по #hash.
+                // Если мы НЕ на главной — даём Next.js перейти по href,
+                // дальше hash + useEffect в About.tsx всё сделают (центрирование).
                 if (!onHome) return;
 
                 let targetId: string | null = null;
-                if (key === 'about') targetId = 'about-section';
+                if (key === 'about') targetId = 'about-text'; // текстовый блок O nás
                 else if (key === 'faq') targetId = 'faq-section';
                 else if (key === 'vehicles') targetId = 'vehicles-section';
 
@@ -176,14 +178,18 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
                 const el = document.getElementById(targetId);
                 if (!el) return;
 
-                // Блокируем стандартное поведение ссылки
                 e.preventDefault();
 
-                // Плавно скроллим к нужному блоку
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Одинаковое центрирование для O nás и Naše vozidlá
+                const block: ScrollLogicalPosition =
+                    key === 'about' || key === 'vehicles' ? 'center' : 'start';
 
-                // И ОБЯЗАТЕЛЬНО обновляем hash в URL,
-                // чтобы никакой другой код/браузер не тащил обратно к старому #faq-section.
+                el.scrollIntoView({
+                    behavior: 'smooth',
+                    block,
+                    inline: 'nearest',
+                });
+
                 if (typeof window !== 'undefined') {
                     const url = new URL(window.location.href);
                     url.hash = `#${targetId}`;
@@ -349,3 +355,4 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
         </footer>
     );
 }
+

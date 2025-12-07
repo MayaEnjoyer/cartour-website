@@ -100,3 +100,5 @@ export default function ContactClient({ locale }: { locale: string }) {
         </section>
     );
 }
+
+

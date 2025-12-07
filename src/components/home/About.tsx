@@ -173,18 +173,26 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
-    // Если страница открыта сразу с #about-section или #vehicles-section
+    // Если страница открыта сразу с #about-section, #about-text или #vehicles-section
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const hash = window.location.hash;
-        if (hash !== '#about-section' && hash !== '#vehicles-section') return;
+        if (!hash) return;
+
+        const validHashes = ['#about-section', '#about-text', '#vehicles-section'] as const;
+        if (!validHashes.includes(hash as (typeof validHashes)[number])) return;
 
         const id = hash.slice(1);
         const el = document.getElementById(id);
         if (!el) return;
 
         setTimeout(() => {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const centerTargets = ['#about-text', '#vehicles-section'];
+            el.scrollIntoView({
+                behavior: 'smooth',
+                block: centerTargets.includes(hash) ? 'center' : 'start',
+                inline: 'nearest',
+            });
         }, 50);
     }, []);
 
@@ -208,8 +216,8 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                {/* ЛЕВАЯ КОЛОНКА — анимация как в HowItWorks/Features */}
-                <div className="max-w-xl">
+                {/* ЛЕВАЯ КОЛОНКА — текстовый блок, сюда скроллим по #about-text */}
+                <div id="about-text" className="max-w-xl">
                     {/* Заголовок */}
                     <motion.h2
                         className="text-3xl sm:text-4xl font-semibold tracking-tight"
@@ -307,7 +315,7 @@ export default function About({ locale }: { locale: string }) {
                     </motion.div>
                 </div>
 
-                {/* ПРАВАЯ КОЛОНКА — слайдер, тоже с мягким появлением */}
+                {/* ПРАВАЯ КОЛОНКА — слайдер, якорь для Naše vozidlá */}
                 <motion.div
                     id="vehicles-section"
                     className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70"
@@ -456,12 +464,16 @@ export default function About({ locale }: { locale: string }) {
                             className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-black touch-pan-y"
                             onTouchStart={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchStartCommon(e.touches[0].clientX);
+                                    handleTouchStartCommon(
+                                        e.touches[0].clientX,
+                                    );
                                 }
                             }}
                             onTouchMove={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchMoveCommon(e.touches[0].clientX);
+                                    handleTouchMoveCommon(
+                                        e.touches[0].clientX,
+                                    );
                                 }
                             }}
                             onTouchEnd={() => {

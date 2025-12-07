@@ -265,3 +265,4 @@ export default function PriceZones({ locale }: { locale: string }) {
         </section>
     );
 }
+

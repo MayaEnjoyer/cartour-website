@@ -25,7 +25,7 @@ export default function PriceZones({ locale }: { locale: string }) {
             {
                 name: 'Centrum a blízke mestské časti',
                 sedan: '60€',
-                van: '75€ (VAN 5/8 osôb)',
+                van: '80€ (VAN 5/8 osôb)',
                 areas: [
                     'Staré Mesto',
                     'Ružinov',
@@ -77,7 +77,7 @@ export default function PriceZones({ locale }: { locale: string }) {
             {
                 name: 'City centre & nearby districts',
                 sedan: '€60',
-                van: '€75 (VAN 5/8 seats)',
+                van: '€80 (VAN 5/8 seats)',
                 areas: [
                     'Staré Mesto (Old Town)',
                     'Ružinov',
@@ -129,7 +129,7 @@ export default function PriceZones({ locale }: { locale: string }) {
             {
                 name: 'Zentrum & nahe Bezirke',
                 sedan: '60€',
-                van: '75€ (VAN 5/8 Plätze)',
+                van: '80€ (VAN 5/8 Plätze)',
                 areas: [
                     'Staré Mesto',
                     'Ružinov',

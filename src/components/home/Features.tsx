@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 const locales = ['sk', 'en', 'de'] as const;
@@ -102,60 +103,101 @@ const dict: Dict = {
     },
 };
 
-/* Плавная «строчная» анимация карточек */
-
-const gridVariants = {
-    hidden: {},
-    show: {
-        transition: {
-            delayChildren: 0.1,
-            staggerChildren: 0.12,
-        },
-    },
-} as const;
-
-const cardVariants = {
-    hidden: {
-        opacity: 0,
-        y: 18,
-    },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.5,
-            ease: [0.22, 1, 0.36, 1],
-        },
-    },
-} as const;
+const SOFT_FAST_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function Features({ locale }: { locale: string }) {
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = dict[safeLocale];
     const icons = [IconClock, IconRadar, IconShield, IconClock, IconShield, IconRadar];
-    const reduce = useReducedMotion();
+    const reduceMotion = useReducedMotion();
+
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Определяем мобильный viewport (только на клиенте)
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const check = () => {
+            setIsMobile(window.innerWidth < 640); // < 640px — mobile
+        };
+
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    const reduce = !!reduceMotion;
+
+    // Варианты анимаций, зависящие от isMobile
+    const sectionVariants = {
+        hidden: { opacity: 0, y: isMobile ? 14 : 20 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: isMobile ? 0.4 : 0.55, // мобилка быстрее
+                ease: SOFT_FAST_EASE,
+                when: 'beforeChildren',
+            },
+        },
+    } as const;
+
+    const headingVariants = {
+        hidden: { opacity: 0, y: 8 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.35,
+                ease: SOFT_FAST_EASE,
+                delay: 0.06,
+            },
+        },
+    } as const;
+
+    const gridVariants = {
+        hidden: {},
+        show: {
+            transition: {
+                delayChildren: isMobile ? 0.04 : 0.12,
+                staggerChildren: isMobile ? 0.05 : 0.1,
+            },
+        },
+    } as const;
+
+    const cardVariants = {
+        hidden: {
+            opacity: 0,
+            y: isMobile ? 10 : 14,
+        },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: isMobile ? 0.35 : 0.45, // быстро, но мягко
+                ease: SOFT_FAST_EASE,
+            },
+        },
+    } as const;
 
     return (
         <motion.section
+            id="features-section"
             className="mx-auto max-w-6xl px-4 py-14 sm:py-20"
+            style={{ willChange: 'transform, opacity' }}
             {...(!reduce
                 ? {
+                    variants: sectionVariants,
                     initial: 'hidden',
                     whileInView: 'show',
-                    viewport: { once: true, amount: 0.3 },
+                    viewport: { once: true, amount: 0.25 },
                 }
                 : {})}
         >
             <motion.h2
                 className="text-2xl sm:text-3xl font-semibold tracking-tight"
-                {...(!reduce
-                    ? {
-                        initial: { opacity: 0, y: 12 },
-                        whileInView: { opacity: 1, y: 0 },
-                        transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-                        viewport: { once: true, amount: 0.6 },
-                    }
-                    : {})}
+                style={{ willChange: 'transform, opacity' }}
+                {...(!reduce ? { variants: headingVariants } : {})}
             >
                 {t.heading}
             </motion.h2>
@@ -170,6 +212,7 @@ export default function Features({ locale }: { locale: string }) {
                         <motion.article
                             key={it.title}
                             className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur p-5 shadow-sm"
+                            style={{ willChange: 'transform, opacity' }}
                             {...(!reduce ? { variants: cardVariants } : {})}
                         >
                             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1 text-xs font-semibold">

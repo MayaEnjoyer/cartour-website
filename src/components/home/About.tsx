@@ -79,29 +79,7 @@ const ringByIdx = (i: number) =>
 const textByIdx = (i: number) =>
     ['text-sky-700', 'text-indigo-700', 'text-rose-700', 'text-emerald-700'][i % 4];
 
-/* === Варианты анимаций текста (мягкие, мобильные-friendly) === */
-
-const textColumnVariants = {
-    hidden: {},
-    show: {
-        transition: {
-            delayChildren: 0.08,
-            staggerChildren: 0.18,
-        },
-    },
-} as const;
-
-const textItemVariants = {
-    hidden: { opacity: 0, y: 18 },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.55,
-            ease: [0.22, 1, 0.36, 1],
-        },
-    },
-} as const;
+const SOFT_FAST_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function About({ locale }: { locale: string }) {
     const reduceMotion = useReducedMotion();
@@ -119,6 +97,21 @@ export default function About({ locale }: { locale: string }) {
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
     const [touchCurrentX, setTouchCurrentX] = useState<number | null>(null);
     const [didSwipe, setDidSwipe] = useState(false);
+
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Определяем мобильный viewport (только на клиенте)
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const check = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     const displayIndex = (position - 1 + total) % total;
 
@@ -195,6 +188,65 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
+    // Если страница открыта сразу с #about-section или #vehicles-section
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const hash = window.location.hash;
+        if (hash !== '#about-section' && hash !== '#vehicles-section') return;
+
+        const id = hash.slice(1);
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        setTimeout(() => {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    }, []);
+
+    // Анимации текста, зависящие от isMobile
+    const textColumnVariants = {
+        hidden: { opacity: 0, y: isMobile ? 14 : 20 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: isMobile ? 0.42 : 0.6,
+                ease: SOFT_FAST_EASE,
+                when: 'beforeChildren',
+                staggerChildren: isMobile ? 0.06 : 0.12,
+            },
+        },
+    } as const;
+
+    const textItemVariants = {
+        hidden: { opacity: 0, y: isMobile ? 8 : 12 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: isMobile ? 0.35 : 0.45,
+                ease: SOFT_FAST_EASE,
+            },
+        },
+    } as const;
+
+    // Анимация для блока со слайдером
+    const sliderInitial =
+        reduce
+            ? undefined
+            : { opacity: 0, y: isMobile ? 14 : 18, scale: isMobile ? 1 : 0.985 };
+
+    const sliderWhileInView =
+        reduce ? undefined : { opacity: 1, y: 0, scale: 1 };
+
+    const sliderTransition =
+        reduce
+            ? undefined
+            : {
+                duration: isMobile ? 0.45 : 0.6,
+                ease: SOFT_FAST_EASE,
+            };
+
     return (
         <section
             id="about-section"
@@ -215,9 +267,10 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                {/* ЛЕВАЯ КОЛОНКА — текст, плавное появление блоков */}
+                {/* ЛЕВАЯ КОЛОНКА — текст, плавное, быстое появление блоков (мобилка-friendly) */}
                 <motion.div
                     className="max-w-xl"
+                    style={{ willChange: 'transform, opacity' }}
                     {...(!reduce
                         ? {
                             variants: textColumnVariants,
@@ -229,6 +282,7 @@ export default function About({ locale }: { locale: string }) {
                 >
                     <motion.h2
                         className="text-3xl sm:text-4xl font-semibold tracking-tight"
+                        style={{ willChange: 'transform, opacity' }}
                         {...(!reduce ? { variants: textItemVariants } : {})}
                     >
                         {t.heading}
@@ -240,6 +294,7 @@ export default function About({ locale }: { locale: string }) {
                             className={`text-[15px] sm:text-base leading-relaxed text-gray-700 ${
                                 i === 0 ? 'mt-6' : 'mt-4'
                             }`}
+                            style={{ willChange: 'transform, opacity' }}
                             {...(!reduce ? { variants: textItemVariants } : {})}
                         >
                             {para}
@@ -248,6 +303,7 @@ export default function About({ locale }: { locale: string }) {
 
                     <motion.ul
                         className="mt-7 flex flex-wrap gap-3"
+                        style={{ willChange: 'transform, opacity' }}
                         {...(!reduce ? { variants: textItemVariants } : {})}
                     >
                         {t.stats.map((s, i) => (
@@ -264,6 +320,7 @@ export default function About({ locale }: { locale: string }) {
 
                     <motion.div
                         className="mt-5 flex flex-wrap gap-2"
+                        style={{ willChange: 'transform, opacity' }}
                         {...(!reduce ? { variants: textItemVariants } : {})}
                     >
                         {t.badges.map((b, i) => (
@@ -273,31 +330,21 @@ export default function About({ locale }: { locale: string }) {
                                     i,
                                 )} border-current/20`}
                             >
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-current" />
                                 {b}
-              </span>
+                            </span>
                         ))}
                     </motion.div>
                 </motion.div>
 
-                {/* ПРАВАЯ КОЛОНКА — слайдер (оставил как был, он норм работает и на мобиле) */}
+                {/* ПРАВАЯ КОЛОНКА — слайдер (якорь для Naše vozidlá) */}
                 <motion.div
-                    initial={
-                        reduce
-                            ? undefined
-                            : { opacity: 0, y: 16, scale: 0.985 }
-                    }
-                    whileInView={
-                        reduce
-                            ? undefined
-                            : { opacity: 1, y: 0, scale: 1 }
-                    }
+                    id="vehicles-section"
+                    style={{ willChange: 'transform, opacity' }}
+                    initial={sliderInitial}
+                    whileInView={sliderWhileInView}
                     viewport={reduce ? undefined : { once: true, amount: 0.2 }}
-                    transition={
-                        reduce
-                            ? undefined
-                            : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-                    }
+                    transition={sliderTransition}
                     className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70"
                 >
                     <div
@@ -329,7 +376,10 @@ export default function About({ locale }: { locale: string }) {
                             onTransitionEnd={handleTransitionEnd}
                         >
                             {extendedSlides.map((img, i) => (
-                                <div key={`${img.src}-${i}`} className="relative min-w-full h-full">
+                                <div
+                                    key={`${img.src}-${i}`}
+                                    className="relative min-w-full h-full"
+                                >
                                     <Image
                                         src={img.src}
                                         alt={img.alt}
@@ -372,7 +422,9 @@ export default function About({ locale }: { locale: string }) {
                                 <span
                                     key={i}
                                     className={`h-1.5 w-1.5 rounded-full ${
-                                        i === displayIndex ? 'bg-white' : 'bg-white/40'
+                                        i === displayIndex
+                                            ? 'bg-white'
+                                            : 'bg-white/40'
                                     }`}
                                 />
                             ))}
@@ -427,12 +479,16 @@ export default function About({ locale }: { locale: string }) {
                             className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-black touch-pan-y"
                             onTouchStart={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchStartCommon(e.touches[0].clientX);
+                                    handleTouchStartCommon(
+                                        e.touches[0].clientX,
+                                    );
                                 }
                             }}
                             onTouchMove={(e) => {
                                 if (e.touches.length === 1) {
-                                    handleTouchMoveCommon(e.touches[0].clientX);
+                                    handleTouchMoveCommon(
+                                        e.touches[0].clientX,
+                                    );
                                 }
                             }}
                             onTouchEnd={() => {
@@ -445,7 +501,10 @@ export default function About({ locale }: { locale: string }) {
                                 onTransitionEnd={handleTransitionEnd}
                             >
                                 {extendedSlides.map((img, i) => (
-                                    <div key={`${img.src}-lb-${i}`} className="relative min-w-full h-full">
+                                    <div
+                                        key={`${img.src}-lb-${i}`}
+                                        className="relative min-w-full h-full"
+                                    >
                                         <Image
                                             src={img.src}
                                             alt={img.alt}

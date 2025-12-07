@@ -47,14 +47,13 @@ export default function ContactClient({ locale }: { locale: string }) {
     return (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
             <Reveal>
-                {/* Обёртка, чтобы на мобиле всё было по центру, а на десктопе слева */}
+                {/* На мобиле по центру, на десктопе слева */}
                 <div className="text-center sm:text-left">
-                    {/* Подчёркивание ТОЛЬКО на телефоне: border-b, а на sm и выше убираем */}
-                    <h1 className="inline-block text-2xl sm:text-3xl font-semibold tracking-tight pb-1 border-b border-slate-300 sm:border-b-0">
+                    {/* Размер и «высота» шрифта как у Cenník */}
+                    <h1 className="inline-block text-3xl sm:text-4xl font-semibold tracking-tight pb-1 border-b border-slate-900/20 sm:border-b-0">
                         {t.title}
                     </h1>
 
-                    {/* Текст по центру на телефоне, слева на больших, плюс мягкая ширина */}
                     <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto sm:mx-0">
                         {t.subtitle}
                     </p>
@@ -76,7 +75,7 @@ export default function ContactClient({ locale }: { locale: string }) {
                     </Reveal>
 
                     <Reveal delay={0.15}>
-                        <div className="rounded-2xl border bg-white/70 backdrop-blur-xl shadow-sm p-6 dark:bg-white/5">
+                        <div className="rounded-2xl border bg-white/70 backdrop-blur-xl shadow-sm p-6 dark:bg:white/5">
                             <h3 className="font-semibold">Cartour</h3>
                             <p className="text-sm text-gray-600 mt-1">
                                 Bratislava, SK — Wien (Schwechat), AT
@@ -100,5 +99,3 @@ export default function ContactClient({ locale }: { locale: string }) {
         </section>
     );
 }
-
-

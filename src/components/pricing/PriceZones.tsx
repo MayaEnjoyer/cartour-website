@@ -207,7 +207,7 @@ export default function PriceZones({ locale }: { locale: string }) {
 
                 {/* Заголовок с таким же подчёркиванием, как на форме резервации */}
                 <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">
-                    <span className="inline-block border-b-2 border-slate-900/20 pb-1">
+                    <span className="inline-block border-b-1 border-slate-900/20 pb-1">
                         {dict.heading}
                     </span>
                 </h1>

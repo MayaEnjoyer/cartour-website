@@ -86,7 +86,7 @@ function AnimatedAccordion({
                                             reduce
                                                 ? { duration: 0 }
                                                 : {
-                                                    duration: 0.28,
+                                                    duration: 0.9,
                                                     ease: SOFT_EASE,
                                                 }
                                         }

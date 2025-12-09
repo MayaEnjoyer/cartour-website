@@ -148,7 +148,8 @@ function buildHtmlBody(
     const dropoffExtra = (data.dropoff_extra ?? []).filter(
         (v) => v.trim() !== '',
     );
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.cartour.sk';
+    const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.cartour.sk';
 
     return `<!doctype html>
 <html lang="sk">
@@ -258,21 +259,50 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
+    // Перевірка критичних env (щоб не мучитися в проді, якщо щось забули)
+    if (
+        !process.env.SMTP_HOST ||
+        !process.env.SMTP_PORT ||
+        !process.env.SMTP_USER ||
+        !process.env.SMTP_PASS
+    ) {
+        console.error(
+            'Reservation mail error: missing SMTP_* env variables',
+        );
+        return NextResponse.json(
+            { ok: false, errors: { _errors: ['Mail config error'] } },
+            { status: 500 },
+        );
+    }
+
     // Лінивий імпорт nodemailer
     const nodemailer = await import('nodemailer');
 
+    const port = Number(process.env.SMTP_PORT || 465);
+
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT ?? 587),
-        secure: Number(process.env.SMTP_PORT ?? 587) === 465,
+        port,
+        secure: port === 465, // Websupport SSL/TLS
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
     });
 
-    const to = process.env.MAIL_TO ?? process.env.SMTP_USER;
-    const from = process.env.MAIL_FROM ?? `CarTour <${process.env.SMTP_USER}>`;
+    // Кому шлём: берем MAIL_TO, иначе по умолчанию два адреса
+    const defaultRecipients = [
+        'info@cartour.sk',
+        'jakubracek026@gmail.com',
+    ];
+    const envTo = (process.env.MAIL_TO || '').trim();
+    const to =
+        envTo.length > 0 ? envTo : defaultRecipients.join(',');
+
+    // От кого
+    const from =
+        process.env.MAIL_FROM ||
+        `Cartour.sk <${process.env.SMTP_USER || 'info@cartour.sk'}>`;
 
     const subject = `Rezervácia prepravy - ${data.firstName} ${data.lastName} - ${data.date}`;
     const textBody = buildTextBody(data);
@@ -281,7 +311,7 @@ export async function POST(req: NextRequest) {
     try {
         await transporter.sendMail({
             from,
-            to,
+            to, // "info@cartour.sk,jakubracek026@gmail.com"
             subject,
             text: textBody,
             html: htmlBody,

@@ -7,6 +7,8 @@ import Nav from '../../components/ui/Nav';
 import PageOffset from '../../components/ui/PageOffset';
 import SiteFooter from '../../components/ui/SiteFooter';
 
+import CookieBanner from '../../components/cookies/CookieBanner'; // ← добавили
+
 import { normalizeLocale, Locale } from '../../lib/i18n';
 
 export default function LocalizedLayout({
@@ -26,12 +28,13 @@ export default function LocalizedLayout({
                 <Nav locale={locale} />
                 <PageOffset height={88} locale={locale} />
 
-                <div className="flex-1">
-                    {children}
-                </div>
+                <div className="flex-1">{children}</div>
 
                 <SiteFooter locale={locale} />
             </div>
+
+            {/* баннер куки поверх всего */}
+            <CookieBanner locale={locale} />
         </UXProvider>
     );
 }

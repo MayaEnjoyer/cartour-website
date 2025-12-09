@@ -1,3 +1,4 @@
+// src/components/form/ReservationForm.tsx
 'use client';
 
 import {
@@ -9,7 +10,6 @@ import {
     type ReactElement,
     type InputHTMLAttributes,
 } from 'react';
-import Link from 'next/link';
 import SocialLinks from '../contact/SocialLinks';
 import ReservationSuccessModal from './ReservationSuccessModal';
 
@@ -154,8 +154,7 @@ const dict: Dict = {
         submit: 'Reservierung senden',
         altCall: 'oder anrufen',
         successTitle: 'Reservierung gesendet',
-        success:
-            'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
+        success: 'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
         required: 'Pflichtfeld',
         requiredBubble: 'Bitte füllen Sie dieses Feld aus.',
         gdprLabel:
@@ -172,6 +171,8 @@ const uid = () =>
         ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
 
+type ApiResponse = { ok?: boolean };
+
 /* ===== component ===== */
 export default function ReservationForm({
                                             locale,
@@ -181,12 +182,15 @@ export default function ReservationForm({
     const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
 
     const [wantReturn, setWantReturn] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
     const [successOpen, setSuccessOpen] = useState(false);
+
     const [extraPickups, setExtraPickups] = useState<Item[]>([]);
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
     const [notesHintOpen, setNotesHintOpen] = useState(false);
 
-    // ref для textarea + авто-увеличение
+    // ref для textarea Poznámky
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
@@ -213,10 +217,62 @@ export default function ReservationForm({
         el.style.height = `${el.scrollHeight}px`;
     };
 
-    // ВАЖНО: сейчас мы НИЧЕГО не отправляем — просто показываем модалку
-    function onSubmit(e: FormEvent<HTMLFormElement>) {
+    async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setSuccessOpen(true);
+
+        // HTML5-валидация required-полей
+        if (!e.currentTarget.reportValidity()) return;
+
+        setServerError(null);
+
+        const fd = new FormData(e.currentTarget);
+
+        const extraP = fd.getAll('pickup_extra[]').map(String).filter(Boolean);
+        const extraD = fd.getAll('dropoff_extra[]').map(String).filter(Boolean);
+
+        const payload = {
+            ...Object.fromEntries(fd.entries()),
+            pickups: [String(fd.get('pickup') ?? ''), ...extraP],
+            dropoffs: [String(fd.get('dropoff') ?? ''), ...extraD],
+            pickup_extra: extraP,
+            dropoff_extra: extraD,
+        };
+
+        setLoading(true);
+        try {
+            const res = await fetch('/api/reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            let data: ApiResponse = {};
+            try {
+                data = await res.json();
+            } catch {
+                data = {};
+            }
+
+            if (!res.ok || data.ok === false) {
+                setServerError(`Error ${res.status}`);
+                return;
+            }
+
+            (e.currentTarget as HTMLFormElement).reset();
+            setWantReturn(false);
+            setExtraPickups([]);
+            setExtraDrops([]);
+
+            if (notesRef.current) {
+                notesRef.current.style.height = '';
+            }
+
+            setSuccessOpen(true);
+        } catch {
+            setServerError('Network error. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     }
 
     const label = (id: string, text: string, req = false): ReactElement => (
@@ -251,6 +307,12 @@ export default function ReservationForm({
     return (
         <>
             <form className="space-y-10" onSubmit={onSubmit} noValidate>
+                {serverError && (
+                    <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
+                        {serverError}
+                    </div>
+                )}
+
                 {/* Personal */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
                     <legend className="mb-2 text-sm font-semibold">
@@ -360,7 +422,11 @@ export default function ReservationForm({
 
                     <div>
                         {label('pax', t.pax, true)}
-                        {textInput('pax', true, { type: 'number', min: 1, max: 8 })}
+                        {textInput('pax', true, {
+                            type: 'number',
+                            min: 1,
+                            max: 8,
+                        })}
                     </div>
 
                     <div className="sm:col-span-2">
@@ -404,7 +470,9 @@ export default function ReservationForm({
 
                     {wantReturn && (
                         <div className="rounded-xl border p-4 bg-white/70">
-                            <p className="mb-3 text-sm font-medium">{t.return}</p>
+                            <p className="mb-3 text-sm font-medium">
+                                {t.return}
+                            </p>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
                                     {label('r_pickup', t.from, true)}
@@ -416,11 +484,15 @@ export default function ReservationForm({
                                 </div>
                                 <div>
                                     {label('r_date', t.date, true)}
-                                    {textInput('r_date', true, { type: 'date' })}
+                                    {textInput('r_date', true, {
+                                        type: 'date',
+                                    })}
                                 </div>
                                 <div>
                                     {label('r_time', t.time, true)}
-                                    {textInput('r_time', true, { type: 'time' })}
+                                    {textInput('r_time', true, {
+                                        type: 'time',
+                                    })}
                                 </div>
                                 <div className="sm:col-span-2">
                                     {label('r_flight', t.flight)}
@@ -503,8 +575,12 @@ export default function ReservationForm({
 
                 {/* Submit + socials */}
                 <div className="flex items-center gap-4 flex-wrap">
-                    <button type="submit" className="btn-primary">
-                        {t.submit}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn-primary"
+                    >
+                        {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
                         {t.altCall}:{' '}
@@ -519,7 +595,7 @@ export default function ReservationForm({
                 </div>
             </form>
 
-            {/* Модалка УСПЕХА на весь экран с блюром */}
+            {/* Полноэкранная модалка УСПЕХА с блюром */}
             <ReservationSuccessModal
                 locale={locale}
                 open={successOpen}

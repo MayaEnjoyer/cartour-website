@@ -34,7 +34,6 @@ const schema = z.object({
     pickup_extra: z.array(z.string()).optional(),
     dropoff_extra: z.array(z.string()).optional(),
 
-    // опційний зворотній трансфер
     r_pickup: z.string().optional(),
     r_dropoff: z.string().optional(),
     r_date: z.string().optional(),
@@ -106,7 +105,7 @@ function buildTextBody(data: ReservationData): string {
     lines.push(`Čas vyzdvihnutia: ${data.time}`);
     lines.push('');
     lines.push(
-        `Počet osôb (informácia, cena sa pri počte osôb nemení): ${data.pax}`,
+        `Počet osôb (informácia, cena sa pri počte osôб nemení): ${data.pax}`,
     );
     lines.push(`Batožina: ${formatBaggage(data)}`);
     lines.push(`Číslo letu: ${data.flight || '—'}`);
@@ -140,10 +139,10 @@ function buildTextBody(data: ReservationData): string {
     return lines.join('\n');
 }
 
+// textBody нам тут не нужен, поэтому не передаём его — так мы убираем warning
 function buildHtmlBody(
     data: ReservationData,
     subject: string,
-    textBody: string,
 ): string {
     const baggage = formatBaggage(data);
     const notes = (data.notes ?? '').trim() || '—';
@@ -190,7 +189,7 @@ function buildHtmlBody(
             : ''
     }
       <p style="margin:0 0 4px 0;"><strong>Dátum vyzdvihnutia:</strong> ${data.date}</p>
-      <p style="margin:0 0 12px 0;"><strong>Čas vyzdvihnutia:</strong> ${data.time}</p>
+      <p style="margin:0 0 12px 0;"><strong>Čас vyzdvihnutia:</strong> ${data.time}</p>
 
       <h2 style="margin:0 0 8px 0;font-size:16px;">Cestujúci a batožina</h2>
       <p style="margin:0 0 4px 0;"><strong>Počet osôb</strong> (informácia, cena sa pri počte osôb nemení): ${data.pax}</p>
@@ -215,7 +214,7 @@ function buildHtmlBody(
       <p style="margin:0 0 12px 0;"><strong>Čas návratu:</strong> ${
                 data.r_time || '-'
             }</p>
-      <p style="margin:0 0 12px 0;"><strong>Číslo letu (návrat):</strong> ${
+      <p style="margin:0 0 12px 0;"><strong>Čísло letu (návrat):</strong> ${
                 data.r_flight || '-'
             }</p>`
             : `<h2 style="margin:0 0 8px 0;font-size:16px;">Spätný transfer</h2>
@@ -250,16 +249,12 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    // ===== DEV-РЕЖИМ ДЛЯ ЛОКАЛЬНОГО ТЕСТА ДИЗАЙНА =====
-    // На localhost (npm run dev) мы:
-    //  - НЕ валидируем данные
-    //  - НЕ отправляем письмо
-    //  - просто возвращаем ok:true, чтобы показать модалку
+    // DEV-режим: на localhost не валидируем и не шлём письма,
+    // только показываем модалку, чтобы можно было спокойно верстать.
     if (IS_DEV) {
         console.log('[DEV] reservation payload:', json);
         return NextResponse.json({ ok: true });
     }
-    // ==================================================
 
     const parsed = schema.safeParse(json);
 
@@ -272,36 +267,53 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
+    // Проверяем, что SMTP настроен — иначе лучше вернуть 500,
+    // чем падать в рантайме внутри nodemailer.
+    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+
+    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+        console.error(
+            'Reservation mail error: missing SMTP_* env variables',
+        );
+        return NextResponse.json(
+            { ok: false, errors: { _errors: ['Mail config error'] } },
+            { status: 500 },
+        );
+    }
+
     // Лінивий імпорт nodemailer
     const nodemailer = await import('nodemailer');
 
+    const port = Number(SMTP_PORT || 587);
+
     const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT ?? 587),
-        secure: Number(process.env.SMTP_PORT ?? 587) === 465,
+        host: SMTP_HOST,
+        port,
+        secure: port === 465, // TLS если порт 465
         auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+            user: SMTP_USER,
+            pass: SMTP_PASS,
         },
     });
 
     const to =
         process.env.MAIL_TO ??
-        process.env.SMTP_USER ??
+        SMTP_USER ??
         'info@cartour.sk';
+
     const from =
-        process.env.MAIL_FROM ?? `CarTour <${process.env.SMTP_USER}>`;
+        process.env.MAIL_FROM ?? `CarTour <${SMTP_USER}>`;
 
     const subject = `Rezervácia prepravy - ${data.firstName} ${data.lastName} - ${data.date}`;
     const textBody = buildTextBody(data);
-    const htmlBody = buildHtmlBody(data, subject, textBody);
+    const htmlBody = buildHtmlBody(data, subject);
 
     try {
         await transporter.sendMail({
             from,
             to,
             subject,
-            text: textBody,
+            text: textBody, // здесь textBody реально используется
             html: htmlBody,
             replyTo: `${data.firstName} ${data.lastName} <${data.email}>`,
         });

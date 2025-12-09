@@ -45,9 +45,6 @@ export default function ReservationSuccessModal({
                 ? 'Reservierung gesendet'
                 : 'Reservation sent';
 
-    // Текст по твоему смыслу:
-    // «Поздравляем, ваша регистрация была успешно отправлена,
-    //  сейчас мы работаем над её рассмотрением.»
     const text =
         locale === 'sk'
             ? 'Ďakujeme, vaša rezervácia bola úspešne odoslaná. Teraz pracujeme na jej spracovaní.'

@@ -421,8 +421,8 @@ export default function ReservationForm({
                                         <Image
                                             src="/leaflet/airport-taxi.png"
                                             alt=""
-                                            width={40}
-                                            height={40}
+                                            width={48}
+                                            height={48}
                                             className="h-7 w-7 sm:h-8 sm:w-8"
                                         />
                                     </div>
@@ -453,8 +453,8 @@ export default function ReservationForm({
                                         <Image
                                             src="/leaflet/route-map.png"
                                             alt=""
-                                            width={40}
-                                            height={40}
+                                            width={48}
+                                            height={48}
                                             className="h-7 w-7 sm:h-8 sm:w-8"
                                         />
                                     </div>

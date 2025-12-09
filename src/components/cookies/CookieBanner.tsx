@@ -317,60 +317,51 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                 />
                             </div>
                             <span className="hidden text-[11px] font-medium text-slate-100 sm:inline">
-                    Cookie nastavenia
-                </span>
+                                Cookie nastavenia
+                            </span>
                         </div>
                     </motion.button>
                 )}
             </AnimatePresence>
 
-            {/* главный модальный диалог */}
+            {/* главный блок с баннером */}
             <AnimatePresence>
                 {panelOpen && (
                     <motion.div
                         initial={
-                            reduce
-                                ? undefined
-                                : { opacity: 0, y: 10, scale: 0.98 }
+                            reduce ? undefined : { opacity: 0, y: 10, scale: 0.98 }
                         }
                         animate={
-                            reduce
-                                ? undefined
-                                : { opacity: 1, y: 0, scale: 1 }
+                            reduce ? undefined : { opacity: 1, y: 0, scale: 1 }
                         }
                         exit={
-                            reduce
-                                ? undefined
-                                : { opacity: 0, y: 10, scale: 0.98 }
+                            reduce ? undefined : { opacity: 0, y: 10, scale: 0.98 }
                         }
                         transition={
                             reduce
                                 ? { duration: 0 }
                                 : { duration: 0.4, ease: SOFT_EASE }
                         }
-                        className="fixed inset-0 z-[9999] flex items-center justify-center px-4 py-6 sm:py-10"
+                        className="fixed inset-x-0 bottom-4 sm:bottom-6 z-[9999] flex items-end justify-center sm:justify-end px-3 sm:px-6 pointer-events-none"
                     >
-                        {/* затемнение фона */}
-                        <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" />
-
-                        {/* карточка */}
-                        <div className="relative max-w-2xl w-full rounded-3xl bg-slate-900/98 text-slate-50 shadow-2xl shadow-slate-950/80 ring-1 ring-sky-500/35">
-                            {/* flex-контейнер для прокрутки контента и фиксированных кнопок */}
-                            <div className="flex max-h-[min(620px,calc(100vh-4rem))] flex-col overflow-hidden">
-                                {/* прокручиваемая часть */}
-                                <div className="flex-1 overflow-y-auto px-4 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4">
+                        {/* карточка, без затемнения фона */}
+                        <div className="relative w-full sm:w-auto max-w-md pointer-events-auto rounded-3xl bg-slate-900/98 text-slate-50 shadow-2xl shadow-slate-950/80 ring-1 ring-sky-500/35">
+                            {/* увеличили допустимую высоту, чтобы не было вертикального скролла */}
+                            <div className="flex max-h-[min(640px,calc(100vh-4rem))] flex-col overflow-hidden">
+                                {/* прокручиваемая часть (на очень маленьких экранах всё ещё может скроллиться) */}
+                                <div className="flex-1 overflow-y-auto px-4 pt-4 pb-3 sm:px-5 sm:pt-4 sm:pb-3">
                                     {/* шапка */}
                                     <div className="mb-3 flex items-start justify-between gap-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-800/95 ring-1 ring-rose-500/70 shadow-[0_10px_25px_rgba(248,113,113,0.55)]">
+                                            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-800/95 ring-1 ring-rose-500/70 shadow-[0_8px_20px_rgba(248,113,113,0.55)]">
                                                 <Image
                                                     src="/leaflet/cookie.png"
                                                     alt="Cookie icon"
-                                                    width={24}
-                                                    height={24}
+                                                    width={22}
+                                                    height={22}
                                                 />
                                             </div>
-                                            <div className="text-sm font-semibold sm:text-base">
+                                            <div className="text-xs font-semibold sm:text-sm">
                                                 {t.title}
                                             </div>
                                         </div>
@@ -386,10 +377,10 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                     </div>
 
                                     {/* текст */}
-                                    <p className="text-xs leading-relaxed text-slate-100/90 sm:text-sm">
+                                    <p className="text-[11px] leading-relaxed text-slate-100/90 sm:text-xs">
                                         {t.text}
                                     </p>
-                                    <p className="mt-1 text-[11px] leading-snug text-slate-300/80 sm:text-xs">
+                                    <p className="mt-1 text-[10px] leading-snug text-slate-300/80 sm:text-[11px]">
                                         {t.googleIntro}{' '}
                                         <a
                                             href={t.googleUrl}
@@ -442,7 +433,7 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                                             ease: SOFT_EASE,
                                                         }
                                                 }
-                                                className="mt-5 space-y-3 sm:space-y-3.5 overflow-hidden"
+                                                className="mt-4 space-y-3 overflow-hidden"
                                             >
                                                 {(Object.entries(
                                                     t.categories,
@@ -457,34 +448,40 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                                     return (
                                                         <div
                                                             key={key}
-                                                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-slate-700/80 bg-slate-900/80 px-4 py-3 sm:px-5 sm:py-3.5"
+                                                            className="flex flex-col gap-2 rounded-2xl border border-slate-700/80 bg-slate-900/80 px-3.5 py-2.5 sm:flex-row sm:items-center sm:gap-3.5 sm:px-4 sm:py-3"
                                                         >
                                                             <div className="flex-1 pr-1">
-                                                                <div className="text-xs font-semibold sm:text-sm">
+                                                                <div className="text-[11px] font-semibold sm:text-xs">
                                                                     {
                                                                         cat.label
                                                                     }{' '}
                                                                     {cat.alwaysOn && (
-                                                                        <span className="align-middle text-[10px] font-medium uppercase tracking-wide text-emerald-300">
+                                                                        <span className="align-middle text-[9px] font-medium uppercase tracking-wide text-emerald-300">
                                                                             •
                                                                             vždy
                                                                             zapnuté
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                <p className="mt-1 text-[11px] leading-snug text-slate-200/80 sm:text-xs">
+                                                                <p className="mt-1 text-[10px] leading-snug text-slate-200/80 sm:text-[11px]">
                                                                     {
                                                                         cat.description
                                                                     }
                                                                 </p>
                                                             </div>
 
-                                                            {/* аккуратный свитч с полной обводкой */}
+                                                            {/* свитч */}
                                                             <button
                                                                 type="button"
-                                                                onClick={() => toggleCategory(key)}
-                                                                disabled={cat.alwaysOn}
-                                                                className={`relative mt-2 sm:mt-0 flex h-6 w-11 flex-shrink-0 items-center self-end sm:self-center rounded-full border overflow-hidden transition-colors ${
+                                                                onClick={() =>
+                                                                    toggleCategory(
+                                                                        key,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    cat.alwaysOn
+                                                                }
+                                                                className={`relative mt-1.5 sm:mt-0 flex h-6 w-11 flex-shrink-0 items-center self-end sm:self-center rounded-full border overflow-hidden transition-colors ${
                                                                     cat.alwaysOn
                                                                         ? 'cursor-default border-rose-300 bg-rose-500'
                                                                         : isOn
@@ -492,11 +489,13 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                                                             : 'border-slate-500 bg-slate-700'
                                                                 }`}
                                                             >
-                                                            <span
-                                                            className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm transition-all ${
-                                                            isOn ? 'left-[24px]' : 'left-[3px]'
-                                                            }`}
-                                                            />
+                                                                <span
+                                                                    className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm transition-all ${
+                                                                        isOn
+                                                                            ? 'left-[24px]'
+                                                                            : 'left-[3px]'
+                                                                    }`}
+                                                                />
                                                             </button>
                                                         </div>
                                                     );
@@ -506,14 +505,14 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                     </AnimatePresence>
                                 </div>
 
-                                {/* нижний блок с кнопками, всегда на одном месте */}
-                                <div className="border-t border-slate-800/80 px-4 py-3 sm:px-6 sm:py-4">
+                                {/* нижние кнопки */}
+                                <div className="border-t border-slate-800/80 px-4 py-3 sm:px-5 sm:py-3.5">
                                     {settingsOpen ? (
                                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <button
                                                 type="button"
                                                 onClick={handleSaveSettings}
-                                                className={`${primaryBtnClasses} w-full sm:w-auto bg-rose-600 text-white shadow-[0_12px_30px_rgba(248,113,113,0.65)] transition-transform transition-colors hover:-translate-y-[1px] hover:bg-rose-500`}
+                                                className={`${primaryBtnClasses} w-full sm:w-auto bg-rose-600 text-white shadow-[0_10px_26px_rgba(248,113,113,0.65)] transition-transform transition-colors hover:-translate-y-[1px] hover:bg-rose-500`}
                                             >
                                                 {t.saveLabel}
                                             </button>
@@ -530,7 +529,7 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                             <button
                                                 type="button"
                                                 onClick={handleAcceptAll}
-                                                className={`${primaryBtnClasses} w-full sm:w-auto bg-rose-600 text-white shadow-[0_12px_30px_rgba(248,113,113,0.65)] transition-transform transition-colors hover:-translate-y-[1px] hover:bg-rose-500`}
+                                                className={`${primaryBtnClasses} w-full sm:w-auto bg-rose-600 text-white shadow-[0_10px_26px_rgba(248,113,113,0.65)] transition-transform transition-colors hover:-translate-y-[1px] hover:bg-rose-500`}
                                             >
                                                 {t.acceptAllLabel}
                                             </button>

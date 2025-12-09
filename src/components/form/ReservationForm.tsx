@@ -9,14 +9,15 @@ import {
     type FormEvent,
     type ReactElement,
     type InputHTMLAttributes,
-    type ChangeEvent,
 } from 'react';
+import Image from 'next/image';
 import SocialLinks from '../contact/SocialLinks';
 import ReservationSuccessModal from './ReservationSuccessModal';
 
 /* ===== i18n ===== */
 type L = 'sk' | 'en' | 'de';
-const isL = (x: string): x is L => (['sk', 'en', 'de'] as const).includes(x as L);
+const isL = (x: string): x is L =>
+    (['sk', 'en', 'de'] as const).includes(x as L);
 
 type Dict = Record<
     L,
@@ -52,10 +53,12 @@ type Dict = Record<
         gdprLabel: string;
         gdprRequiredBubble: string;
 
-        // новые строки для селектора маршрута
-        routeSelect: string;
-        routePlaceholder: string;
-        routeHint: string;
+        // маршруты
+        routeTitle: string;
+        routeToAirport: string;
+        routeFromAirport: string;
+        routeCustom: string;
+        airportLabel: string;
     }
 >;
 
@@ -96,10 +99,11 @@ const dict: Dict = {
         gdprRequiredBubble:
             'Prosím, potvrďte súhlas so spracovaním osobných údajov.',
 
-        routeSelect: 'Trasa (voliteľné)',
-        routePlaceholder: 'Vyberte trasu alebo vyplňte adresy ručne',
-        routeHint:
-            'Po výbere trasy sa polia „Miesto vyzdvihnutia“ a „Cieľ cesty“ automaticky vyplnia, ale môžete ich ďalej upraviť.',
+        routeTitle: 'Vyberte trasu',
+        routeToAirport: 'Bratislava → Letisko Viedeň (Schwechat)',
+        routeFromAirport: 'Letisko Viedeň (Schwechat) → Bratislava',
+        routeCustom: 'Iná trasa',
+        airportLabel: 'Letisko Viedeň Schwechat (VIE)',
     },
     en: {
         title: 'Reservation form',
@@ -137,10 +141,11 @@ const dict: Dict = {
         gdprRequiredBubble:
             'Please confirm the consent to process your personal data.',
 
-        routeSelect: 'Route (optional)',
-        routePlaceholder: 'Choose a route or fill in addresses manually',
-        routeHint:
-            'When you choose a route, pickup and destination fields are filled automatically, but you can still edit them.',
+        routeTitle: 'Choose route',
+        routeToAirport: 'Bratislava → Vienna Airport (Schwechat)',
+        routeFromAirport: 'Vienna Airport (Schwechat) → Bratislava',
+        routeCustom: 'Other route',
+        airportLabel: 'Letisko Viedeň Schwechat (VIE)',
     },
     de: {
         title: 'Reservierungsformular',
@@ -169,7 +174,8 @@ const dict: Dict = {
         submit: 'Reservierung senden',
         altCall: 'oder anrufen',
         successTitle: 'Reservierung gesendet',
-        success: 'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
+        success:
+            'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
         required: 'Pflichtfeld',
         requiredBubble: 'Bitte füllen Sie dieses Feld aus.',
         gdprLabel:
@@ -177,105 +183,12 @@ const dict: Dict = {
         gdprRequiredBubble:
             'Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung.',
 
-        routeSelect: 'Strecke (optional)',
-        routePlaceholder: 'Route auswählen oder Adressen manuell eingeben',
-        routeHint:
-            'Wenn Sie eine Route auswählen, werden Abhol- und Zieladresse automatisch ausgefüllt, Sie können sie aber jederzeit anpassen.',
+        routeTitle: 'Strecke wählen',
+        routeToAirport: 'Bratislava → Flughafen Wien (Schwechat)',
+        routeFromAirport: 'Flughafen Wien (Schwechat) → Bratislava',
+        routeCustom: 'Andere Strecke',
+        airportLabel: 'Letisko Viedeň Schwechat (VIE)',
     },
-};
-
-/* ===== predefined routes (for select) ===== */
-
-type RouteOption = {
-    id: string;
-    pickup: string;
-    dropoff: string;
-    label: string;
-};
-
-/**
- * Маршруты синхронизированы с таблицей "Ďalšie destinácie".
- * Можно спокойно добавлять новые строки, сохраняя id.
- */
-const ROUTES: Record<L, RouteOption[]> = {
-    sk: [
-        {
-            id: 'ba-bts',
-            pickup: 'Bratislava',
-            dropoff: 'Letisko M. R. Štefánika (BTS)',
-            label: 'Bratislava ↔ Letisko M. R. Štefánika (BTS)',
-        },
-        {
-            id: 'ba-vienna-center',
-            pickup: 'Bratislava',
-            dropoff: 'Viedeň – centrum',
-            label: 'Bratislava ↔ Viedeň – centrum',
-        },
-        {
-            id: 'ba-budapest',
-            pickup: 'Bratislava',
-            dropoff: 'Budapešť',
-            label: 'Bratislava ↔ Budapešť',
-        },
-        {
-            id: 'ba-prague',
-            pickup: 'Bratislava',
-            dropoff: 'Praha',
-            label: 'Bratislava ↔ Praha',
-        },
-    ],
-    en: [
-        {
-            id: 'ba-bts',
-            pickup: 'Bratislava',
-            dropoff: 'M. R. Štefánik Airport (BTS)',
-            label: 'Bratislava ↔ M. R. Štefánik Airport (BTS)',
-        },
-        {
-            id: 'ba-vienna-center',
-            pickup: 'Bratislava',
-            dropoff: 'Vienna – city centre',
-            label: 'Bratislava ↔ Vienna – city centre',
-        },
-        {
-            id: 'ba-budapest',
-            pickup: 'Bratislava',
-            dropoff: 'Budapest',
-            label: 'Bratislava ↔ Budapest',
-        },
-        {
-            id: 'ba-prague',
-            pickup: 'Bratislava',
-            dropoff: 'Prague',
-            label: 'Bratislava ↔ Prague',
-        },
-    ],
-    de: [
-        {
-            id: 'ba-bts',
-            pickup: 'Bratislava',
-            dropoff: 'Flughafen M. R. Štefánik (BTS)',
-            label: 'Bratislava ↔ Flughafen M. R. Štefánik (BTS)',
-        },
-        {
-            id: 'ba-vienna-center',
-            pickup: 'Bratislava',
-            dropoff: 'Wien – Zentrum',
-            label: 'Bratislava ↔ Wien – Zentrum',
-        },
-        {
-            id: 'ba-budapest',
-            pickup: 'Bratislava',
-            dropoff: 'Budapest',
-            label: 'Bratislava ↔ Budapest',
-        },
-        {
-            id: 'ba-prague',
-            pickup: 'Bratislava',
-            dropoff: 'Prag',
-            label: 'Bratislava ↔ Prag',
-        },
-    ],
 };
 
 /* ===== helpers ===== */
@@ -287,16 +200,15 @@ const uid = () =>
 
 type ApiResponse = { ok?: boolean };
 
+type RouteOption = 'toAirport' | 'fromAirport' | 'custom';
+
 /* ===== component ===== */
 export default function ReservationForm({
                                             locale,
                                         }: {
     locale: string;
 }): ReactElement {
-    const normalizedLocale: L = isL(locale) ? locale : 'sk';
-
-    const t = useMemo(() => dict[normalizedLocale], [normalizedLocale]);
-    const routes = ROUTES[normalizedLocale];
+    const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
 
     const [wantReturn, setWantReturn] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -307,10 +219,13 @@ export default function ReservationForm({
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
     const [notesHintOpen, setNotesHintOpen] = useState(false);
 
-    const [selectedRouteId, setSelectedRouteId] = useState('');
+    const [route, setRoute] = useState<RouteOption>('custom');
 
-    // ref для формы и textarea Poznámky
-    const formRef = useRef<HTMLFormElement | null>(null);
+    // refs для pickup / dropoff
+    const pickupRef = useRef<HTMLInputElement | null>(null);
+    const dropoffRef = useRef<HTMLInputElement | null>(null);
+
+    // ref для textarea Poznámky
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
@@ -337,38 +252,32 @@ export default function ReservationForm({
         el.style.height = `${el.scrollHeight}px`;
     };
 
-    // выбор маршрута → автозаполнение pickup/dropoff
-    const handleRouteChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        const value = e.target.value;
-        setSelectedRouteId(value);
+    // АВТОПОДСТАНОВКА аэропорта / очистка полей при выборе маршрута
+    useEffect(() => {
+        const pickupEl = pickupRef.current;
+        const dropoffEl = dropoffRef.current;
+        if (!pickupEl || !dropoffEl) return;
 
-        if (!value || !formRef.current) return;
+        const airport = t.airportLabel;
 
-        const route = routes.find((r) => r.id === value);
-        if (!route) return;
-
-        const formEl = formRef.current;
-        const pickupEl = formEl.elements.namedItem('pickup') as
-            | HTMLInputElement
-            | null;
-        const dropoffEl = formEl.elements.namedItem('dropoff') as
-            | HTMLInputElement
-            | null;
-
-        if (pickupEl) {
-            pickupEl.value = route.pickup;
-            pickupEl.dispatchEvent(new Event('input', { bubbles: true }));
+        if (route === 'toAirport') {
+            // Bratislava → letisko
+            pickupEl.value = '';
+            dropoffEl.value = airport;
+        } else if (route === 'fromAirport') {
+            // letisko → Bratislava
+            pickupEl.value = airport;
+            dropoffEl.value = '';
+        } else {
+            // Iná trasa – обе строки пустые
+            pickupEl.value = '';
+            dropoffEl.value = '';
         }
-        if (dropoffEl) {
-            dropoffEl.value = route.dropoff;
-            dropoffEl.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-    };
+    }, [route, t.airportLabel]);
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        // HTML5-валидация required-полей
         if (!e.currentTarget.reportValidity()) return;
 
         setServerError(null);
@@ -406,12 +315,11 @@ export default function ReservationForm({
                 return;
             }
 
-            // Успешно: чистим форму и стейт
             (e.currentTarget as HTMLFormElement).reset();
             setWantReturn(false);
             setExtraPickups([]);
             setExtraDrops([]);
-            setSelectedRouteId('');
+            setRoute('custom'); // сбрасываем выбор маршрута
 
             if (notesRef.current) {
                 notesRef.current.style.height = '';
@@ -454,14 +362,12 @@ export default function ReservationForm({
         />
     );
 
+    const routeCardBase =
+        'w-full text-left rounded-2xl border px-3 py-3 sm:px-4 sm:py-3 transition shadow-sm bg-white/80 hover:border-rose-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60';
+
     return (
         <>
-            <form
-                ref={formRef}
-                className="space-y-10"
-                onSubmit={onSubmit}
-                noValidate
-            >
+            <form className="space-y-10" onSubmit={onSubmit} noValidate>
                 {serverError && (
                     <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
                         {serverError}
@@ -497,42 +403,134 @@ export default function ReservationForm({
                         {t.ride}
                     </legend>
 
-                    {/* селектор готовых маршрутов */}
-                    {routes.length > 0 && (
-                        <div className="sm:col-span-2">
-                            <label htmlFor="route" className="ui-label">
-                                {t.routeSelect}
-                            </label>
-                            <select
-                                id="route"
-                                name="route"
-                                className="ui-select mt-1"
-                                value={selectedRouteId}
-                                onChange={handleRouteChange}
+                    {/* Выбор маршрута */}
+                    <div className="sm:col-span-2 space-y-3">
+                        <p className="text-xs sm:text-sm font-medium text-gray-700">
+                            {t.routeTitle}
+                        </p>
+
+                        <div className="grid gap-3">
+                            {/* Bratislava → letisko */}
+                            <button
+                                type="button"
+                                aria-pressed={route === 'toAirport'}
+                                onClick={() => setRoute('toAirport')}
+                                className={`${routeCardBase} ${
+                                    route === 'toAirport'
+                                        ? 'border-rose-500 shadow-md ring-1 ring-rose-500/40'
+                                        : 'border-white/0'
+                                }`}
                             >
-                                <option value="">
-                                    {t.routePlaceholder}
-                                </option>
-                                {routes.map((r) => (
-                                    <option key={r.id} value={r.id}>
-                                        {r.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="mt-1 hint">{t.routeHint}</p>
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-rose-50">
+                                        <Image
+                                            src="/leaflet/airport-taxi.png"
+                                            alt=""
+                                            width={40}
+                                            height={40}
+                                            className="h-7 w-7 sm:h-8 sm:w-8"
+                                        />
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-sm sm:text-base font-semibold text-gray-900">
+                                            {t.routeToAirport}
+                                        </div>
+                                        <div className="text-xs text-gray-500 sm:block hidden">
+                                            {t.airportLabel}
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* letisko → Bratislava */}
+                            <button
+                                type="button"
+                                aria-pressed={route === 'fromAirport'}
+                                onClick={() => setRoute('fromAirport')}
+                                className={`${routeCardBase} ${
+                                    route === 'fromAirport'
+                                        ? 'border-rose-500 shadow-md ring-1 ring-rose-500/40'
+                                        : 'border-white/0'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-slate-900/5">
+                                        <Image
+                                            src="/leaflet/route-map.png"
+                                            alt=""
+                                            width={40}
+                                            height={40}
+                                            className="h-7 w-7 sm:h-8 sm:w-8"
+                                        />
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-sm sm:text-base font-semibold text-gray-900">
+                                            {t.routeFromAirport}
+                                        </div>
+                                        <div className="text-xs text-gray-500 sm:block hidden">
+                                            {t.airportLabel}
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Iná trasa / custom */}
+                            <button
+                                type="button"
+                                aria-pressed={route === 'custom'}
+                                onClick={() => setRoute('custom')}
+                                className={`${routeCardBase} ${
+                                    route === 'custom'
+                                        ? 'border-rose-500 shadow-md ring-1 ring-rose-500/40'
+                                        : 'border-white/0'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-slate-900/5">
+                                        <Image
+                                            src="/leaflet/journey.png"
+                                            alt=""
+                                            width={40}
+                                            height={40}
+                                            className="h-7 w-7 sm:h-8 sm:w-8"
+                                        />
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-sm sm:text-base font-semibold text-gray-900">
+                                            {t.routeCustom}
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
                         </div>
-                    )}
+                    </div>
+
+                    {/* скрытое поле с типом маршрута */}
+                    <input type="hidden" name="routeType" value={route} />
 
                     <div className="sm:col-span-2">
                         {label('pickup', t.from, true)}
-                        {textInput('pickup', true, { placeholder: t.from })}
+                        <input
+                            id="pickup"
+                            name="pickup"
+                            required
+                            aria-required
+                            ref={pickupRef}
+                            className="ui-input mt-1"
+                            placeholder={t.from}
+                            onInvalid={(ev) =>
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    t.requiredBubble,
+                                )
+                            }
+                            onInput={(ev) =>
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                            }
+                        />
                     </div>
 
                     {extraPickups.map((item) => (
-                        <div
-                            key={item.id}
-                            className="sm:col-span-2 relative"
-                        >
+                        <div key={item.id} className="sm:col-span-2 relative">
                             <input
                                 name="pickup_extra[]"
                                 className="ui-input mt-1 pr-8"
@@ -560,14 +558,27 @@ export default function ReservationForm({
 
                     <div className="sm:col-span-2">
                         {label('dropoff', t.to, true)}
-                        {textInput('dropoff', true, { placeholder: t.to })}
+                        <input
+                            id="dropoff"
+                            name="dropoff"
+                            required
+                            aria-required
+                            ref={dropoffRef}
+                            className="ui-input mt-1"
+                            placeholder={t.to}
+                            onInvalid={(ev) =>
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    t.requiredBubble,
+                                )
+                            }
+                            onInput={(ev) =>
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                            }
+                        />
                     </div>
 
                     {extraDrops.map((item) => (
-                        <div
-                            key={item.id}
-                            className="sm:col-span-2 relative"
-                        >
+                        <div key={item.id} className="sm:col-span-2 relative">
                             <input
                                 name="dropoff_extra[]"
                                 className="ui-input mt-1 pr-8"
@@ -604,9 +615,7 @@ export default function ReservationForm({
 
                     <div className="sm:col-span-2">
                         {label('flight', t.flight)}
-                        {textInput('flight', false, {
-                            placeholder: t.flight,
-                        })}
+                        {textInput('flight', false, { placeholder: t.flight })}
                     </div>
 
                     <div>
@@ -652,9 +661,7 @@ export default function ReservationForm({
                             type="checkbox"
                             className="h-4 w-4 rounded border"
                             checked={wantReturn}
-                            onChange={(e) =>
-                                setWantReturn(e.target.checked)
-                            }
+                            onChange={(e) => setWantReturn(e.target.checked)}
                         />
                         <span className="text-sm">{t.wantReturn}</span>
                     </label>
@@ -704,9 +711,7 @@ export default function ReservationForm({
 
                     <button
                         type="button"
-                        onClick={() =>
-                            setNotesHintOpen((v) => !v)
-                        }
+                        onClick={() => setNotesHintOpen((v) => !v)}
                         aria-label="Notes hint"
                         className="absolute right-0 top-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm hover:bg-sky-700"
                     >
@@ -776,14 +781,11 @@ export default function ReservationForm({
                         {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
-                        {t.altCall}:{' '}
-                        <a
-                            href="tel:+421908699151"
-                            className="underline"
-                        >
-                            +421 908 699 151
-                        </a>
-                    </span>
+            {t.altCall}:{' '}
+                        <a href="tel:+421908699151" className="underline">
+              +421 908 699 151
+            </a>
+          </span>
 
                     <div className="ml-auto">
                         <SocialLinks />

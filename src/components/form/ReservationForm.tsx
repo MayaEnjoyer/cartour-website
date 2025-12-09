@@ -221,11 +221,9 @@ export default function ReservationForm({
 
     const [route, setRoute] = useState<RouteOption>('custom');
 
-    // refs для pickup / dropoff
     const pickupRef = useRef<HTMLInputElement | null>(null);
     const dropoffRef = useRef<HTMLInputElement | null>(null);
 
-    // ref для textarea Poznámky
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
@@ -261,15 +259,12 @@ export default function ReservationForm({
         const airport = t.airportLabel;
 
         if (route === 'toAirport') {
-            // Bratislava → letisko
             pickupEl.value = '';
             dropoffEl.value = airport;
         } else if (route === 'fromAirport') {
-            // letisko → Bratislava
             pickupEl.value = airport;
             dropoffEl.value = '';
         } else {
-            // Iná trasa – обе строки пустые
             pickupEl.value = '';
             dropoffEl.value = '';
         }
@@ -319,7 +314,7 @@ export default function ReservationForm({
             setWantReturn(false);
             setExtraPickups([]);
             setExtraDrops([]);
-            setRoute('custom'); // сбрасываем выбор маршрута
+            setRoute('custom');
 
             if (notesRef.current) {
                 notesRef.current.style.height = '';
@@ -454,7 +449,7 @@ export default function ReservationForm({
                                 }`}
                             >
                                 <div className="flex items-center gap-3 sm:gap-4">
-                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-slate-900/5">
+                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-rose-50">
                                         <Image
                                             src="/leaflet/route-map.png"
                                             alt=""
@@ -463,6 +458,7 @@ export default function ReservationForm({
                                             className="h-7 w-7 sm:h-8 sm:w-8"
                                         />
                                     </div>
+
                                     <div className="text-left">
                                         <div className="text-sm sm:text-base font-semibold text-gray-900">
                                             {t.routeFromAirport}
@@ -486,7 +482,7 @@ export default function ReservationForm({
                                 }`}
                             >
                                 <div className="flex items-center gap-3 sm:gap-4">
-                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-slate-900/5">
+                                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-rose-50">
                                         <Image
                                             src="/leaflet/journey.png"
                                             alt=""

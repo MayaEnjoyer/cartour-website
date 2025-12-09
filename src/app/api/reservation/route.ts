@@ -105,10 +105,10 @@ function buildTextBody(data: ReservationData): string {
     lines.push(`Čas vyzdvihnutia: ${data.time}`);
     lines.push('');
     lines.push(
-        `Počet osôb (informácia, cena sa pri počte osôб nemení): ${data.pax}`,
+        `Počet osôb (informácia, cena sa pri počte osôb nemení): ${data.pax}`,
     );
     lines.push(`Batožina: ${formatBaggage(data)}`);
-    lines.push(`Číslo letu: ${data.flight || '—'}`);
+    lines.push(`Čísло letu: ${data.flight || '—'}`);
     lines.push('');
 
     const notes = (data.notes ?? '').trim();
@@ -139,18 +139,16 @@ function buildTextBody(data: ReservationData): string {
     return lines.join('\n');
 }
 
-// textBody нам тут не нужен, поэтому не передаём его — так мы убираем warning
-function buildHtmlBody(
-    data: ReservationData,
-    subject: string,
-): string {
+// HTML-body для листа
+function buildHtmlBody(data: ReservationData, subject: string): string {
     const baggage = formatBaggage(data);
     const notes = (data.notes ?? '').trim() || '—';
     const pickupExtra = (data.pickup_extra ?? []).filter((v) => v.trim() !== '');
     const dropoffExtra = (data.dropoff_extra ?? []).filter(
         (v) => v.trim() !== '',
     );
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.cartour.sk';
+    const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.cartour.sk';
 
     return `<!doctype html>
 <html lang="sk">
@@ -192,7 +190,7 @@ function buildHtmlBody(
       <p style="margin:0 0 12px 0;"><strong>Čас vyzdvihnutia:</strong> ${data.time}</p>
 
       <h2 style="margin:0 0 8px 0;font-size:16px;">Cestujúci a batožina</h2>
-      <p style="margin:0 0 4px 0;"><strong>Počet osôb</strong> (informácia, cena sa pri počte osôb nemení): ${data.pax}</p>
+      <p style="margin:0 0 4px 0;"><strong>Počet osôb</strong> (informácia, cena sa pri počте osôb nemení): ${data.pax}</p>
       <p style="margin:0 0 4px 0;"><strong>Batožina:</strong> ${baggage}</p>
       <p style="margin:0 0 12px 0;"><strong>Číslo letu:</strong> ${data.flight || '—'}</p>
 
@@ -211,7 +209,7 @@ function buildHtmlBody(
       <p style="margin:0 0 4px 0;"><strong>Dátum návratu:</strong> ${
                 data.r_date || '-'
             }</p>
-      <p style="margin:0 0 12px 0;"><strong>Čas návratu:</strong> ${
+      <p style="margin:0 0 12px 0;"><strong>Čас návratu:</strong> ${
                 data.r_time || '-'
             }</p>
       <p style="margin:0 0 12px 0;"><strong>Čísло letu (návrat):</strong> ${
@@ -267,8 +265,6 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
-    // Проверяем, что SMTP настроен — иначе лучше вернуть 500,
-    // чем падать в рантайме внутри nodemailer.
     const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
     if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
@@ -284,12 +280,14 @@ export async function POST(req: NextRequest) {
     // Лінивий імпорт nodemailer
     const nodemailer = await import('nodemailer');
 
-    const port = Number(SMTP_PORT || 587);
+    // По умолчанию ждём порт 465 (SSL/TLS), как на Websupport
+    const port = Number(SMTP_PORT || '465');
+    const useSecure = port === 465;
 
     const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
         port,
-        secure: port === 465, // TLS если порт 465
+        secure: useSecure, // true для 465
         auth: {
             user: SMTP_USER,
             pass: SMTP_PASS,
@@ -313,7 +311,7 @@ export async function POST(req: NextRequest) {
             from,
             to,
             subject,
-            text: textBody, // здесь textBody реально используется
+            text: textBody,
             html: htmlBody,
             replyTo: `${data.firstName} ${data.lastName} <${data.email}>`,
         });

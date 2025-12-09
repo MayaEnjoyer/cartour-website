@@ -9,7 +9,7 @@ import SiteFooter from '../../components/ui/SiteFooter';
 
 import CookieBanner from '../../components/cookies/CookieBanner'; // ← добавили
 
-import { normalizeLocale, Locale } from '../../lib/i18n';
+import { normalizeLocale, Locale } from '@/lib/i18n';
 
 export default function LocalizedLayout({
                                             children,

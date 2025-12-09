@@ -11,10 +11,12 @@ import {
 } from 'react';
 import Link from 'next/link';
 import SocialLinks from '../contact/SocialLinks';
+import ReservationSuccessModal from './ReservationSuccessModal';
 
 /* ===== i18n ===== */
 type L = 'sk' | 'en' | 'de';
-const isL = (x: string): x is L => (['sk', 'en', 'de'] as const).includes(x as L);
+const isL = (x: string): x is L =>
+    (['sk', 'en', 'de'] as const).includes(x as L);
 
 type Dict = Record<
     L,
@@ -80,10 +82,12 @@ const dict: Dict = {
         submit: 'Odoslať rezerváciu',
         altCall: 'alebo zavolajte',
         successTitle: 'Rezervácia odoslaná',
-        success: 'Ďakujeme! Vaša požiadavka bola odoslaná. Ozveme sa vám čoskoro.',
+        success:
+            'Ďakujeme! Vaša požiadavka bola odoslaná. Ozveme sa vám čoskoro.',
         required: 'Povinné pole',
         requiredBubble: 'Vyplňte toto pole.',
-        gdprLabel: 'Súhlasím so spracovaním osobných údajov na účely rezervácie.',
+        gdprLabel:
+            'Súhlasím so spracovaním osobných údajov na účely rezervácie.',
         gdprRequiredBubble:
             'Prosím, potvrďte súhlas so spracovaním osobných údajov.',
     },
@@ -150,7 +154,8 @@ const dict: Dict = {
         submit: 'Reservierung senden',
         altCall: 'oder anrufen',
         successTitle: 'Reservierung gesendet',
-        success: 'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
+        success:
+            'Danke! Ihre Anfrage wurde gesendet. Wir melden uns in Kürze.',
         required: 'Pflichtfeld',
         requiredBubble: 'Bitte füllen Sie dieses Feld aus.',
         gdprLabel:
@@ -167,8 +172,6 @@ const uid = () =>
         ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
 
-type ApiResponse = { ok?: boolean };
-
 /* ===== component ===== */
 export default function ReservationForm({
                                             locale,
@@ -178,15 +181,12 @@ export default function ReservationForm({
     const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
 
     const [wantReturn, setWantReturn] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [serverError, setServerError] = useState<string | null>(null);
     const [successOpen, setSuccessOpen] = useState(false);
-
     const [extraPickups, setExtraPickups] = useState<Item[]>([]);
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
     const [notesHintOpen, setNotesHintOpen] = useState(false);
 
-    // ref для textarea Poznámky
+    // ref для textarea + авто-увеличение
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
@@ -206,63 +206,17 @@ export default function ReservationForm({
     // авто-увеличение textarea
     const handleNotesInput = (e: FormEvent<HTMLTextAreaElement>) => {
         const el = e.currentTarget;
+        if (notesRef.current !== el) {
+            notesRef.current = el;
+        }
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
     };
 
-    async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    // ВАЖНО: сейчас мы НИЧЕГО не отправляем — просто показываем модалку
+    function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-
-        if (!e.currentTarget.reportValidity()) return;
-
-        setServerError(null);
-        const fd = new FormData(e.currentTarget);
-
-        const extraP = fd.getAll('pickup_extra[]').map(String).filter(Boolean);
-        const extraD = fd.getAll('dropoff_extra[]').map(String).filter(Boolean);
-
-        const payload = {
-            ...Object.fromEntries(fd.entries()),
-            pickups: [String(fd.get('pickup') ?? ''), ...extraP],
-            dropoffs: [String(fd.get('dropoff') ?? ''), ...extraD],
-            pickup_extra: extraP,
-            dropoff_extra: extraD,
-        };
-
-        setLoading(true);
-        try {
-            const res = await fetch('/api/reservation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            let data: ApiResponse = {};
-            try {
-                data = await res.json();
-            } catch {
-                data = {};
-            }
-
-            if (!res.ok || data.ok === false) {
-                setServerError(`Error ${res.status}`);
-                return;
-            }
-
-            (e.currentTarget as HTMLFormElement).reset();
-            setWantReturn(false);
-            setExtraPickups([]);
-            setExtraDrops([]);
-            // сброс высоты textarea после отправки
-            if (notesRef.current) {
-                notesRef.current.style.height = '';
-            }
-            setSuccessOpen(true);
-        } catch {
-            setServerError('Network error. Please try again.');
-        } finally {
-            setLoading(false);
-        }
+        setSuccessOpen(true);
     }
 
     const label = (id: string, text: string, req = false): ReactElement => (
@@ -297,15 +251,11 @@ export default function ReservationForm({
     return (
         <>
             <form className="space-y-10" onSubmit={onSubmit} noValidate>
-                {serverError && (
-                    <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
-                        {serverError}
-                    </div>
-                )}
-
                 {/* Personal */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
-                    <legend className="mb-2 text-sm font-semibold">{t.personal}</legend>
+                    <legend className="mb-2 text-sm font-semibold">
+                        {t.personal}
+                    </legend>
                     <div>
                         {label('firstName', t.first, true)}
                         {textInput('firstName', true)}
@@ -326,7 +276,9 @@ export default function ReservationForm({
 
                 {/* Ride details */}
                 <fieldset className="grid gap-4 sm:grid-cols-2">
-                    <legend className="mb-2 text-sm font-semibold">{t.ride}</legend>
+                    <legend className="mb-2 text-sm font-semibold">
+                        {t.ride}
+                    </legend>
 
                     <div className="sm:col-span-2">
                         {label('pickup', t.from, true)}
@@ -436,7 +388,9 @@ export default function ReservationForm({
 
                 {/* Options */}
                 <fieldset className="space-y-4">
-                    <legend className="mb-2 text-sm font-semibold">{t.options}</legend>
+                    <legend className="mb-2 text-sm font-semibold">
+                        {t.options}
+                    </legend>
 
                     <label className="inline-flex items-center gap-2">
                         <input
@@ -470,7 +424,9 @@ export default function ReservationForm({
                                 </div>
                                 <div className="sm:col-span-2">
                                     {label('r_flight', t.flight)}
-                                    {textInput('r_flight', false, { placeholder: t.flight })}
+                                    {textInput('r_flight', false, {
+                                        placeholder: t.flight,
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -517,8 +473,8 @@ export default function ReservationForm({
                         rows={4}
                         ref={notesRef}
                         className="ui-textarea"
-                        style={{ resize: 'none' }}   // запрет ручного растягивания
-                        onInput={handleNotesInput}   // авто-увеличение по тексту
+                        style={{ resize: 'none' }}
+                        onInput={handleNotesInput}
                     />
                 </fieldset>
 
@@ -536,7 +492,9 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    '',
+                                )
                             }
                         />
                         <span>{t.gdprLabel}</span>
@@ -545,8 +503,8 @@ export default function ReservationForm({
 
                 {/* Submit + socials */}
                 <div className="flex items-center gap-4 flex-wrap">
-                    <button type="submit" disabled={loading} className="btn-primary">
-                        {loading ? '…' : t.submit}
+                    <button type="submit" className="btn-primary">
+                        {t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
                         {t.altCall}:{' '}
@@ -561,69 +519,12 @@ export default function ReservationForm({
                 </div>
             </form>
 
-            {/* Success modal */}
-            {successOpen && (
-                <div
-                    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label={t.successTitle}
-                    onClick={() => setSuccessOpen(false)}
-                >
-                    <div
-                        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                            <svg
-                                viewBox="0 0 24 24"
-                                width="24"
-                                height="24"
-                                className="text-emerald-600"
-                            >
-                                <path
-                                    d="M20 7L9 18l-5-5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </div>
-                        <h3 className="text-center text-lg font-semibold">
-                            {t.successTitle}
-                        </h3>
-                        <p className="mt-1 text-center text-sm text-gray-600">
-                            {t.success}
-                        </p>
-
-                        <div className="mt-6 flex gap-3">
-                            <Link
-                                href={`/${locale}`}
-                                className="inline-flex flex-1 items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-white font-medium hover:bg-emerald-500"
-                            >
-                                {locale === 'sk'
-                                    ? 'Späť na Domov'
-                                    : locale === 'de'
-                                        ? 'Zur Startseite'
-                                        : 'Back to Home'}
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={() => setSuccessOpen(false)}
-                                className="inline-flex flex-1 items-center justify-center rounded-xl border px-4 py-2.5 font-medium hover:bg-gray-50"
-                            >
-                                {locale === 'sk'
-                                    ? 'Zostať tu'
-                                    : locale === 'de'
-                                        ? 'Hier bleiben'
-                                        : 'Stay here'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Модалка УСПЕХА на весь экран с блюром */}
+            <ReservationSuccessModal
+                locale={locale}
+                open={successOpen}
+                onCloseAction={() => setSuccessOpen(false)}
+            />
         </>
     );
 }

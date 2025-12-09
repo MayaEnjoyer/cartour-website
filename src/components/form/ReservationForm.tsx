@@ -9,14 +9,14 @@ import {
     type FormEvent,
     type ReactElement,
     type InputHTMLAttributes,
+    type ChangeEvent,
 } from 'react';
 import SocialLinks from '../contact/SocialLinks';
 import ReservationSuccessModal from './ReservationSuccessModal';
 
 /* ===== i18n ===== */
 type L = 'sk' | 'en' | 'de';
-const isL = (x: string): x is L =>
-    (['sk', 'en', 'de'] as const).includes(x as L);
+const isL = (x: string): x is L => (['sk', 'en', 'de'] as const).includes(x as L);
 
 type Dict = Record<
     L,
@@ -51,6 +51,11 @@ type Dict = Record<
         requiredBubble: string;
         gdprLabel: string;
         gdprRequiredBubble: string;
+
+        // новые строки для селектора маршрута
+        routeSelect: string;
+        routePlaceholder: string;
+        routeHint: string;
     }
 >;
 
@@ -90,6 +95,11 @@ const dict: Dict = {
             'Súhlasím so spracovaním osobných údajov na účely rezervácie.',
         gdprRequiredBubble:
             'Prosím, potvrďte súhlas so spracovaním osobných údajov.',
+
+        routeSelect: 'Trasa (voliteľné)',
+        routePlaceholder: 'Vyberte trasu alebo vyplňte adresy ručne',
+        routeHint:
+            'Po výbere trasy sa polia „Miesto vyzdvihnutia“ a „Cieľ cesty“ automaticky vyplnia, ale môžete ich ďalej upraviť.',
     },
     en: {
         title: 'Reservation form',
@@ -126,6 +136,11 @@ const dict: Dict = {
             'I agree to the processing of my personal data for the purpose of this reservation.',
         gdprRequiredBubble:
             'Please confirm the consent to process your personal data.',
+
+        routeSelect: 'Route (optional)',
+        routePlaceholder: 'Choose a route or fill in addresses manually',
+        routeHint:
+            'When you choose a route, pickup and destination fields are filled automatically, but you can still edit them.',
     },
     de: {
         title: 'Reservierungsformular',
@@ -161,7 +176,106 @@ const dict: Dict = {
             'Ich stimme der Verarbeitung meiner personenbezogenen Daten zum Zweck der Reservierung zu.',
         gdprRequiredBubble:
             'Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung.',
+
+        routeSelect: 'Strecke (optional)',
+        routePlaceholder: 'Route auswählen oder Adressen manuell eingeben',
+        routeHint:
+            'Wenn Sie eine Route auswählen, werden Abhol- und Zieladresse automatisch ausgefüllt, Sie können sie aber jederzeit anpassen.',
     },
+};
+
+/* ===== predefined routes (for select) ===== */
+
+type RouteOption = {
+    id: string;
+    pickup: string;
+    dropoff: string;
+    label: string;
+};
+
+/**
+ * Маршруты синхронизированы с таблицей "Ďalšie destinácie".
+ * Можно спокойно добавлять новые строки, сохраняя id.
+ */
+const ROUTES: Record<L, RouteOption[]> = {
+    sk: [
+        {
+            id: 'ba-bts',
+            pickup: 'Bratislava',
+            dropoff: 'Letisko M. R. Štefánika (BTS)',
+            label: 'Bratislava ↔ Letisko M. R. Štefánika (BTS)',
+        },
+        {
+            id: 'ba-vienna-center',
+            pickup: 'Bratislava',
+            dropoff: 'Viedeň – centrum',
+            label: 'Bratislava ↔ Viedeň – centrum',
+        },
+        {
+            id: 'ba-budapest',
+            pickup: 'Bratislava',
+            dropoff: 'Budapešť',
+            label: 'Bratislava ↔ Budapešť',
+        },
+        {
+            id: 'ba-prague',
+            pickup: 'Bratislava',
+            dropoff: 'Praha',
+            label: 'Bratislava ↔ Praha',
+        },
+    ],
+    en: [
+        {
+            id: 'ba-bts',
+            pickup: 'Bratislava',
+            dropoff: 'M. R. Štefánik Airport (BTS)',
+            label: 'Bratislava ↔ M. R. Štefánik Airport (BTS)',
+        },
+        {
+            id: 'ba-vienna-center',
+            pickup: 'Bratislava',
+            dropoff: 'Vienna – city centre',
+            label: 'Bratislava ↔ Vienna – city centre',
+        },
+        {
+            id: 'ba-budapest',
+            pickup: 'Bratislava',
+            dropoff: 'Budapest',
+            label: 'Bratislava ↔ Budapest',
+        },
+        {
+            id: 'ba-prague',
+            pickup: 'Bratislava',
+            dropoff: 'Prague',
+            label: 'Bratislava ↔ Prague',
+        },
+    ],
+    de: [
+        {
+            id: 'ba-bts',
+            pickup: 'Bratislava',
+            dropoff: 'Flughafen M. R. Štefánik (BTS)',
+            label: 'Bratislava ↔ Flughafen M. R. Štefánik (BTS)',
+        },
+        {
+            id: 'ba-vienna-center',
+            pickup: 'Bratislava',
+            dropoff: 'Wien – Zentrum',
+            label: 'Bratislava ↔ Wien – Zentrum',
+        },
+        {
+            id: 'ba-budapest',
+            pickup: 'Bratislava',
+            dropoff: 'Budapest',
+            label: 'Bratislava ↔ Budapest',
+        },
+        {
+            id: 'ba-prague',
+            pickup: 'Bratislava',
+            dropoff: 'Prag',
+            label: 'Bratislava ↔ Prag',
+        },
+    ],
 };
 
 /* ===== helpers ===== */
@@ -179,7 +293,10 @@ export default function ReservationForm({
                                         }: {
     locale: string;
 }): ReactElement {
-    const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
+    const normalizedLocale: L = isL(locale) ? locale : 'sk';
+
+    const t = useMemo(() => dict[normalizedLocale], [normalizedLocale]);
+    const routes = ROUTES[normalizedLocale];
 
     const [wantReturn, setWantReturn] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -190,7 +307,10 @@ export default function ReservationForm({
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
     const [notesHintOpen, setNotesHintOpen] = useState(false);
 
-    // ref для textarea Poznámky
+    const [selectedRouteId, setSelectedRouteId] = useState('');
+
+    // ref для формы и textarea Poznámky
+    const formRef = useRef<HTMLFormElement | null>(null);
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
@@ -215,6 +335,34 @@ export default function ReservationForm({
         }
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
+    };
+
+    // выбор маршрута → автозаполнение pickup/dropoff
+    const handleRouteChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedRouteId(value);
+
+        if (!value || !formRef.current) return;
+
+        const route = routes.find((r) => r.id === value);
+        if (!route) return;
+
+        const formEl = formRef.current;
+        const pickupEl = formEl.elements.namedItem('pickup') as
+            | HTMLInputElement
+            | null;
+        const dropoffEl = formEl.elements.namedItem('dropoff') as
+            | HTMLInputElement
+            | null;
+
+        if (pickupEl) {
+            pickupEl.value = route.pickup;
+            pickupEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        if (dropoffEl) {
+            dropoffEl.value = route.dropoff;
+            dropoffEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     };
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -258,10 +406,12 @@ export default function ReservationForm({
                 return;
             }
 
+            // Успешно: чистим форму и стейт
             (e.currentTarget as HTMLFormElement).reset();
             setWantReturn(false);
             setExtraPickups([]);
             setExtraDrops([]);
+            setSelectedRouteId('');
 
             if (notesRef.current) {
                 notesRef.current.style.height = '';
@@ -306,7 +456,12 @@ export default function ReservationForm({
 
     return (
         <>
-            <form className="space-y-10" onSubmit={onSubmit} noValidate>
+            <form
+                ref={formRef}
+                className="space-y-10"
+                onSubmit={onSubmit}
+                noValidate
+            >
                 {serverError && (
                     <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
                         {serverError}
@@ -342,13 +497,42 @@ export default function ReservationForm({
                         {t.ride}
                     </legend>
 
+                    {/* селектор готовых маршрутов */}
+                    {routes.length > 0 && (
+                        <div className="sm:col-span-2">
+                            <label htmlFor="route" className="ui-label">
+                                {t.routeSelect}
+                            </label>
+                            <select
+                                id="route"
+                                name="route"
+                                className="ui-select mt-1"
+                                value={selectedRouteId}
+                                onChange={handleRouteChange}
+                            >
+                                <option value="">
+                                    {t.routePlaceholder}
+                                </option>
+                                {routes.map((r) => (
+                                    <option key={r.id} value={r.id}>
+                                        {r.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="mt-1 hint">{t.routeHint}</p>
+                        </div>
+                    )}
+
                     <div className="sm:col-span-2">
                         {label('pickup', t.from, true)}
                         {textInput('pickup', true, { placeholder: t.from })}
                     </div>
 
                     {extraPickups.map((item) => (
-                        <div key={item.id} className="sm:col-span-2 relative">
+                        <div
+                            key={item.id}
+                            className="sm:col-span-2 relative"
+                        >
                             <input
                                 name="pickup_extra[]"
                                 className="ui-input mt-1 pr-8"
@@ -380,7 +564,10 @@ export default function ReservationForm({
                     </div>
 
                     {extraDrops.map((item) => (
-                        <div key={item.id} className="sm:col-span-2 relative">
+                        <div
+                            key={item.id}
+                            className="sm:col-span-2 relative"
+                        >
                             <input
                                 name="dropoff_extra[]"
                                 className="ui-input mt-1 pr-8"
@@ -417,7 +604,9 @@ export default function ReservationForm({
 
                     <div className="sm:col-span-2">
                         {label('flight', t.flight)}
-                        {textInput('flight', false, { placeholder: t.flight })}
+                        {textInput('flight', false, {
+                            placeholder: t.flight,
+                        })}
                     </div>
 
                     <div>
@@ -463,7 +652,9 @@ export default function ReservationForm({
                             type="checkbox"
                             className="h-4 w-4 rounded border"
                             checked={wantReturn}
-                            onChange={(e) => setWantReturn(e.target.checked)}
+                            onChange={(e) =>
+                                setWantReturn(e.target.checked)
+                            }
                         />
                         <span className="text-sm">{t.wantReturn}</span>
                     </label>
@@ -513,7 +704,9 @@ export default function ReservationForm({
 
                     <button
                         type="button"
-                        onClick={() => setNotesHintOpen((v) => !v)}
+                        onClick={() =>
+                            setNotesHintOpen((v) => !v)
+                        }
                         aria-label="Notes hint"
                         className="absolute right-0 top-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm hover:bg-sky-700"
                     >
@@ -584,7 +777,10 @@ export default function ReservationForm({
                     </button>
                     <span className="text-sm text-gray-500">
                         {t.altCall}:{' '}
-                        <a href="tel:+421908699151" className="underline">
+                        <a
+                            href="tel:+421908699151"
+                            className="underline"
+                        >
                             +421 908 699 151
                         </a>
                     </span>
@@ -595,7 +791,6 @@ export default function ReservationForm({
                 </div>
             </form>
 
-            {/* Полноэкранная модалка УСПЕХА с блюром */}
             <ReservationSuccessModal
                 locale={locale}
                 open={successOpen}

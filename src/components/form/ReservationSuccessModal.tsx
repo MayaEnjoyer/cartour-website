@@ -50,7 +50,7 @@ export default function ReservationSuccessModal({
     //  сейчас мы работаем над её рассмотрением.»
     const text =
         locale === 'sk'
-            ? 'Blahoželáme, vaša rezervácia bola úspešne odoslaná. Teraz pracujeme na jej spracovaní.'
+            ? 'Ďakujeme, vaša rezervácia bola úspešne odoslaná. Teraz pracujeme na jej spracovaní.'
             : locale === 'de'
                 ? 'Glückwunsch! Ihre Reservierung wurde erfolgreich gesendet. Wir bearbeiten sie nun.'
                 : 'Congratulations, your reservation has been successfully sent. We are now processing it.';

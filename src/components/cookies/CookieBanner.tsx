@@ -482,15 +482,9 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                                             {/* аккуратный свитч с полной обводкой */}
                                                             <button
                                                                 type="button"
-                                                                onClick={() =>
-                                                                    toggleCategory(
-                                                                        key,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    cat.alwaysOn
-                                                                }
-                                                                className={`relative mt-1 sm:mt-0 flex h-6 w-11 flex-shrink-0 items-center self-center rounded-full border overflow-hidden transition-colors ${
+                                                                onClick={() => toggleCategory(key)}
+                                                                disabled={cat.alwaysOn}
+                                                                className={`relative mt-2 sm:mt-0 flex h-6 w-11 flex-shrink-0 items-center self-end sm:self-center rounded-full border overflow-hidden transition-colors ${
                                                                     cat.alwaysOn
                                                                         ? 'cursor-default border-rose-300 bg-rose-500'
                                                                         : isOn
@@ -498,13 +492,11 @@ export default function CookieBanner({ locale }: { locale: string }) {
                                                                             : 'border-slate-500 bg-slate-700'
                                                                 }`}
                                                             >
-                                                                <span
-                                                                    className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm transition-all ${
-                                                                        isOn
-                                                                            ? 'left-[24px]'
-                                                                            : 'left-[3px]'
-                                                                    }`}
-                                                                />
+                                                            <span
+                                                            className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-sm transition-all ${
+                                                            isOn ? 'left-[24px]' : 'left-[3px]'
+                                                            }`}
+                                                            />
                                                             </button>
                                                         </div>
                                                     );

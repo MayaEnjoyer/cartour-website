@@ -242,8 +242,8 @@ export async function POST(req: NextRequest) {
 
     if (!json) {
         return NextResponse.json(
-            { ok: false, errors: { _errors: ['Invalid JSON'] } },
-            { status: 400 },
+            {ok: false, errors: {_errors: ['Invalid JSON']}},
+            {status: 400},
         );
     }
 
@@ -251,29 +251,29 @@ export async function POST(req: NextRequest) {
     // только показываем модалку, чтобы можно было спокойно верстать.
     if (IS_DEV) {
         console.log('[DEV] reservation payload:', json);
-        return NextResponse.json({ ok: true });
+        return NextResponse.json({ok: true});
     }
 
     const parsed = schema.safeParse(json);
 
     if (!parsed.success) {
         return NextResponse.json(
-            { ok: false, errors: parsed.error.format() },
-            { status: 400 },
+            {ok: false, errors: parsed.error.format()},
+            {status: 400},
         );
     }
 
     const data = parsed.data;
 
-    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+    const {SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS} = process.env;
 
     if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
         console.error(
             'Reservation mail error: missing SMTP_* env variables',
         );
         return NextResponse.json(
-            { ok: false, errors: { _errors: ['Mail config error'] } },
-            { status: 500 },
+            {ok: false, errors: {_errors: ['Mail config error']}},
+            {status: 500},
         );
     }
 
@@ -316,12 +316,18 @@ export async function POST(req: NextRequest) {
             replyTo: `${data.firstName} ${data.lastName} <${data.email}>`,
         });
 
-        return NextResponse.json({ ok: true });
-    } catch (err) {
+        return NextResponse.json({ok: true});
+    } catch (err: unknown) {
         console.error('Reservation mail error', err);
+
+        const message =
+            err instanceof Error
+                ? err.message
+                : 'Mail send failed';
+
         return NextResponse.json(
-            { ok: false, errors: { _errors: ['Mail send failed'] } },
-            { status: 500 },
+            {ok: false, errors: {_errors: [message]}},
+            {status: 500},
         );
     }
 }

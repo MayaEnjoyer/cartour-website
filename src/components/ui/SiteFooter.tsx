@@ -137,10 +137,8 @@ function buildHref(locale: FooterLocale, key: InfoKey): string {
     const base = `/${locale}`;
     switch (key) {
         case 'about':
-            // Ведём к текстовому блоку O nás
             return `${base}#about-text`;
         case 'vehicles':
-            // Блок со слайдером
             return `${base}#vehicles-section`;
         case 'faq':
             return `${base}#faq-section`;
@@ -164,12 +162,10 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
                 const onHome =
                     pathname === homePath || pathname === `${homePath}/`;
 
-                // Если мы НЕ на главной — даём Next.js перейти по href,
-                // дальше hash + useEffect в About.tsx всё сделают (центрирование).
                 if (!onHome) return;
 
                 let targetId: string | null = null;
-                if (key === 'about') targetId = 'about-text'; // текстовый блок O nás
+                if (key === 'about') targetId = 'about-text';
                 else if (key === 'faq') targetId = 'faq-section';
                 else if (key === 'vehicles') targetId = 'vehicles-section';
 
@@ -180,7 +176,6 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
 
                 e.preventDefault();
 
-                // Одинаковое центрирование для O nás и Naše vozidlá
                 const block: ScrollLogicalPosition =
                     key === 'about' || key === 'vehicles' ? 'center' : 'start';
 
@@ -199,6 +194,7 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
 
     return (
         <footer className="mt-16 border-t border-slate-200 bg-slate-100/80">
+            {/* основной контент футера */}
             <div className="mx-auto max-w-screen-2xl px-4 py-10 md:py-14">
                 <div className="grid gap-10 lg:gap-14 md:grid-cols-2 lg:grid-cols-4">
                     <section className="space-y-4 lg:col-span-1 md:col-span-2">
@@ -352,7 +348,15 @@ export default function SiteFooter({ locale }: { locale: FooterLocale }) {
                     </section>
                 </div>
             </div>
+
+            {/* нижняя подпись по центру на всех страницах */}
+            <div className="border-t border-slate-200/80">
+                <div className="mx-auto max-w-screen-2xl px-4 py-4">
+                    <p className="text-center text-xs sm:text-sm text-slate-500">
+                        © 2025 Cartour | Všetky práva vyhradené.
+                    </p>
+                </div>
+            </div>
         </footer>
     );
 }
-

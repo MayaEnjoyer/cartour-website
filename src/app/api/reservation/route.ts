@@ -6,7 +6,8 @@ import { z } from 'zod';
 export const runtime = 'nodejs';
 
 // true локально при `npm run dev`, false на Vercel / проде
-const IS_DEV = process.env.NODE_ENV !== 'production';
+const IS_DEV =
+    process.env.NODE_ENV === 'development' && process.env.VERCEL !== '1';
 
 // ---- Валідація даних форми ----
 const schema = z.object({
@@ -40,8 +41,11 @@ const schema = z.object({
     r_time: z.string().optional(),
     r_flight: z.string().optional(),
 
-    // чекбокс GDPR (нам не критично, але може прийти)
+    // чекбокс GDPR
     gdpr: z.string().optional(),
+
+    // скрытое поле типа маршрута
+    routeType: z.string().optional(),
 });
 
 type ReservationData = z.infer<typeof schema>;
@@ -247,11 +251,9 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    // DEV-режим: на localhost не валидируем и не шлём письма,
-    // только показываем модалку, чтобы можно было спокойно верстать.
     if (IS_DEV) {
         console.log('[DEV] reservation payload:', json);
-        return NextResponse.json({ok: true});
+        return NextResponse.json({ ok: true });
     }
 
     const parsed = schema.safeParse(json);

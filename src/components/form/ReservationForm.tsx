@@ -273,6 +273,7 @@ export default function ReservationForm({
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
+        // HTML-валидация всех полей
         if (!e.currentTarget.reportValidity()) return;
 
         setServerError(null);
@@ -298,18 +299,28 @@ export default function ReservationForm({
                 body: JSON.stringify(payload),
             });
 
-            let data: ApiResponse = {};
+            // Пытаемся аккуратно прочитать JSON
+            let data: ApiResponse & {
+                errors?: { _errors?: string[] };
+            } = {};
             try {
-                data = await res.json();
+                const ct = res.headers.get('content-type') || '';
+                if (ct.includes('application/json')) {
+                    data = await res.json();
+                }
             } catch {
+                // если не JSON – просто оставляем data пустым
                 data = {};
             }
 
             if (!res.ok || data.ok === false) {
-                setServerError(`Error ${res.status}`);
+                const msgFromServer =
+                    data?.errors?._errors?.[0] ?? `Error ${res.status}`;
+                setServerError(msgFromServer);
                 return;
             }
 
+            // Успех: чистим форму
             (e.currentTarget as HTMLFormElement).reset();
             setWantReturn(false);
             setExtraPickups([]);
@@ -321,7 +332,9 @@ export default function ReservationForm({
             }
 
             setSuccessOpen(true);
-        } catch {
+        } catch (err) {
+            // ВАЖНО: логируем реальную причину в консоль
+            console.error('Reservation network error', err);
             setServerError('Network error. Please try again.');
         } finally {
             setLoading(false);

@@ -18,6 +18,11 @@ export const metadata: Metadata = {
             },
         ],
     },
+    // Это превратится в:
+    // <meta name="google-site-verification" content="SvbGjS-bIsmscaCKj1r0LbaG6ec0oo6YKincblPdDp4" />
+    verification: {
+        google: "SvbGjS-bIsmscaCKj1r0LbaG6ec0oo6YKincblPdDp4",
+    },
 };
 
 // Корневой layout
@@ -26,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="sk">
         <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh text-gray-900 
-                bg-[radial-gradient(40%_60%_at_0%_0%,#e9edff_0%,transparent_60%),radial-gradient(60%_60%_at_100%_100%,#e6fff3_0%,transparent_60%)]`}
+          bg-[radial-gradient(40%_60%_at_0%_0%,#e9edff_0%,transparent_60%),radial-gradient(60%_60%_at_100%_100%,#e6fff3_0%,transparent_60%)]`}
         >
         {/* Контент страницы */}
         {children}

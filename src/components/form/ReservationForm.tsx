@@ -198,7 +198,10 @@ const uid = () =>
         ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
 
-type ApiResponse = { ok?: boolean };
+// Ответ API: ok + возможные errors._errors[]
+type ApiSuccessPayload = { ok?: boolean };
+type ApiErrorPayload = { errors?: { _errors?: unknown[] } };
+type ApiResponse = ApiSuccessPayload & ApiErrorPayload;
 
 type RouteOption = 'toAirport' | 'fromAirport' | 'custom';
 
@@ -273,6 +276,9 @@ export default function ReservationForm({
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
+        // защита от двойного клика
+        if (loading) return;
+
         // HTML-валидация всех полей
         if (!e.currentTarget.reportValidity()) return;
 
@@ -292,6 +298,7 @@ export default function ReservationForm({
         };
 
         setLoading(true);
+
         try {
             const res = await fetch('/api/reservation', {
                 method: 'POST',
@@ -299,28 +306,33 @@ export default function ReservationForm({
                 body: JSON.stringify(payload),
             });
 
-            // Пытаемся аккуратно прочитать JSON
-            let data: ApiResponse & {
-                errors?: { _errors?: string[] };
-            } = {};
+            let data: ApiResponse | null = null;
+
             try {
                 const ct = res.headers.get('content-type') || '';
                 if (ct.includes('application/json')) {
-                    data = await res.json();
+                    data = (await res.json()) as ApiResponse;
                 }
             } catch {
-                // если не JSON – просто оставляем data пустым
-                data = {};
+                data = null; // если не смогли прочитать JSON – просто игнорим
             }
 
-            if (!res.ok || data.ok === false) {
+            const isOk = res.ok && (data?.ok ?? true);
+
+            if (!isOk) {
+                // пробуем достать текст ошибки из errors._errors[0]
+                const rootErrors = data?.errors?._errors;
                 const msgFromServer =
-                    data?.errors?._errors?.[0] ?? `Error ${res.status}`;
+                    Array.isArray(rootErrors) && rootErrors.length
+                        ? String(rootErrors[0])
+                        : `Error ${res.status}`;
+
                 setServerError(msgFromServer);
                 return;
             }
 
-            // Успех: чистим форму
+            // ===== УСПЕХ =====
+
             (e.currentTarget as HTMLFormElement).reset();
             setWantReturn(false);
             setExtraPickups([]);
@@ -333,8 +345,7 @@ export default function ReservationForm({
 
             setSuccessOpen(true);
         } catch (err) {
-            // ВАЖНО: логируем реальную причину в консоль
-            console.error('Reservation network error', err);
+            console.error('Reservation request failed', err);
             setServerError('Network error. Please try again.');
         } finally {
             setLoading(false);
@@ -533,7 +544,9 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    '',
+                                )
                             }
                         />
                     </div>
@@ -581,7 +594,9 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    '',
+                                )
                             }
                         />
                     </div>
@@ -790,11 +805,11 @@ export default function ReservationForm({
                         {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
-            {t.altCall}:{' '}
+                        {t.altCall}:{' '}
                         <a href="tel:+421908699151" className="underline">
-              +421 908 699 151
-            </a>
-          </span>
+                            +421 908 699 151
+                        </a>
+                    </span>
 
                     <div className="ml-auto">
                         <SocialLinks />

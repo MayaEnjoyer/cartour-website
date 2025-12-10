@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
@@ -16,25 +16,17 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
     const shouldReduceMotion = useReducedMotion();
     const reduce = !!shouldReduceMotion;
 
-    // чтобы portal работал только на клиенте
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
     // блокируем скролл страницы, пока модалка открыта
     useEffect(() => {
         if (!open) return;
 
-        const prev = document.body.style.overflow;
+        const prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
 
         return () => {
-            document.body.style.overflow = prev;
+            document.body.style.overflow = prevOverflow;
         };
     }, [open]);
-
-    if (!mounted) return null;
 
     const title =
         locale === 'sk'
@@ -178,6 +170,7 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
         </AnimatePresence>
     );
 
+    // рисуем модалку поверх всей страницы
     return createPortal(modal, document.body);
 };
 

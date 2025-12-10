@@ -53,7 +53,6 @@ type Dict = Record<
         gdprLabel: string;
         gdprRequiredBubble: string;
 
-        // маршруты
         routeTitle: string;
         routeToAirport: string;
         routeFromAirport: string;
@@ -193,15 +192,18 @@ const dict: Dict = {
 
 /* ===== helpers ===== */
 type Item = { id: string };
+
 const uid = () =>
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
         ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
 
-// Ответ API: ok + возможные errors._errors[]
-type ApiSuccessPayload = { ok?: boolean };
-type ApiErrorPayload = { errors?: { _errors?: unknown[] } };
-type ApiResponse = ApiSuccessPayload & ApiErrorPayload;
+type ApiResponse =
+    | { ok: true }
+    | {
+    ok?: false;
+    errors?: { _errors?: string[] } | Record<string, unknown>;
+};
 
 type RouteOption = 'toAirport' | 'fromAirport' | 'custom';
 
@@ -226,12 +228,12 @@ export default function ReservationForm({
 
     const pickupRef = useRef<HTMLInputElement | null>(null);
     const dropoffRef = useRef<HTMLInputElement | null>(null);
-
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
         setExtraPickups((a) => [...a, { id: uid() }]);
-    const addExtraDrop = () => setExtraDrops((a) => [...a, { id: uid() }]);
+    const addExtraDrop = () =>
+        setExtraDrops((a) => [...a, { id: uid() }]);
     const removeExtraPickup = (id: string) =>
         setExtraPickups((a) => a.filter((x) => x.id !== id));
     const removeExtraDrop = (id: string) =>
@@ -253,7 +255,7 @@ export default function ReservationForm({
         el.style.height = `${el.scrollHeight}px`;
     };
 
-    // АВТОПОДСТАНОВКА аэропорта / очистка полей при выборе маршрута
+    // автоподстановка аэропорта
     useEffect(() => {
         const pickupEl = pickupRef.current;
         const dropoffEl = dropoffRef.current;
@@ -276,10 +278,8 @@ export default function ReservationForm({
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        // защита от двойного клика
         if (loading) return;
 
-        // HTML-валидация всех полей
         if (!e.currentTarget.reportValidity()) return;
 
         setServerError(null);
@@ -299,62 +299,69 @@ export default function ReservationForm({
 
         setLoading(true);
 
+        // --- только fetch + чтение JSON под try/catch ---
+        let res: Response;
+        let data: ApiResponse | null = null;
+
         try {
-            const res = await fetch('/api/reservation', {
+            res = await fetch('/api/reservation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
-            let data: ApiResponse | null = null;
-
-            try {
-                const ct = res.headers.get('content-type') || '';
-                if (ct.includes('application/json')) {
-                    data = (await res.json()) as ApiResponse;
-                }
-            } catch {
-                data = null; // если не смогли прочитать JSON – просто игнорим
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+                data = (await res.json()) as ApiResponse;
             }
-
-            const isOk = res.ok && (data?.ok ?? true);
-
-            if (!isOk) {
-                // пробуем достать текст ошибки из errors._errors[0]
-                const rootErrors = data?.errors?._errors;
-                const msgFromServer =
-                    Array.isArray(rootErrors) && rootErrors.length
-                        ? String(rootErrors[0])
-                        : `Error ${res.status}`;
-
-                setServerError(msgFromServer);
-                return;
-            }
-
-            // ===== УСПЕХ =====
-
-            (e.currentTarget as HTMLFormElement).reset();
-            setWantReturn(false);
-            setExtraPickups([]);
-            setExtraDrops([]);
-            setRoute('custom');
-
-            if (notesRef.current) {
-                notesRef.current.style.height = '';
-            }
-
-            setSuccessOpen(true);
         } catch (err) {
-            console.error('Reservation request failed', err);
+            console.error('[Reservation] fetch /api/reservation failed', err);
             setServerError('Network error. Please try again.');
-        } finally {
             setLoading(false);
+            return;
         }
+
+        // --- проверка статуса / ответа сервера ---
+        const isOk = res.ok && (data?.ok ?? true);
+
+        if (!isOk) {
+            // пробуем достать текст ошибки из errors._errors[0]
+            const maybeErrors =
+                data && 'errors' in data ? data.errors : undefined;
+            const rootErrors =
+                maybeErrors && typeof maybeErrors === 'object'
+                    ? (maybeErrors as { _errors?: unknown[] })._errors
+                    : undefined;
+
+            const msgFromServer =
+                Array.isArray(rootErrors) && rootErrors.length
+                    ? String(rootErrors[0])
+                    : `Error ${res.status}`;
+
+            setServerError(msgFromServer);
+            setLoading(false);
+            return;
+        }
+
+        // --- успех ---
+        (e.currentTarget as HTMLFormElement).reset();
+        setWantReturn(false);
+        setExtraPickups([]);
+        setExtraDrops([]);
+        setRoute('custom');
+
+        if (notesRef.current) {
+            notesRef.current.style.height = '';
+        }
+
+        setLoading(false);
+        setSuccessOpen(true);
     }
 
     const label = (id: string, text: string, req = false): ReactElement => (
         <label htmlFor={id} className="ui-label">
-            {text} {req && <span aria-hidden className="text-red-500">*</span>}
+            {text}{' '}
+            {req && <span aria-hidden className="text-red-500">*</span>}
         </label>
     );
 
@@ -422,7 +429,7 @@ export default function ReservationForm({
                         {t.ride}
                     </legend>
 
-                    {/* Выбор маршрута */}
+                    {/* выбор маршрута */}
                     <div className="sm:col-span-2 space-y-3">
                         <p className="text-xs sm:text-sm font-medium text-gray-700">
                             {t.routeTitle}
@@ -494,7 +501,7 @@ export default function ReservationForm({
                                 </div>
                             </button>
 
-                            {/* Iná trasa / custom */}
+                            {/* Iná trasa */}
                             <button
                                 type="button"
                                 aria-pressed={route === 'custom'}
@@ -525,7 +532,6 @@ export default function ReservationForm({
                         </div>
                     </div>
 
-                    {/* скрытое поле с типом маршрута */}
                     <input type="hidden" name="routeType" value={route} />
 
                     <div className="sm:col-span-2">
@@ -544,9 +550,7 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
-                                    '',
-                                )
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
                             }
                         />
                     </div>
@@ -594,9 +598,7 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
-                                    '',
-                                )
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
                             }
                         />
                     </div>
@@ -727,7 +729,7 @@ export default function ReservationForm({
                     )}
                 </fieldset>
 
-                {/* Notes + lamp tooltip */}
+                {/* Notes */}
                 <fieldset className="relative">
                     <legend className="mb-2 text-sm font-semibold pr-8">
                         {t.notes}
@@ -772,7 +774,7 @@ export default function ReservationForm({
                     />
                 </fieldset>
 
-                {/* GDPR checkbox */}
+                {/* GDPR */}
                 <div className="pt-2 border-t border-gray-100">
                     <label className="inline-flex items-start gap-2 text-xs sm:text-sm text-gray-600">
                         <input
@@ -805,11 +807,11 @@ export default function ReservationForm({
                         {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
-                        {t.altCall}:{' '}
+            {t.altCall}:{' '}
                         <a href="tel:+421908699151" className="underline">
-                            +421 908 699 151
-                        </a>
-                    </span>
+              +421 908 699 151
+            </a>
+          </span>
 
                     <div className="ml-auto">
                         <SocialLinks />

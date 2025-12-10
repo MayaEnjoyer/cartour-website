@@ -207,12 +207,14 @@ type ApiResponse =
 
 type RouteOption = 'toAirport' | 'fromAirport' | 'custom';
 
+type ReservationFormProps = {
+    locale: string;
+};
+
 /* ===== component ===== */
 export default function ReservationForm({
                                             locale,
-                                        }: {
-    locale: string;
-}): ReactElement {
+                                        }: ReservationFormProps): ReactElement {
     const t = useMemo(() => dict[isL(locale) ? locale : 'sk'], [locale]);
 
     const [wantReturn, setWantReturn] = useState(false);
@@ -232,13 +234,13 @@ export default function ReservationForm({
     const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
     const addExtraPickup = () =>
-        setExtraPickups((a) => [...a, { id: uid() }]);
+        setExtraPickups((prev) => [...prev, { id: uid() }]);
     const addExtraDrop = () =>
-        setExtraDrops((a) => [...a, { id: uid() }]);
+        setExtraDrops((prev) => [...prev, { id: uid() }]);
     const removeExtraPickup = (id: string) =>
-        setExtraPickups((a) => a.filter((x) => x.id !== id));
+        setExtraPickups((prev) => prev.filter((x) => x.id !== id));
     const removeExtraDrop = (id: string) =>
-        setExtraDrops((a) => a.filter((x) => x.id !== id));
+        setExtraDrops((prev) => prev.filter((x) => x.id !== id));
 
     useEffect(() => {
         if (!notesHintOpen) return;
@@ -280,14 +282,17 @@ export default function ReservationForm({
         e.preventDefault();
 
         if (loading) return;
-        if (!e.currentTarget.reportValidity()) return;
+
+        const form = e.currentTarget;
+        // HTML5 валидация
+        if (!form.reportValidity()) return;
 
         // сбрасываем прошлые состояния
         setServerError(null);
         setSuccessOpen(false);
         setSuccessBanner(false);
 
-        const fd = new FormData(e.currentTarget);
+        const fd = new FormData(form);
 
         const extraP = fd.getAll('pickup_extra[]').map(String).filter(Boolean);
         const extraD = fd.getAll('dropoff_extra[]').map(String).filter(Boolean);
@@ -302,7 +307,7 @@ export default function ReservationForm({
 
         setLoading(true);
 
-        let res: Response;
+        let res: Response | null = null;
         let data: ApiResponse | null = null;
 
         try {
@@ -323,11 +328,18 @@ export default function ReservationForm({
             return;
         }
 
+        if (!res) {
+            setServerError('Unexpected error. Please try again.');
+            setLoading(false);
+            return;
+        }
+
         const isOk = res.ok && (data?.ok ?? true);
 
         if (!isOk) {
             const maybeErrors =
                 data && 'errors' in data ? data.errors : undefined;
+
             const rootErrors =
                 maybeErrors && typeof maybeErrors === 'object'
                     ? (maybeErrors as { _errors?: unknown[] })._errors
@@ -344,7 +356,7 @@ export default function ReservationForm({
         }
 
         // --- успех ---
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
         setWantReturn(false);
         setExtraPickups([]);
         setExtraDrops([]);
@@ -354,6 +366,7 @@ export default function ReservationForm({
             notesRef.current.style.height = '';
         }
 
+        console.log('[ReservationForm] success => open modal');
         setLoading(false);
         setSuccessOpen(true);
         setSuccessBanner(true);
@@ -703,9 +716,7 @@ export default function ReservationForm({
 
                     {wantReturn && (
                         <div className="rounded-xl border p-4 bg-white/70">
-                            <p className="mb-3 text-sm font-medium">
-                                {t.return}
-                            </p>
+                            <p className="mb-3 text-sm font-medium">{t.return}</p>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
                                     {label('r_pickup', t.from, true)}
@@ -797,9 +808,7 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
-                                    '',
-                                )
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
                             }
                         />
                         <span>{t.gdprLabel}</span>

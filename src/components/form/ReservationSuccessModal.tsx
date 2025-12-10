@@ -11,10 +11,8 @@ type Props = {
 };
 
 const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => {
-    const reduceMotion = useReducedMotion();
-    const reduce = !!reduceMotion;
-
-    if (!open) return null;
+    const shouldReduceMotion = useReducedMotion();
+    const reduce = !!shouldReduceMotion;
 
     const title =
         locale === 'sk'
@@ -35,9 +33,10 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
     };
 
     return (
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
             {open && (
                 <motion.div
+                    key="reservation-success-backdrop"
                     className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/70 backdrop-blur-2xl px-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -46,8 +45,13 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
                     onClick={handleClose}
                 >
                     <motion.div
+                        key="reservation-success-modal"
                         className="relative w-full max-w-xl rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.9)] border border-slate-700/60 px-8 py-8 sm:px-10 sm:py-9"
-                        initial={reduce ? undefined : { scale: 0.9, opacity: 0, y: 20 }}
+                        initial={
+                            reduce
+                                ? { opacity: 0 }
+                                : { scale: 0.9, opacity: 0, y: 20 }
+                        }
                         animate={
                             reduce
                                 ? { opacity: 1 }

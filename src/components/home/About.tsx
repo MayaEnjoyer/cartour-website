@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import {
+    useState,
+    useMemo,
+    useEffect,
+    useRef,
+    type CSSProperties,
+} from 'react';
 import {
     motion,
     useReducedMotion,
@@ -90,13 +96,22 @@ export default function About({ locale }: { locale: string }) {
     const reduceMotion = useReducedMotion();
     const reduce = !!reduceMotion;
 
+    // Детект iOS сразу в начальном состоянии (без useEffect и setState)
+    const [isIosMobile] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        const ua = window.navigator.userAgent || '';
+        return /iPhone|iPad|iPod/i.test(ua) && window.innerWidth <= 820;
+    });
+
+    const heavyMotionDisabled = reduce || isIosMobile;
+
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = useMemo(() => dict[safeLocale], [safeLocale]);
 
     const total = GALLERY.length;
 
     const [position, setPosition] = useState(1);
-    const [isAnimating, setIsAnimating] = useState(true);
+    const [isJumping, setIsJumping] = useState(false);
     const [lightbox, setLightbox] = useState(false);
 
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -106,42 +121,48 @@ export default function About({ locale }: { locale: string }) {
     const displayIndex = (position - 1 + total) % total;
 
     const next = () => {
-        setIsAnimating(true);
         setPosition((p) => p + 1);
     };
 
     const prev = () => {
-        setIsAnimating(true);
         setPosition((p) => p - 1);
     };
 
+    // Плавный циклический слайдер без эффект-циклов
     const handleTransitionEnd = () => {
         if (reduce) return;
 
-        if (position === total + 1) {
-            setIsAnimating(false);
-            setPosition(1);
-        } else if (position === 0) {
-            setIsAnimating(false);
-            setPosition(total);
-        }
-    };
+        setPosition((current) => {
+            if (current === total + 1 || current === 0) {
+                const target = current === total + 1 ? 1 : total;
 
-    useEffect(() => {
-        if (!isAnimating) {
-            const id = requestAnimationFrame(() => setIsAnimating(true));
-            return () => cancelAnimationFrame(id);
-        }
-    }, [isAnimating]);
+                setIsJumping(true);
+                if (typeof window !== 'undefined') {
+                    window.requestAnimationFrame(() => {
+                        setIsJumping(false);
+                    });
+                } else {
+                    setIsJumping(false);
+                }
+
+                return target;
+            }
+            return current;
+        });
+    };
 
     const extendedSlides = [GALLERY[total - 1], ...GALLERY, GALLERY[0]];
 
-    const sliderStyle = {
+    const baseTransition = isIosMobile
+        ? 'transform 0.4s ease-out'
+        : 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)';
+
+    const sliderStyle: CSSProperties = {
         transform: `translateX(-${position * 100}%)`,
-        willChange: 'transform' as const,
-        ...(reduce || !isAnimating
+        willChange: 'transform',
+        ...(reduce || isJumping
             ? { transition: 'none' }
-            : { transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)' }),
+            : { transition: baseTransition }),
     };
 
     const handleTouchStartCommon = (clientX: number) => {
@@ -186,16 +207,19 @@ export default function About({ locale }: { locale: string }) {
         offset: ['start center', 'end center'],
     });
 
-    // Лёгкий вертикальный сдвиг карточки при скролле (без scale)
     const sliderTranslateY = useTransform(scrollYProgress, [0, 1], [12, -12]);
 
-    // Если страница открыта сразу с #about-section, #about-text или #vehicles-section
+    // Скролл к якорю, если открыли страницу сразу с #about-section / #about-text / #vehicles-section
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const hash = window.location.hash;
         if (!hash) return;
 
-        const validHashes = ['#about-section', '#about-text', '#vehicles-section'] as const;
+        const validHashes = [
+            '#about-section',
+            '#about-text',
+            '#vehicles-section',
+        ] as const;
         if (!validHashes.includes(hash as (typeof validHashes)[number])) return;
 
         const id = hash.slice(1);
@@ -234,9 +258,8 @@ export default function About({ locale }: { locale: string }) {
             </div>
 
             <div className="mt-3 grid items-center gap-10 lg:grid-cols-2">
-                {/* ЛЕВАЯ КОЛОНКА — текстовый блок, сюда скроллим по #about-text */}
+                {/* ЛЕВАЯ КОЛОНКА — текстовый блок */}
                 <div id="about-text" className="max-w-xl">
-                    {/* Заголовок */}
                     <motion.h2
                         className="text-3xl sm:text-4xl font-semibold tracking-tight"
                         initial={reduce ? undefined : { opacity: 0, y: 18 }}
@@ -251,7 +274,6 @@ export default function About({ locale }: { locale: string }) {
                         {t.heading}
                     </motion.h2>
 
-                    {/* Параграфы */}
                     {t.p.map((para, i) => (
                         <motion.p
                             key={i}
@@ -275,7 +297,6 @@ export default function About({ locale }: { locale: string }) {
                         </motion.p>
                     ))}
 
-                    {/* Статы */}
                     <motion.ul
                         className="mt-7 flex flex-wrap gap-3"
                         initial={reduce ? undefined : { opacity: 0, y: 18 }}
@@ -303,7 +324,6 @@ export default function About({ locale }: { locale: string }) {
                         ))}
                     </motion.ul>
 
-                    {/* Бейджи */}
                     <motion.div
                         className="mt-5 flex flex-wrap gap-2"
                         initial={reduce ? undefined : { opacity: 0, y: 18 }}
@@ -333,11 +353,11 @@ export default function About({ locale }: { locale: string }) {
                     </motion.div>
                 </div>
 
-                {/* ПРАВАЯ КОЛОНКА — слайдер, якорь для Naše vozidlá */}
+                {/* ПРАВАЯ КОЛОНКА — слайдер */}
                 <motion.div
                     id="vehicles-section"
                     className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 bg-slate-900/70 transform-gpu"
-                    style={reduce ? undefined : { y: sliderTranslateY }}
+                    style={heavyMotionDisabled ? undefined : { y: sliderTranslateY }}
                     initial={reduce ? undefined : { opacity: 0 }}
                     whileInView={reduce ? undefined : { opacity: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
@@ -351,15 +371,29 @@ export default function About({ locale }: { locale: string }) {
                             }
                     }
                 >
-                    {/* glow-background как на портфолио */}
+                    {/* glow-background (отключаем бесконечную анимацию на iOS / reduce) */}
                     <motion.div
                         aria-hidden
                         className="pointer-events-none absolute -inset-10 rounded-[32px] bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(244,63,94,0.32),transparent_55%)]"
-                        initial={reduce ? undefined : { opacity: 0, scale: 0.95 }}
-                        whileInView={reduce ? undefined : { opacity: 1, scale: 1 }}
+                        initial={
+                            reduce
+                                ? undefined
+                                : {
+                                    opacity: 0,
+                                    scale: 0.95,
+                                }
+                        }
+                        whileInView={
+                            reduce
+                                ? undefined
+                                : {
+                                    opacity: 1,
+                                    scale: 1,
+                                }
+                        }
                         viewport={{ once: true, amount: 0.3 }}
                         animate={
-                            reduce
+                            heavyMotionDisabled
                                 ? undefined
                                 : {
                                     x: [-18, 18, -18],
@@ -392,9 +426,7 @@ export default function About({ locale }: { locale: string }) {
                                 handleTouchMoveCommon(e.touches[0].clientX);
                             }
                         }}
-                        onTouchEnd={() => {
-                            handleTouchEndCommon();
-                        }}
+                        onTouchEnd={handleTouchEndCommon}
                     >
                         <div
                             className="flex h-full w-full select-none"
@@ -455,6 +487,7 @@ export default function About({ locale }: { locale: string }) {
                         </div>
                     </div>
 
+                    {/* подписи для мобильной / десктоп версии */}
                     <div className="sm:hidden px-3 pb-3 pt-2 flex flex-wrap justify-center gap-2">
                         <div className="rounded-[999px] bg-white/95 px-4 py-2 text-[11px] font-medium shadow whitespace-nowrap">
                             Mercedes-Benz • E-Class
@@ -511,9 +544,7 @@ export default function About({ locale }: { locale: string }) {
                                     handleTouchMoveCommon(e.touches[0].clientX);
                                 }
                             }}
-                            onTouchEnd={() => {
-                                handleTouchEndCommon();
-                            }}
+                            onTouchEnd={handleTouchEndCommon}
                         >
                             <div
                                 className="flex h-full w-full select-none"

@@ -27,6 +27,16 @@ function AnimatedAccordion({
     const reduceMotion = useReducedMotion();
     const reduce = !!reduceMotion;
 
+    // Лёгкий детект iOS, без useEffect (значение вычисляется один раз на клиенте)
+    const [isIosMobile] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        const ua = window.navigator.userAgent || '';
+        return /iPhone|iPad|iPod/i.test(ua) && window.innerWidth <= 820;
+    });
+
+    // Если пользователь просит меньше анимаций или это iOS — отключаем тяжёлую анимацию
+    const heavyMotionDisabled = reduce || isIosMobile;
+
     const [openIndex, setOpenIndex] = useState<number | null>(
         typeof defaultOpen === 'number' ? defaultOpen : null,
     );
@@ -38,16 +48,16 @@ function AnimatedAccordion({
     const contentVariants = {
         collapsed: { height: 0, opacity: 0 },
         open: { height: 'auto', opacity: 1 },
-    };
+    } as const;
 
     return (
         <motion.div
             className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm"
-            initial={reduce ? undefined : { opacity: 0, y: 12 }}
-            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            initial={heavyMotionDisabled ? undefined : { opacity: 0, y: 12 }}
+            whileInView={heavyMotionDisabled ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={
-                reduce
+                heavyMotionDisabled
                     ? undefined
                     : { duration: 0.6, ease: SOFT_EASE }
             }
@@ -74,30 +84,37 @@ function AnimatedAccordion({
                                 </div>
                             </button>
 
-                            <AnimatePresence initial={false}>
-                                {isOpen && (
-                                    <motion.div
-                                        key="content"
-                                        initial="collapsed"
-                                        animate="open"
-                                        exit="collapsed"
-                                        variants={contentVariants}
-                                        transition={
-                                            reduce
-                                                ? { duration: 0 }
-                                                : {
-                                                    duration: 0.9,
-                                                    ease: SOFT_EASE,
-                                                }
-                                        }
-                                        className="overflow-hidden"
-                                    >
+                            {/* На iOS / reduce-motion убираем тяжёлую анимацию высоты */}
+                            {heavyMotionDisabled ? (
+                                isOpen && (
+                                    <div className="overflow-hidden">
                                         <div className="px-4 sm:px-5 pb-4 pt-1 text-[14px] sm:text-[15px] leading-relaxed text-gray-700">
                                             {item.content}
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                    </div>
+                                )
+                            ) : (
+                                <AnimatePresence initial={false}>
+                                    {isOpen && (
+                                        <motion.div
+                                            key="content"
+                                            initial="collapsed"
+                                            animate="open"
+                                            exit="collapsed"
+                                            variants={contentVariants}
+                                            transition={{
+                                                duration: 0.9,
+                                                ease: SOFT_EASE,
+                                            }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="px-4 sm:px-5 pb-4 pt-1 text-[14px] sm:text-[15px] leading-relaxed text-gray-700">
+                                                {item.content}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            )}
                         </div>
                     );
                 })}

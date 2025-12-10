@@ -1,6 +1,11 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { useState } from 'react';
+import {
+    motion,
+    useReducedMotion,
+    type Transition,
+} from 'framer-motion';
 
 const locales = ['sk', 'en', 'de'] as const;
 type Locale = (typeof locales)[number];
@@ -130,7 +135,19 @@ export default function Features({ locale }: { locale: string }) {
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = dict[safeLocale];
     const icons = [IconClock, IconRadar, IconShield, IconClock, IconShield, IconRadar];
-    const reduce = useReducedMotion();
+    const reduceMotion = useReducedMotion();
+
+    // лёгкий детект iOS + маленький экран, без useEffect → нет варнинга ESLint
+    const [isIosMobile] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        const ua = window.navigator.userAgent || '';
+        const isIOS = /iP(hone|od|ad)/.test(ua);
+        const isSmall = window.innerWidth <= 768;
+        return isIOS && isSmall;
+    });
+
+    const disableAnimation = !!reduceMotion;
+    const useSoftAnimation = !disableAnimation && isIosMobile;
 
     return (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
@@ -146,22 +163,41 @@ export default function Features({ locale }: { locale: string }) {
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {t.items.map((it, i) => {
                         const Ico = icons[i % icons.length];
+
+                        const initial = disableAnimation
+                            ? undefined
+                            : useSoftAnimation
+                                ? { opacity: 0 }
+                                : { opacity: 0, y: 12 };
+
+                        const whileInView = disableAnimation
+                            ? undefined
+                            : useSoftAnimation
+                                ? { opacity: 1 }
+                                : { opacity: 1, y: 0 };
+
+                        const transition: Transition | undefined = disableAnimation
+                            ? undefined
+                            : useSoftAnimation
+                                ? {
+                                    duration: 0.35,
+                                    ease: [0.16, 1, 0.3, 1],
+                                }
+                                : {
+                                    duration: 0.6,
+                                    delay: i * 0.08,
+                                    ease: [0.22, 1, 0.36, 1],
+                                };
+
                         return (
                             <motion.article
                                 key={it.title}
-                                className="relative rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur p-5 shadow-sm"
-                                initial={reduce ? undefined : { opacity: 0, y: 12 }}
-                                whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+                                className="relative rounded-2xl border border-slate-200/70 bg-white/80 md:backdrop-blur p-5 shadow-sm"
+                                style={{ willChange: 'transform, opacity' }}
+                                initial={initial}
+                                whileInView={whileInView}
                                 viewport={{ once: true, amount: 0.2 }}
-                                transition={
-                                    reduce
-                                        ? undefined
-                                        : {
-                                            duration: 0.6,
-                                            delay: i * 0.08,
-                                            ease: [0.22, 1, 0.36, 1],
-                                        }
-                                }
+                                transition={transition}
                             >
                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1 text-xs font-semibold">
                                     <Ico />

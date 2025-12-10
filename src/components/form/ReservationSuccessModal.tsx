@@ -1,42 +1,20 @@
 // src/components/form/ReservationSuccessModal.tsx
 'use client';
 
-import {
-    useEffect,
-    useState,
-    type ReactPortal,
-} from 'react';
-import { createPortal } from 'react-dom';
-import {
-    AnimatePresence,
-    motion,
-    useReducedMotion,
-} from 'framer-motion';
+import type { FC } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 type Props = {
     locale: string;
     open: boolean;
-    // название пропа совпадает с тем, что ты передаёшь из ReservationForm
     onCloseAction: () => void;
 };
 
-export default function ReservationSuccessModal({
-                                                    locale,
-                                                    open,
-                                                    onCloseAction,
-                                                }: Props): ReactPortal | null {
-    const [mounted, setMounted] = useState(false);
+const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => {
     const reduceMotion = useReducedMotion();
     const reduce = !!reduceMotion;
 
-    // Аккуратно помечаем, что компонент смонтирован (чтобы безопасно использовать document/body)
-    useEffect(() => {
-        const id = window.requestAnimationFrame(() => setMounted(true));
-        return () => window.cancelAnimationFrame(id);
-    }, []);
-
-    if (!mounted) return null;
-    if (typeof document === 'undefined') return null;
+    if (!open) return null;
 
     const title =
         locale === 'sk'
@@ -52,17 +30,15 @@ export default function ReservationSuccessModal({
                 ? 'Glückwunsch! Ihre Reservierung wurde erfolgreich gesendet. Wir bearbeiten sie nun.'
                 : 'Congratulations, your reservation has been successfully sent. We are now processing it.';
 
-    const root = document.getElementById('modal-root') ?? document.body;
-
     const handleClose = () => {
         onCloseAction();
     };
 
-    return createPortal(
+    return (
         <AnimatePresence>
             {open && (
                 <motion.div
-                    className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/70 backdrop-blur-2xl px-4"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/70 backdrop-blur-2xl px-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -71,9 +47,7 @@ export default function ReservationSuccessModal({
                 >
                     <motion.div
                         className="relative w-full max-w-xl rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.9)] border border-slate-700/60 px-8 py-8 sm:px-10 sm:py-9"
-                        initial={
-                            reduce ? undefined : { scale: 0.9, opacity: 0, y: 20 }
-                        }
+                        initial={reduce ? undefined : { scale: 0.9, opacity: 0, y: 20 }}
                         animate={
                             reduce
                                 ? { opacity: 1 }
@@ -96,7 +70,7 @@ export default function ReservationSuccessModal({
                         }
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Кнопка закрытия в углу */}
+                        {/* close button */}
                         <button
                             type="button"
                             onClick={handleClose}
@@ -117,7 +91,7 @@ export default function ReservationSuccessModal({
                             </svg>
                         </button>
 
-                        {/* Иконка с галочкой + заголовок + текст */}
+                        {/* icon + title + text */}
                         <div className="flex flex-col items-center text-center">
                             <div className="relative mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-400/90 shadow-[0_0_40px_rgba(16,185,129,0.9)]">
                                 <div className="absolute inset-[-14px] rounded-full bg-emerald-500/20 blur-2xl" />
@@ -147,7 +121,7 @@ export default function ReservationSuccessModal({
                             </p>
                         </div>
 
-                        {/* Кнопки снизу */}
+                        {/* buttons */}
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
                             <button
                                 type="button"
@@ -175,7 +149,8 @@ export default function ReservationSuccessModal({
                     </motion.div>
                 </motion.div>
             )}
-        </AnimatePresence>,
-        root,
+        </AnimatePresence>
     );
-}
+};
+
+export default ReservationSuccessModal;

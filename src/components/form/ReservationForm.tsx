@@ -219,6 +219,7 @@ export default function ReservationForm({
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [successOpen, setSuccessOpen] = useState(false);
+    const [successBanner, setSuccessBanner] = useState(false);
 
     const [extraPickups, setExtraPickups] = useState<Item[]>([]);
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
@@ -279,10 +280,12 @@ export default function ReservationForm({
         e.preventDefault();
 
         if (loading) return;
-
         if (!e.currentTarget.reportValidity()) return;
 
+        // сбрасываем прошлые состояния
         setServerError(null);
+        setSuccessOpen(false);
+        setSuccessBanner(false);
 
         const fd = new FormData(e.currentTarget);
 
@@ -299,7 +302,6 @@ export default function ReservationForm({
 
         setLoading(true);
 
-        // --- только fetch + чтение JSON под try/catch ---
         let res: Response;
         let data: ApiResponse | null = null;
 
@@ -321,11 +323,9 @@ export default function ReservationForm({
             return;
         }
 
-        // --- проверка статуса / ответа сервера ---
         const isOk = res.ok && (data?.ok ?? true);
 
         if (!isOk) {
-            // пробуем достать текст ошибки из errors._errors[0]
             const maybeErrors =
                 data && 'errors' in data ? data.errors : undefined;
             const rootErrors =
@@ -356,6 +356,7 @@ export default function ReservationForm({
 
         setLoading(false);
         setSuccessOpen(true);
+        setSuccessBanner(true);
     }
 
     const label = (id: string, text: string, req = false): ReactElement => (
@@ -394,6 +395,14 @@ export default function ReservationForm({
     return (
         <>
             <form className="space-y-10" onSubmit={onSubmit} noValidate>
+                {/* зелёная плашка успеха */}
+                {successBanner && (
+                    <div className="info-card p-3 text-sm text-emerald-800 border-emerald-200 bg-emerald-50/80">
+                        {t.success}
+                    </div>
+                )}
+
+                {/* красная плашка ошибки */}
                 {serverError && (
                     <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">
                         {serverError}

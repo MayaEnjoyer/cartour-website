@@ -29,12 +29,16 @@ export default function ReservationSuccessModal({
     const reduceMotion = useReducedMotion();
     const reduce = !!reduceMotion;
 
-    // Аккуратно помечаем, что компонент смонтирован (чтобы безопасно использовать document/body)
+    // Аккуратно помечаем, что компонент смонтирован (только на клиенте)
     useEffect(() => {
-        const id = window.requestAnimationFrame(() => setMounted(true));
+        const id = window.requestAnimationFrame(() => {
+            setMounted(true);
+        });
+
         return () => window.cancelAnimationFrame(id);
     }, []);
 
+    // Пока ещё не смонтировались – ничего не рендерим
     if (!mounted) return null;
     if (typeof document === 'undefined') return null;
 
@@ -71,9 +75,7 @@ export default function ReservationSuccessModal({
                 >
                     <motion.div
                         className="relative w-full max-w-xl rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.9)] border border-slate-700/60 px-8 py-8 sm:px-10 sm:py-9"
-                        initial={
-                            reduce ? undefined : { scale: 0.9, opacity: 0, y: 20 }
-                        }
+                        initial={reduce ? undefined : { scale: 0.9, opacity: 0, y: 20 }}
                         animate={
                             reduce
                                 ? { opacity: 1 }

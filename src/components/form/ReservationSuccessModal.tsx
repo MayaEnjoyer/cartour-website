@@ -2,6 +2,8 @@
 'use client';
 
 import type { FC } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 type Props = {
@@ -13,6 +15,26 @@ type Props = {
 const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => {
     const shouldReduceMotion = useReducedMotion();
     const reduce = !!shouldReduceMotion;
+
+    // чтобы portal работал только на клиенте
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // блокируем скролл страницы, пока модалка открыта
+    useEffect(() => {
+        if (!open) return;
+
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, [open]);
+
+    if (!mounted) return null;
 
     const title =
         locale === 'sk'
@@ -32,12 +54,12 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
         onCloseAction();
     };
 
-    return (
+    const modal = (
         <AnimatePresence initial={false}>
             {open && (
                 <motion.div
                     key="reservation-success-backdrop"
-                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/70 backdrop-blur-2xl px-4"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-2xl px-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -155,6 +177,8 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
             )}
         </AnimatePresence>
     );
+
+    return createPortal(modal, document.body);
 };
 
 export default ReservationSuccessModal;

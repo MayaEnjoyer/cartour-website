@@ -43,7 +43,7 @@ const ReservationSuccessModal: FC<Props> = ({
 
     const text =
         locale === 'sk'
-            ? 'Ďakujeme, vaša rezervácia bola úspešne odoslaná. Teraz pracujeme na jej spracovaní.'
+            ? 'Ďakujeme! Vaša rezervácia bola odoslaná na spracovanie. Ozveme sa vám čo najskôr.'
             : locale === 'de'
                 ? 'Glückwunsch! Ihre Reservierung wurde erfolgreich gesendet. Wir bearbeiten sie nun.'
                 : 'Congratulations, your reservation has been successfully sent. We are now processing it.';

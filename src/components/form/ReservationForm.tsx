@@ -221,7 +221,6 @@ export default function ReservationForm({
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [successOpen, setSuccessOpen] = useState(false);
-    const [successBanner, setSuccessBanner] = useState(false);
 
     const [extraPickups, setExtraPickups] = useState<Item[]>([]);
     const [extraDrops, setExtraDrops] = useState<Item[]>([]);
@@ -248,7 +247,7 @@ export default function ReservationForm({
         return () => clearTimeout(id);
     }, [notesHintOpen]);
 
-    // авто-увеличение textarea
+    // auto-resize textarea
     const handleNotesInput = (e: FormEvent<HTMLTextAreaElement>) => {
         const el = e.currentTarget;
         if (notesRef.current !== el) {
@@ -280,17 +279,15 @@ export default function ReservationForm({
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-
         if (loading) return;
 
         const form = e.currentTarget;
-        // HTML5 валидация
+
+        // HTML5 validation
         if (!form.reportValidity()) return;
 
-        // сбрасываем прошлые состояния
         setServerError(null);
         setSuccessOpen(false);
-        setSuccessBanner(false);
 
         const fd = new FormData(form);
 
@@ -355,7 +352,7 @@ export default function ReservationForm({
             return;
         }
 
-        // --- успех ---
+        // --- success ---
         form.reset();
         setWantReturn(false);
         setExtraPickups([]);
@@ -366,10 +363,8 @@ export default function ReservationForm({
             notesRef.current.style.height = '';
         }
 
-        console.log('[ReservationForm] success => open modal');
         setLoading(false);
         setSuccessOpen(true);
-        setSuccessBanner(true);
     }
 
     const label = (id: string, text: string, req = false): ReactElement => (
@@ -408,13 +403,6 @@ export default function ReservationForm({
     return (
         <>
             <form className="space-y-10" onSubmit={onSubmit} noValidate>
-                {/* зелёная плашка успеха */}
-                {successBanner && (
-                    <div className="info-card p-3 text-sm text-emerald-800 border-emerald-200 bg-emerald-50/80">
-                        {t.success}
-                    </div>
-                )}
-
                 {/* красная плашка ошибки */}
                 {serverError && (
                     <div className="info-card p-3 text-sm text-red-700 border-red-200 bg-red-50/70">

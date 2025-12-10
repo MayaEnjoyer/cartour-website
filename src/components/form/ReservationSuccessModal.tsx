@@ -4,6 +4,7 @@
 import type { FC } from 'react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 type Props = {
@@ -12,7 +13,12 @@ type Props = {
     onCloseAction: () => void;
 };
 
-const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => {
+const ReservationSuccessModal: FC<Props> = ({
+                                                locale,
+                                                open,
+                                                onCloseAction,
+                                            }) => {
+    const router = useRouter();
     const shouldReduceMotion = useReducedMotion();
     const reduce = !!shouldReduceMotion;
 
@@ -46,6 +52,17 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
         onCloseAction();
     };
 
+    // переход на главную с учётом текущей локали
+    const handleGoHome = () => {
+        const loc =
+            locale === 'sk' || locale === 'en' || locale === 'de'
+                ? locale
+                : 'sk';
+
+        router.push(`/${loc}`);
+        onCloseAction();
+    };
+
     const modal = (
         <AnimatePresence initial={false}>
             {open && (
@@ -62,19 +79,13 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
                         key="reservation-success-modal"
                         className="relative w-full max-w-xl rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-slate-50 shadow-[0_40px_120px_rgba(15,23,42,0.9)] border border-slate-700/60 px-8 py-8 sm:px-10 sm:py-9"
                         initial={
-                            reduce
-                                ? { opacity: 0 }
-                                : { scale: 0.9, opacity: 0, y: 20 }
+                            reduce ? { opacity: 0 } : { scale: 0.9, opacity: 0, y: 20 }
                         }
                         animate={
-                            reduce
-                                ? { opacity: 1 }
-                                : { scale: 1, opacity: 1, y: 0 }
+                            reduce ? { opacity: 1 } : { scale: 1, opacity: 1, y: 0 }
                         }
                         exit={
-                            reduce
-                                ? { opacity: 0 }
-                                : { scale: 0.9, opacity: 0, y: 20 }
+                            reduce ? { opacity: 0 } : { scale: 0.9, opacity: 0, y: 20 }
                         }
                         transition={
                             reduce
@@ -143,7 +154,7 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
                             <button
                                 type="button"
-                                onClick={handleClose}
+                                onClick={handleGoHome}
                                 className="inline-flex flex-1 items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm sm:text-base font-medium text-white shadow-lg shadow-emerald-500/40 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/80 focus:ring-offset-2 focus:ring-offset-slate-900"
                             >
                                 {locale === 'sk'
@@ -170,7 +181,10 @@ const ReservationSuccessModal: FC<Props> = ({ locale, open, onCloseAction }) => 
         </AnimatePresence>
     );
 
-    // рисуем модалку поверх всей страницы
+    if (typeof document === 'undefined') {
+        return null;
+    }
+
     return createPortal(modal, document.body);
 };
 

@@ -1,3 +1,4 @@
+// src/components/home/Features.tsx
 'use client';
 
 import { useState } from 'react';
@@ -5,6 +6,7 @@ import {
     motion,
     useReducedMotion,
     type Transition,
+    type MotionProps,
 } from 'framer-motion';
 
 const locales = ['sk', 'en', 'de'] as const;
@@ -131,22 +133,28 @@ const dict: Dict = {
     },
 };
 
+const EASE_DEFAULT: Transition['ease'] = [0.22, 1, 0.36, 1];
+const EASE_SOFT_IOS: Transition['ease'] = [0.16, 1, 0.3, 1];
+
 export default function Features({ locale }: { locale: string }) {
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
     const t = dict[safeLocale];
     const icons = [IconClock, IconRadar, IconShield, IconClock, IconShield, IconRadar];
+
     const reduceMotion = useReducedMotion();
 
-    // лёгкий детект iOS + маленький экран, без useEffect → нет варнинга ESLint
+    // Лёгкий клиентский детект iOS + маленький экран
     const [isIosMobile] = useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         const ua = window.navigator.userAgent || '';
-        const isIOS = /iP(hone|od|ad)/.test(ua);
+        const isIOS = /iP(hone|od|ad)/i.test(ua);
         const isSmall = window.innerWidth <= 768;
         return isIOS && isSmall;
     });
 
+    // Если пользователь включил "Reduce motion" → вообще не анимируем
     const disableAnimation = !!reduceMotion;
+    // Для iOS: супер-мягкая анимация без сдвигов и без задержек
     const useSoftAnimation = !disableAnimation && isIosMobile;
 
     return (
@@ -164,13 +172,14 @@ export default function Features({ locale }: { locale: string }) {
                     {t.items.map((it, i) => {
                         const Ico = icons[i % icons.length];
 
-                        const initial = disableAnimation
+                        // Конфиг анимации под платформу
+                        const initial: MotionProps['initial'] = disableAnimation
                             ? undefined
                             : useSoftAnimation
                                 ? { opacity: 0 }
                                 : { opacity: 0, y: 12 };
 
-                        const whileInView = disableAnimation
+                        const whileInView: MotionProps['whileInView'] = disableAnimation
                             ? undefined
                             : useSoftAnimation
                                 ? { opacity: 1 }
@@ -181,30 +190,40 @@ export default function Features({ locale }: { locale: string }) {
                             : useSoftAnimation
                                 ? {
                                     duration: 0.35,
-                                    ease: [0.16, 1, 0.3, 1],
+                                    ease: EASE_SOFT_IOS,
                                 }
                                 : {
-                                    duration: 0.6,
-                                    delay: i * 0.08,
-                                    ease: [0.22, 1, 0.36, 1],
+                                    duration: 0.55,
+                                    delay: i * 0.07,
+                                    ease: EASE_DEFAULT,
                                 };
 
+                        const viewport: MotionProps['viewport'] = disableAnimation
+                            ? undefined
+                            : { once: true, amount: 0.2 };
+
                         return (
-                            <motion.article
+                            <motion.div
                                 key={it.title}
-                                className="relative rounded-2xl border border-slate-200/70 bg-white/80 md:backdrop-blur p-5 shadow-sm"
-                                style={{ willChange: 'transform, opacity' }}
+                                // Вынесли motion в обёртку → внутри обычный <article>,
+                                // чтобы можно было спокойно давать GPU-подсказки
+                                className="will-change-transform will-change-opacity"
+                                style={{
+                                    willChange: 'transform, opacity',
+                                }}
                                 initial={initial}
                                 whileInView={whileInView}
-                                viewport={{ once: true, amount: 0.2 }}
                                 transition={transition}
+                                viewport={viewport}
                             >
-                                <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1 text-xs font-semibold">
-                                    <Ico />
-                                    <span className="opacity-90">{it.title}</span>
-                                </div>
-                                <p className="text-sm text-gray-600">{it.desc}</p>
-                            </motion.article>
+                                <article className="relative rounded-2xl border border-slate-200/70 bg-white/80 md:backdrop-blur p-5 shadow-sm">
+                                    <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1 text-xs font-semibold">
+                                        <Ico />
+                                        <span className="opacity-90">{it.title}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600">{it.desc}</p>
+                                </article>
+                            </motion.div>
                         );
                     })}
                 </div>

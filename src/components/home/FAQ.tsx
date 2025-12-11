@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+    AnimatePresence,
+    motion,
+    useReducedMotion,
+    type Transition,
+} from 'framer-motion';
 
 const locales = ['sk', 'en', 'de'] as const;
 type Locale = (typeof locales)[number];
@@ -17,6 +22,11 @@ const SOFT_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 type AccordionItem = { title: string; content: string };
 
+const contentVariants = {
+    collapsed: { height: 0, opacity: 0 },
+    open: { height: 'auto', opacity: 1 },
+} as const;
+
 function AnimatedAccordion({
                                items,
                                defaultOpen = null,
@@ -25,17 +35,20 @@ function AnimatedAccordion({
     defaultOpen?: number | null;
 }) {
     const reduceMotion = useReducedMotion();
-    const reduce = !!reduceMotion;
+    const [isIosMobile, setIsIosMobile] = useState(false);
 
-    // Лёгкий детект iOS, без useEffect (значение вычисляется один раз на клиенте)
-    const [isIosMobile] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return false;
+    // аккуратный iOS-детект только на клиенте
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
         const ua = window.navigator.userAgent || '';
-        return /iPhone|iPad|iPod/i.test(ua) && window.innerWidth <= 820;
-    });
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isSmall = window.innerWidth <= 820;
+        setIsIosMobile(isIOS && isSmall);
+        // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+    }, []);
 
-    // Если пользователь просит меньше анимаций или это iOS — отключаем тяжёлую анимацию
-    const heavyMotionDisabled = reduce || isIosMobile;
+    // на iOS и при reduce-motion не используем тяжелую height-анимацию
+    const heavyMotionDisabled = !!reduceMotion || isIosMobile;
 
     const [openIndex, setOpenIndex] = useState<number | null>(
         typeof defaultOpen === 'number' ? defaultOpen : null,
@@ -45,23 +58,8 @@ function AnimatedAccordion({
         setOpenIndex((current) => (current === idx ? null : idx));
     };
 
-    const contentVariants = {
-        collapsed: { height: 0, opacity: 0 },
-        open: { height: 'auto', opacity: 1 },
-    } as const;
-
     return (
-        <motion.div
-            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm"
-            initial={heavyMotionDisabled ? undefined : { opacity: 0, y: 12 }}
-            whileInView={heavyMotionDisabled ? undefined : { opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={
-                heavyMotionDisabled
-                    ? undefined
-                    : { duration: 0.6, ease: SOFT_EASE }
-            }
-        >
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm">
             <div className="divide-y divide-slate-200/80">
                 {items.map((item, idx) => {
                     const isOpen = openIndex === idx;
@@ -84,8 +82,8 @@ function AnimatedAccordion({
                                 </div>
                             </button>
 
-                            {/* На iOS / reduce-motion убираем тяжёлую анимацию высоты */}
                             {heavyMotionDisabled ? (
+                                // iOS + reduce-motion: просто показываем/скрываем блок, без Framer
                                 isOpen && (
                                     <div className="overflow-hidden">
                                         <div className="px-4 sm:px-5 pb-4 pt-1 text-[14px] sm:text-[15px] leading-relaxed text-gray-700">
@@ -94,6 +92,7 @@ function AnimatedAccordion({
                                     </div>
                                 )
                             ) : (
+                                // десктоп / Android: плавная анимация высоты
                                 <AnimatePresence initial={false}>
                                     {isOpen && (
                                         <motion.div
@@ -102,10 +101,12 @@ function AnimatedAccordion({
                                             animate="open"
                                             exit="collapsed"
                                             variants={contentVariants}
-                                            transition={{
-                                                duration: 0.9,
-                                                ease: SOFT_EASE,
-                                            }}
+                                            transition={
+                                                {
+                                                    duration: 0.45,
+                                                    ease: SOFT_EASE,
+                                                } satisfies Transition
+                                            }
                                             className="overflow-hidden"
                                         >
                                             <div className="px-4 sm:px-5 pb-4 pt-1 text-[14px] sm:text-[15px] leading-relaxed text-gray-700">
@@ -119,7 +120,7 @@ function AnimatedAccordion({
                     );
                 })}
             </div>
-        </motion.div>
+        </div>
     );
 }
 
@@ -146,7 +147,7 @@ export default function FAQ({ locale }: { locale: string }) {
                 },
                 {
                     q: 'Ako môžem platiť? ',
-                    a: 'Platbu je možné uskutočniť priamo u vodiča v hotovosti, pohodlne kartou alebo na faktúru.',
+                    a: 'Platbu je možné uskutočniť priamo u vodiča v hotovosti, pohodlne kartou alebo na faktúру.',
                 },
             ],
         },
@@ -204,7 +205,7 @@ export default function FAQ({ locale }: { locale: string }) {
 
     const t = dict[isLocale(locale) ? locale : 'sk'];
 
-    // Если загружаем страницу сразу с #faq-section — докрутим к себе
+    // если сразу открыли страницу с #faq-section — докручиваемся до неё
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (window.location.hash !== '#faq-section') return;

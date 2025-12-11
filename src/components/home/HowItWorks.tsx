@@ -1,7 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import {
+    motion,
+    useReducedMotion,
+    type MotionProps,
+    type Transition,
+} from 'framer-motion';
 
 const locales = ['sk', 'en', 'de'] as const;
 type Locale = (typeof locales)[number];
@@ -13,19 +18,27 @@ function isLocale(x: string): x is Locale {
 type Step = { title: string; desc: string };
 type Dict = Record<Locale, { heading: string; steps: Step[] }>;
 
+const EASE_DEFAULT: Transition['ease'] = [0.22, 1, 0.36, 1];
+const EASE_SOFT_IOS: Transition['ease'] = [0.16, 1, 0.3, 1];
+
 export default function HowItWorks({ locale }: { locale: string }) {
     const reduceMotion = useReducedMotion();
-    const reduce = !!reduceMotion;
+    const disableAnimation = !!reduceMotion;
 
-    // Мягкий детект iOS, без useEffect (чтобы не было ворнингов про setState в effect)
-    const [isIosMobile] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return false;
+    // iOS-детект только после гидратации → без расхождений HTML
+    const [isIosMobile, setIsIosMobile] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
         const ua = window.navigator.userAgent || '';
-        return /iPhone|iPad|iPod/i.test(ua) && window.innerWidth <= 820;
-    });
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isSmall = window.innerWidth <= 820;
+        setIsIosMobile(isIOS && isSmall);
+        // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+    }, []);
 
-    // На iOS и при prefers-reduced-motion упрощаем анимации
-    const heavyMotionDisabled = reduce || isIosMobile;
+    // Для iOS: очень мягкая анимация без вертикального сдвига и без сильного стеггера
+    const useSoftAnimation = !disableAnimation && isIosMobile;
 
     const dict: Dict = {
         sk: {
@@ -107,32 +120,56 @@ export default function HowItWorks({ locale }: { locale: string }) {
                     <div className="hidden sm:block absolute left-10 right-10 top-7 h-px border-t border-dashed border-white/30" />
 
                     <ol className="grid gap-6 sm:grid-cols-3">
-                        {t.steps.map((s, i) => (
-                            <motion.li
-                                key={s.title}
-                                className="relative rounded-2xl border border-white/20 bg-white/5 backdrop-blur p-5 shadow-sm"
-                                initial={heavyMotionDisabled ? undefined : { opacity: 0, y: 12 }}
-                                whileInView={heavyMotionDisabled ? undefined : { opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.25 }}
-                                transition={
-                                    heavyMotionDisabled
-                                        ? undefined
-                                        : {
-                                            duration: 0.55,
-                                            delay: i * 0.06,
-                                            ease: [0.22, 1, 0.36, 1],
-                                        }
-                                }
-                            >
-                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow ring-1 ring-black/5">
-                                    {i + 1}
-                                </div>
-                                <h3 className="text-lg font-medium">{s.title}</h3>
-                                <p className="mt-2 text-[15px] sm:text-base text-white/80">
-                                    {s.desc}
-                                </p>
-                            </motion.li>
-                        ))}
+                        {t.steps.map((s, i) => {
+                            const initial: MotionProps['initial'] = disableAnimation
+                                ? undefined
+                                : useSoftAnimation
+                                    ? { opacity: 0 }
+                                    : { opacity: 0, y: 12 };
+
+                            const whileInView: MotionProps['whileInView'] =
+                                disableAnimation
+                                    ? undefined
+                                    : useSoftAnimation
+                                        ? { opacity: 1 }
+                                        : { opacity: 1, y: 0 };
+
+                            const transition: Transition | undefined = disableAnimation
+                                ? undefined
+                                : useSoftAnimation
+                                    ? {
+                                        duration: 0.35,
+                                        ease: EASE_SOFT_IOS,
+                                    }
+                                    : {
+                                        duration: 0.55,
+                                        delay: i * 0.06,
+                                        ease: EASE_DEFAULT,
+                                    };
+
+                            const viewport: MotionProps['viewport'] = disableAnimation
+                                ? undefined
+                                : { once: true, amount: 0.25 };
+
+                            return (
+                                <motion.li
+                                    key={s.title}
+                                    className="relative rounded-2xl border border-white/20 bg-white/5 backdrop-blur p-5 shadow-sm"
+                                    initial={initial}
+                                    whileInView={whileInView}
+                                    viewport={viewport}
+                                    transition={transition}
+                                >
+                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow ring-1 ring-black/5">
+                                        {i + 1}
+                                    </div>
+                                    <h3 className="text-lg font-medium">{s.title}</h3>
+                                    <p className="mt-2 text-[15px] sm:text-base text-white/80">
+                                        {s.desc}
+                                    </p>
+                                </motion.li>
+                            );
+                        })}
                     </ol>
                 </div>
             </div>

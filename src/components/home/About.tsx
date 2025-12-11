@@ -96,13 +96,19 @@ export default function About({ locale }: { locale: string }) {
     const reduceMotion = useReducedMotion();
     const reduce = !!reduceMotion;
 
-    // Детект iOS сразу в начальном состоянии (без useEffect и setState)
-    const [isIosMobile] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return false;
-        const ua = window.navigator.userAgent || '';
-        return /iPhone|iPad|iPod/i.test(ua) && window.innerWidth <= 820;
-    });
+    // iOS-детект только после гидратации → без mismatch по HTML
+    const [isIosMobile, setIsIosMobile] = useState(false);
 
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const ua = window.navigator.userAgent || '';
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isSmall = window.innerWidth <= 820;
+        setIsIosMobile(isIOS && isSmall);
+        // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+    }, []);
+
+    // На iOS или при Reduce Motion отключаем тяжёлые эффекты (parallax + glow)
     const heavyMotionDisabled = reduce || isIosMobile;
 
     const safeLocale: Locale = isLocale(locale) ? locale : 'sk';
@@ -128,7 +134,7 @@ export default function About({ locale }: { locale: string }) {
         setPosition((p) => p - 1);
     };
 
-    // Плавный циклический слайдер без эффект-циклов
+    // Плавный циклический слайдер
     const handleTransitionEnd = () => {
         if (reduce) return;
 
@@ -153,13 +159,14 @@ export default function About({ locale }: { locale: string }) {
 
     const extendedSlides = [GALLERY[total - 1], ...GALLERY, GALLERY[0]];
 
+    // На iOS — чуть короче и проще ease
     const baseTransition = isIosMobile
         ? 'transform 0.4s ease-out'
         : 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)';
 
     const sliderStyle: CSSProperties = {
         transform: `translateX(-${position * 100}%)`,
-        willChange: 'transform',
+        willChange: reduce ? undefined : 'transform',
         ...(reduce || isJumping
             ? { transition: 'none' }
             : { transition: baseTransition }),
@@ -199,7 +206,7 @@ export default function About({ locale }: { locale: string }) {
         setTouchCurrentX(null);
     };
 
-    // Параллакс для блока about
+    // Параллакс для блока about (отключаем на iOS/ReduceMotion)
     const sectionRef = useRef<HTMLElement | null>(null);
 
     const { scrollYProgress } = useScroll({
@@ -209,7 +216,7 @@ export default function About({ locale }: { locale: string }) {
 
     const sliderTranslateY = useTransform(scrollYProgress, [0, 1], [12, -12]);
 
-    // Скролл к якорю, если открыли страницу сразу с #about-section / #about-text / #vehicles-section
+    // Скролл к якорю при hash в URL
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const hash = window.location.hash;
@@ -371,7 +378,7 @@ export default function About({ locale }: { locale: string }) {
                             }
                     }
                 >
-                    {/* glow-background (отключаем бесконечную анимацию на iOS / reduce) */}
+                    {/* glow-background — отключаем бесконечное движение на iOS/Reduce */}
                     <motion.div
                         aria-hidden
                         className="pointer-events-none absolute -inset-10 rounded-[32px] bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(244,63,94,0.32),transparent_55%)]"

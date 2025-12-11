@@ -140,7 +140,7 @@ export default function FAQ({ locale }: { locale: string }) {
                 },
                 {
                     q: 'Ako dlho trvá cesta na letisko Schwechat?',
-                    a: 'Priemerná doba cesty je približne 45 až 55 minút v závislosti od dopravnej situácie.',
+                    a: 'Priemerný čas cesty je približne 45 až 55 minút, v závislosti od aktuálnej dopravnej situácie.',
                 },
                 {
                     q: 'Môžem si rezervovať spätnú cestu?',

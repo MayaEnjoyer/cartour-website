@@ -34,6 +34,7 @@ export default function PriceZones({ locale }: { locale: string }) {
                     'Karlova Ves',
                     'Jarovce',
                     'Hlavná vlaková stanica',
+                    'Vrakuňa',
                 ],
             },
             {
@@ -86,6 +87,7 @@ export default function PriceZones({ locale }: { locale: string }) {
                     'Karlova Ves',
                     'Jarovce',
                     'Main railway station',
+                    'Vrakuňa',
                 ],
             },
             {
@@ -138,6 +140,7 @@ export default function PriceZones({ locale }: { locale: string }) {
                     'Karlova Ves',
                     'Jarovce',
                     'Hauptbahnhof',
+                    'Vrakuňa',
                 ],
             },
             {

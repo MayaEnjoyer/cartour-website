@@ -35,9 +35,9 @@ function AnimatedAccordion({
     defaultOpen?: number | null;
 }) {
     const reduceMotion = useReducedMotion();
-    const [isIosMobile, setIsIosMobile] = useState(false);
 
-    // аккуратный iOS-детект только на клиенте
+    // мягкий iOS-детект только на клиенте
+    const [isIosMobile, setIsIosMobile] = useState(false);
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const ua = window.navigator.userAgent || '';
@@ -47,8 +47,8 @@ function AnimatedAccordion({
         // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
     }, []);
 
-    // на iOS и при reduce-motion не используем тяжелую height-анимацию
-    const heavyMotionDisabled = !!reduceMotion || isIosMobile;
+    // если пользователь просит reduce-motion → вообще без анимаций
+    const animationsDisabled = !!reduceMotion;
 
     const [openIndex, setOpenIndex] = useState<number | null>(
         typeof defaultOpen === 'number' ? defaultOpen : null,
@@ -82,8 +82,8 @@ function AnimatedAccordion({
                                 </div>
                             </button>
 
-                            {heavyMotionDisabled ? (
-                                // iOS + reduce-motion: просто показываем/скрываем блок, без Framer
+                            {animationsDisabled ? (
+                                // prefers-reduced-motion: без Framer, просто показать/скрыть
                                 isOpen && (
                                     <div className="overflow-hidden">
                                         <div className="px-4 sm:px-5 pb-4 pt-1 text-[14px] sm:text-[15px] leading-relaxed text-gray-700">
@@ -92,7 +92,7 @@ function AnimatedAccordion({
                                     </div>
                                 )
                             ) : (
-                                // десктоп / Android: плавная анимация высоты
+                                // все остальные (включая iOS) — плавная height-анимация
                                 <AnimatePresence initial={false}>
                                     {isOpen && (
                                         <motion.div
@@ -103,7 +103,8 @@ function AnimatedAccordion({
                                             variants={contentVariants}
                                             transition={
                                                 {
-                                                    duration: 0.45,
+                                                    // на iOS чуть короче и мягче, чтобы не было «дёрганий»
+                                                    duration: isIosMobile ? 0.35 : 0.45,
                                                     ease: SOFT_EASE,
                                                 } satisfies Transition
                                             }
@@ -147,7 +148,7 @@ export default function FAQ({ locale }: { locale: string }) {
                 },
                 {
                     q: 'Ako môžem platiť? ',
-                    a: 'Platbu je možné uskutočniť priamo u vodiča v hotovosti, pohodlne kartou alebo na faktúру.',
+                    a: 'Platbu je možné uskutočniť priamo u vodiča v hotovosti, pohodlne kartou alebo na faktúru.',
                 },
             ],
         },

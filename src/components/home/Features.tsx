@@ -154,7 +154,7 @@ export default function Features({ locale }: { locale: string }) {
 
     // Если пользователь включил "Reduce motion" → вообще не анимируем
     const disableAnimation = !!reduceMotion;
-    // Для iOS: супер-мягкая анимация без сдвигов и без задержек
+    // Для iOS: супер-мягкая анимация без сдвигов
     const useSoftAnimation = !disableAnimation && isIosMobile;
 
     return (
@@ -172,7 +172,6 @@ export default function Features({ locale }: { locale: string }) {
                     {t.items.map((it, i) => {
                         const Ico = icons[i % icons.length];
 
-                        // Конфиг анимации под платформу
                         const initial: MotionProps['initial'] = disableAnimation
                             ? undefined
                             : useSoftAnimation
@@ -189,7 +188,9 @@ export default function Features({ locale }: { locale: string }) {
                             ? undefined
                             : useSoftAnimation
                                 ? {
-                                    duration: 0.35,
+                                    // айфон: ЧУТЬ медленнее и лёгкий stagger
+                                    duration: 0.45,
+                                    delay: i * 0.04,
                                     ease: EASE_SOFT_IOS,
                                 }
                                 : {
@@ -205,12 +206,8 @@ export default function Features({ locale }: { locale: string }) {
                         return (
                             <motion.div
                                 key={it.title}
-                                // Вынесли motion в обёртку → внутри обычный <article>,
-                                // чтобы можно было спокойно давать GPU-подсказки
                                 className="will-change-transform will-change-opacity"
-                                style={{
-                                    willChange: 'transform, opacity',
-                                }}
+                                style={{ willChange: 'transform, opacity' }}
                                 initial={initial}
                                 whileInView={whileInView}
                                 transition={transition}

@@ -188,9 +188,9 @@ export default function Features({ locale }: { locale: string }) {
                             ? undefined
                             : useSoftAnimation
                                 ? {
-                                    // айфон: ЧУТЬ медленнее и лёгкий stagger
-                                    duration: 0.45,
-                                    delay: i * 0.04,
+                                    // iOS: ещё немного медленнее + лёгкий stagger
+                                    duration: 0.55,
+                                    delay: i * 0.05,
                                     ease: EASE_SOFT_IOS,
                                 }
                                 : {

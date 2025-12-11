@@ -1,4 +1,3 @@
-// src/components/form/ReservationForm.tsx
 'use client';
 
 import {
@@ -471,9 +470,7 @@ export default function ReservationForm({
                                         <div className="text-sm sm:text-base font-semibold text-gray-900">
                                             {t.routeToAirport}
                                         </div>
-                                        <div className="text-xs text-gray-500 sm:block hidden">
-                                            {t.airportLabel}
-                                        </div>
+                                        {/* подпись с аэропортом скрыта */}
                                     </div>
                                 </div>
                             </button>
@@ -504,9 +501,7 @@ export default function ReservationForm({
                                         <div className="text-sm sm:text-base font-semibold text-gray-900">
                                             {t.routeFromAirport}
                                         </div>
-                                        <div className="text-xs text-gray-500 sm:block hidden">
-                                            {t.airportLabel}
-                                        </div>
+                                        {/* подпись с аэропортом скрыта */}
                                     </div>
                                 </div>
                             </button>
@@ -560,7 +555,9 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    '',
+                                )
                             }
                         />
                     </div>
@@ -608,7 +605,9 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    '',
+                                )
                             }
                         />
                     </div>
@@ -704,7 +703,9 @@ export default function ReservationForm({
 
                     {wantReturn && (
                         <div className="rounded-xl border p-4 bg-white/70">
-                            <p className="mb-3 text-sm font-medium">{t.return}</p>
+                            <p className="mb-3 text-sm font-medium">
+                                {t.return}
+                            </p>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
                                     {label('r_pickup', t.from, true)}
@@ -796,7 +797,9 @@ export default function ReservationForm({
                                 )
                             }
                             onInput={(ev) =>
-                                (ev.currentTarget as HTMLInputElement).setCustomValidity('')
+                                (ev.currentTarget as HTMLInputElement).setCustomValidity(
+                                    '',
+                                )
                             }
                         />
                         <span>{t.gdprLabel}</span>
@@ -813,11 +816,11 @@ export default function ReservationForm({
                         {loading ? '…' : t.submit}
                     </button>
                     <span className="text-sm text-gray-500">
-            {t.altCall}:{' '}
+                        {t.altCall}:{' '}
                         <a href="tel:+421908699151" className="underline">
-              +421 908 699 151
-            </a>
-          </span>
+                            +421 908 699 151
+                        </a>
+                    </span>
 
                     <div className="ml-auto">
                         <SocialLinks />

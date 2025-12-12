@@ -53,7 +53,7 @@ const FOOTER: Record<FooterLocale, FooterDict> = {
         contactTitle: 'Kontakt',
         contact: {
             locationLabel: 'Lokalita',
-            location: 'Bezručova 3, 811 09 Bratislava',
+            location: 'Lomonosovova 2, 811 09 Bratislava',
             phoneLabel: 'Telefón',
             phoneDisplay: '+421 908 699 151',
             phoneHref: 'tel:+421908699151',
@@ -87,7 +87,7 @@ const FOOTER: Record<FooterLocale, FooterDict> = {
         contactTitle: 'Contact',
         contact: {
             locationLabel: 'Location',
-            location: 'Bezručova 3, 811 09 Bratislava, Slovakia',
+            location: Lomonosovova 2, 811 09 Bratislava, Slovakia',
             phoneLabel: 'Phone',
             phoneDisplay: '+421 908 699 151',
             phoneHref: 'tel:+421908699151',
@@ -121,7 +121,7 @@ const FOOTER: Record<FooterLocale, FooterDict> = {
         contactTitle: 'Kontakt',
         contact: {
             locationLabel: 'Standort',
-            location: 'Bezručova 3, 811 09 Bratislava, Slowakei',
+            location: Lomonosovova 2, 811 09 Bratislava, Slowakei',
             phoneLabel: 'Telefon',
             phoneDisplay: '+421 908 699 151',
             phoneHref: 'tel:+421908699151',

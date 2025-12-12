@@ -88,6 +88,7 @@ export default function PriceZones({ locale }: { locale: string }) {
                     'Main railway station',
                     'Vrakuňa',
                 ],
+
             },
             {
                 name: 'Extended districts',
